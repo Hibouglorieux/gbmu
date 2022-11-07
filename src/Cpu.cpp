@@ -6,12 +6,14 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/07 22:10:53 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/07 22:28:32 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include <iostream>
+
+#define PHL mem[HL]
 
 unsigned short Cpu::PC = 0x100;
 unsigned short Cpu::SP = 0;
@@ -49,11 +51,117 @@ const unsigned char& Cpu::getData(int i)
 	return mem[i];
 }
 
+unsigned char& Cpu::getLoadSource(unsigned int opcode)
+{
+	switch (opcode & 0x07)
+	{
+		case 0x7:
+			return A;
+		case 0x0:
+			return B;
+		case 0x1:
+			return C;
+		case 0x2:
+			return D;
+		case 0x3:
+			return E;
+		case 0x4:
+			return H;
+		case 0x5:
+			return L;
+		case 0x6:
+			return PHL;
+	}
+	std::cout << "Error with SourceTarget not in range with opcode: "
+		<< opcode << std::endl;
+	exit(-1);
+}
+
+unsigned char& Cpu::getLoadTarget(unsigned int opcode)
+{
+    if (opcode > 0x40 && opcode <= 0x8F)
+	{
+        switch ((opcode - 0x40) / 0x08)
+		{
+			case 0x7:
+				return A;
+			case 0x0:
+				return B;
+			case 0x1:
+				return C;
+			case 0x2:
+				return D;
+			case 0x3:
+				return E;
+			case 0x4:
+				return H;
+			case 0x5:
+				return L;
+			case 0x6:
+				return PHL;
+			default:
+				std::cout << "Error with LoadTarget not in range with opcode: "
+					<< opcode << std::endl;
+				exit(-1);
+        }
+    }
+    if ((opcode & 0x0F) == 0x0E)
+	{
+        switch (opcode)
+		{
+			case 0x0E:
+			   	return C;
+			case 0x1E:
+				return E;
+			case 0x2E:
+				return L;
+			case 0x3E:
+				return A;
+			default:
+				std::cout << "Error with LoadTarget not in range with opcode: "
+					<< opcode << std::endl;
+				exit(-1);
+        }
+    }
+    if ((opcode & 0x0F) == 0x06)
+	{
+        switch (opcode)
+		{
+			case 0x06:
+				return B;
+			case 0x16:
+				return D;
+			case 0x26:
+				return H;
+			case 0x36:
+				return PHL;
+			default:
+				std::cout << "Error with LoadTarget not in range with opcode: "
+					<< opcode << std::endl;
+				exit(-1);
+        }
+    }
+	std::cout << "Error with LoadTarget not in range with opcode: "
+		<< opcode << std::endl;
+	exit(-1);
+}
+
+unsigned char Cpu::getTargetBit(unsigned int opcode)
+{
+    // opcode % 40 removes the offset for first operation that need this function (0x40-0x7f)
+    // & 0xF0 >> 4 to get the higher bit, multiplied by 2 to get the result
+    unsigned char nb = (((opcode % 0x40) & 0xF0) >> 4) * 2;
+    if ((opcode & 0xF) % 0x7 == 1) {
+        nb++;
+    }
+    return nb;
+}
+
 void Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
-	unsigned char& loadSource = A;
-	unsigned char& loadTarget = A;
+	unsigned char& loadSource = getLoadSource(opcode);
+	unsigned char& loadTarget = getLoadTarget(opcode);
 	switch (opcode)
 	{
 		case 0x00:

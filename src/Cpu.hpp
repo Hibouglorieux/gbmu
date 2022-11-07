@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/07 22:10:54 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/07 22:21:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,9 @@ public:
 	static unsigned short& HL;
 	static Mem mem;
 private:
+	static unsigned char& getLoadSource(unsigned int opcode);
+	static unsigned char& getLoadTarget(unsigned int opcode);
+	static unsigned char getTargetBit(unsigned int opcode);
 
 	static unsigned char nop();
 	static unsigned char stop();
