@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 16:10:07 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 20:27:09 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,11 @@ unsigned char Cpu::add_a_d8()
 }
 
 unsigned char Cpu::sub_d8()
+{
+	return 0;
+}
+
+unsigned char Cpu::adc_a_d8()
 {
 	return 0;
 }
