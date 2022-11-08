@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 16:31:16 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 17:28:34 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # define CPU_CLASS_H
 
 #include "Mem.hpp"
+#include <string>
 #include "Clock.hpp"
 
 class Cpu {
@@ -30,6 +31,11 @@ public:
 	static void setSubtractFlag(bool value);
 	static void setHalfCarryFlag(bool value);
 	static void setCarryFlag(bool value);
+	static void setFlags(bool zero, bool sub, bool halfCarry, bool carry);
+	static bool getZeroFlag();
+	static bool getSubtractFlag();
+	static bool getHalfCarryFlag();
+	static bool getCarryFlag();
 
 
 	static const unsigned char& getData(int i);
@@ -54,6 +60,9 @@ public:
 	static Mem mem;
 	static Clock clock;
 private:
+
+	static bool getHalfCarry8Bit(unsigned char a, unsigned char b);
+	static bool getHalfCarry16Bit(unsigned short a, unsigned short b);
 
 	static void logErr(std::string msg);
 

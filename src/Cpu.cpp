@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 16:41:42 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 17:17:55 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,35 @@ void	Cpu::setCarryFlag(bool value)
 	else
 		F &= value << 4;
 }
+
+void	Cpu::setFlags(bool zero, bool sub, bool halfCarry, bool carry)
+{
+	setZeroFlag(zero);
+	setSubtractFlag(sub);
+	setHalfCarryFlag(halfCarry);
+	setCarryFlag(carry);
+}
+
+bool	Cpu::getZeroFlag()
+{
+	return (F >> 7) & 1;
+}
+
+bool	Cpu::getSubtractFlag()
+{
+	return (F >> 6) & 1;
+}
+
+bool	Cpu::getHalfCarryFlag()
+{
+	return (F >> 5) & 1;
+}
+
+bool	Cpu::getCarryFlag()
+{
+	return (F >> 4) & 1;
+}
+
 unsigned char Cpu::readByte()
 {
 	return mem[PC++];

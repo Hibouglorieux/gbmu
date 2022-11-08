@@ -6,33 +6,29 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:25:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 16:53:04 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 17:32:48 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 
-template <typename T>
-T	getFlagResult(T a, T b, FlagOp operation)
+bool Cpu::getHalfCarry8Bit(unsigned char a, unsigned char b)
 {
-	bool flagVal;
-	switch (operation)
-	{
-		case FlagOp::Reset:
-			return 0;
-		case FlagOp::Set:
-			return 1;
-		default:
-			exit(-2);
-	}
-	return flagVal;
+	a &= 0xF;
+	b &= 0xF;
+	return (a + b) > 0xF;
 }
 
-template <typename T>
-T	perform(T a, T b, FlagOp zero, FlagOp subtract, FlagOp halfCarry, FlagOp carry)
+bool Cpu::getHalfCarry16Bit(unsigned short a, unsigned short b)
 {
-	setZeroFlag(getFlagResult(a, b, zero));
-	setSubtractFlag(getFlagResult(a, b, subtract));
-	setHalfCarryFlag(getFlagResult(a, b, haldCarry));
-	setCarryFlag(getFlagResult(a, b, carry));
+	a &= 0xFFF;
+	b &= 0xFFF;
+	return (a + b) > 0xFFF;
 }
+
+/*
+bool Cpu::getHalfBorrow8Bit(unsigned char a, unsigned char b)
+{
+
+}
+*/
