@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/07 22:21:22 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:48:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,13 @@
 # define CPU_CLASS_H
 
 #include "Mem.hpp"
+#include "Clock.hpp"
 
 class Cpu {
 public:
 
-	void executeInstruction();
+	static void loadBootRom();
+	static void executeInstruction();
 
 	static unsigned char readByte();
 	static unsigned short readShort();
@@ -45,6 +47,7 @@ public:
 	static unsigned short& DE;
 	static unsigned short& HL;
 	static Mem mem;
+	static Clock clock;
 private:
 	static unsigned char& getLoadSource(unsigned int opcode);
 	static unsigned char& getLoadTarget(unsigned int opcode);

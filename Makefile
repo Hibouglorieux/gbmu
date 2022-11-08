@@ -4,7 +4,8 @@ NAME = gbmu
 FILES = main.cpp \
 		Cpu.cpp \
 		Mem.cpp \
-		Instructions.cpp
+		Instructions.cpp \
+		Clock.cpp
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))

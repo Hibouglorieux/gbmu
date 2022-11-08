@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/07 22:28:32 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:49:19 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #define PHL mem[HL]
 
-unsigned short Cpu::PC = 0x100;
+unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
 unsigned char Cpu::registers[8] = {};
 
@@ -33,6 +33,7 @@ unsigned short& Cpu::DE = *reinterpret_cast<unsigned short*>(&E);
 unsigned short& Cpu::HL = *reinterpret_cast<unsigned short*>(&L);
 
 Mem Cpu::mem = Mem();
+Clock Cpu::clock = Clock();
 
 unsigned char Cpu::readByte()
 {
@@ -156,6 +157,20 @@ unsigned char Cpu::getTargetBit(unsigned int opcode)
     }
     return nb;
 }
+
+void Cpu::loadBootRom()
+{
+	PC = 0x100;
+	BC = 0x0000;
+	DE = 0xFF56;
+	HL = 0x000D;
+	SP = 0xFFFE;
+	A = 0x11;
+	F = 0x80;
+	mem[0xFF44] = 0x90;
+	clock = 32916 / 2;
+}
+
 
 void Cpu::executeInstruction()
 {

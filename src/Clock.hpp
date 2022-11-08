@@ -1,21 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Clock.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 15:49:08 by nallani          ###   ########.fr       */
+/*   Created: 2022/11/08 14:55:36 by nallani           #+#    #+#             */
+/*   Updated: 2022/11/08 15:47:39 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
 
-int main(int argc, char** argv)
-{
-	(void) argc;
-	(void) argv;
-	Cpu::loadBootRom();
-	return (0);
-}
+#ifndef CLOCK_CLASS_H
+# define CLOCK_CLASS_H
+
+class Clock {
+public:
+	Clock(void);
+	virtual ~Clock(void);
+	int operator+(int addValue);
+	int operator-(int subValue);
+	int& operator+=(int addValue);
+	int& operator-=(int subValue);
+	int& operator=(int value);
+private:
+	int _clock;
+};
+
+#endif
