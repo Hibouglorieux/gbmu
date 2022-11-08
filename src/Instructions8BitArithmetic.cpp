@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 20:27:09 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 21:48:35 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,26 +18,6 @@ unsigned char Cpu::inc_r8(unsigned short opcode)
 }
 
 unsigned char Cpu::dec_r8(unsigned short opcode)
-{
-	return 0;
-}
-
-unsigned char Cpu::daa()
-{
-	return 0;
-}
-
-unsigned char Cpu::cpl()
-{
-	return 0;
-}
-
-unsigned char Cpu::scf()
-{
-	return 0;
-}
-
-unsigned char Cpu::ccf()
 {
 	return 0;
 }

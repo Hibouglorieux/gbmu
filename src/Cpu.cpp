@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 19:42:07 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 21:50:15 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ void	Cpu::setZeroFlag(bool value)
 	else
 		F &= value << 7;
 }
-
 
 void	Cpu::setSubtractFlag(bool value)
 {
