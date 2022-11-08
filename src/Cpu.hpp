@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 17:28:34 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 19:39:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ public:
 
 	static unsigned short PC;
 	static unsigned short SP;
-	static unsigned char registers[8];
+	static unsigned short registers[4];
 	static unsigned char& A;
 	static unsigned char& B;
 	static unsigned char& C;
@@ -150,6 +150,10 @@ private:
 	static unsigned char bit_n_r8(unsigned char targetBit, unsigned char& targetRegister);
 	static unsigned char res_n_r8(unsigned char targetBit, unsigned char& targetRegister);
 	static unsigned char set_n_r8(unsigned char targetBit, unsigned char& targetRegister);
+
+
+	static void internalPush(unsigned short valueToPush);
+	static unsigned short internalPop();
 };
 
 #endif

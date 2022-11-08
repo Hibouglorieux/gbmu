@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 17:17:55 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 19:42:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,20 +17,22 @@
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
-unsigned char Cpu::registers[8] = {};
+unsigned short Cpu::registers[4] = {};
 
-unsigned char& Cpu::A = registers[7];
-unsigned char& Cpu::B = registers[6];
-unsigned char& Cpu::C = registers[5];
-unsigned char& Cpu::D = registers[4];
-unsigned char& Cpu::E = registers[3];
-unsigned char& Cpu::F = registers[2];
-unsigned char& Cpu::H = registers[1];
-unsigned char& Cpu::L = registers[0];
 
-unsigned short& Cpu::BC = *reinterpret_cast<unsigned short*>(&C);
-unsigned short& Cpu::DE = *reinterpret_cast<unsigned short*>(&E);
-unsigned short& Cpu::HL = *reinterpret_cast<unsigned short*>(&L);
+unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[0];
+unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[1];
+unsigned char& Cpu::B = reinterpret_cast<unsigned char*>(registers)[2];
+unsigned char& Cpu::C = reinterpret_cast<unsigned char*>(registers)[3];
+unsigned char& Cpu::D = reinterpret_cast<unsigned char*>(registers)[4];
+unsigned char& Cpu::E = reinterpret_cast<unsigned char*>(registers)[5];
+unsigned char& Cpu::H = reinterpret_cast<unsigned char*>(registers)[6];
+unsigned char& Cpu::L = reinterpret_cast<unsigned char*>(registers)[7];
+
+unsigned short& Cpu::AF = registers[0];
+unsigned short& Cpu::BC = registers[1];
+unsigned short& Cpu::DE = registers[2];
+unsigned short& Cpu::HL = registers[3];
 
 Mem Cpu::mem = Mem();
 Clock Cpu::clock = Clock();
