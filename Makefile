@@ -4,7 +4,13 @@ NAME = gbmu
 FILES = main.cpp \
 		Cpu.cpp \
 		Mem.cpp \
-		Instructions.cpp \
+		InstructionsControl.cpp \
+		InstructionsJumpCalls.cpp \
+		Instructions8BitLoad.cpp \
+		Instructions16BitLoad.cpp \
+		Instructions16BitArithmetic.cpp \
+		Instructions8BitArithmetic.cpp \
+		Instructions8BitShift.cpp \
 		Clock.cpp
 
 

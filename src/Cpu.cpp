@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 15:49:19 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 16:41:42 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,38 @@ unsigned short& Cpu::HL = *reinterpret_cast<unsigned short*>(&L);
 Mem Cpu::mem = Mem();
 Clock Cpu::clock = Clock();
 
+void	Cpu::setZeroFlag(bool value)
+{
+	if (value)
+		F |= value << 7;
+	else
+		F &= value << 7;
+}
+
+
+void	Cpu::setSubtractFlag(bool value)
+{
+	if (value)
+		F |= value << 6;
+	else
+		F &= value << 6;
+}
+
+void	Cpu::setHalfCarryFlag(bool value)
+{
+	if (value)
+		F |= value << 5;
+	else
+		F &= value << 5;
+}
+
+void	Cpu::setCarryFlag(bool value)
+{
+	if (value)
+		F |= value << 4;
+	else
+		F &= value << 4;
+}
 unsigned char Cpu::readByte()
 {
 	return mem[PC++];
@@ -158,6 +190,12 @@ unsigned char Cpu::getTargetBit(unsigned int opcode)
     return nb;
 }
 
+void Cpu::logErr(std::string msg)
+{
+	std::cerr << msg << std::endl;
+	exit(-1);
+}
+
 void Cpu::loadBootRom()
 {
 	PC = 0x100;
@@ -170,7 +208,6 @@ void Cpu::loadBootRom()
 	mem[0xFF44] = 0x90;
 	clock = 32916 / 2;
 }
-
 
 void Cpu::executeInstruction()
 {

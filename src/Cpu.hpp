@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 15:48:53 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/08 16:31:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,11 @@ public:
 
 	static unsigned char readByte();
 	static unsigned short readShort();
+
+	static void setZeroFlag(bool value);
+	static void setSubtractFlag(bool value);
+	static void setHalfCarryFlag(bool value);
+	static void setCarryFlag(bool value);
 
 
 	static const unsigned char& getData(int i);
@@ -49,6 +54,9 @@ public:
 	static Mem mem;
 	static Clock clock;
 private:
+
+	static void logErr(std::string msg);
+
 	static unsigned char& getLoadSource(unsigned int opcode);
 	static unsigned char& getLoadTarget(unsigned int opcode);
 	static unsigned char getTargetBit(unsigned int opcode);
@@ -79,8 +87,6 @@ private:
 	static unsigned char jr_s8_flag(unsigned short opcode);
 	static unsigned char load_hl_d8();
 	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char loadSource);
-	static unsigned char load_r_hl(unsigned char& loadTarget, unsigned char loadSource);
-	static unsigned char load_hl_r(unsigned char& loadTarget, unsigned char loadSource);
 	static unsigned char add_a_r8(unsigned char& loadSource);
 	static unsigned char add_a_hl();
 	static unsigned char adc_a_r8(unsigned char& loadSource);
