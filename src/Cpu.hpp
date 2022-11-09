@@ -18,7 +18,7 @@
 #include <string>
 #include "Clock.hpp"
 
-#define PHL mem[HL]
+#define PHL (mem[HL])
 
 class Cpu {
 public:
