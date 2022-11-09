@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 19:39:07 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:01:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include "Mem.hpp"
 #include <string>
 #include "Clock.hpp"
+
+#define PHL mem[HL]
 
 class Cpu {
 public:

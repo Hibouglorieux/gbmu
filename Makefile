@@ -11,6 +11,7 @@ FILES = main.cpp \
 		Instructions16BitArithmetic.cpp \
 		Instructions8BitArithmetic.cpp \
 		Instructions8BitShift.cpp \
+		InstructionsMisc.cpp \
 		FlagOp.cpp \
 		Clock.cpp
 

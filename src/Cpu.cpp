@@ -6,14 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 21:50:15 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:01:01 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include <iostream>
-
-#define PHL mem[HL]
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;

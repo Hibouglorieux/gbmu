@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 21:48:16 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 21:49:36 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 15:46:48 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 unsigned char Cpu::daa()
 {
-	/*
     // Opcode: 0x27
     // Symbol: DAA
     // Number of Bytes: 1
@@ -24,37 +23,62 @@ unsigned char Cpu::daa()
     // Adjust the accumulator (register A) to a binary-coded decimal (BCD) number after BCD addition and subtraction operations.
     // https://stackoverflow.com/questions/8119577/z80-daa-instruction
     // http://z80-heaven.wikidot.com/instructions-set:daa
-    let a = cpu.get_r8(Register8BitIdentifier::A);
-    //think about subtract being same than addition but on the other side
-    let mut magic = if cpu.get_half_carry_flag() || (!cpu.get_operation_flag() && (a & 0xF) > 9) {0x6} else {0};
+	unsigned char magic = ((getHalfCarryFlag() || getSubtractFlag()) && ((A & 0xF) > 9)) ? 0x6 : 0;
 
-    if cpu.get_carry_flag() || (!cpu.get_operation_flag() && a > 0x99)
-    {
-        magic |= 0x60;
-        cpu.set_carry_flag(true);
-    }
+	if (getCarryFlag() || (!getSubtractFlag() && A > 0x99))
+	{
+		magic |= 0x60;
+		setCarryFlag(true);
+	}
 
-    let res = if cpu.get_operation_flag() {Op::Sub(a , magic).perform(cpu)} else {Op::Add(a, magic).perform(cpu)};
-    cpu.set_r8(Register8BitIdentifier::A, res);
+	A = (getSubtractFlag()) ? (A - magic) : A + magic;
 
-    cpu.set_zero_flag(cpu.get_r8(Register8BitIdentifier::A) == 0);
-    cpu.set_half_carry_flag(false);
-
-	*/
-    return 1;
+	setZeroFlag(A == 0);
+	setHalfCarryFlag(false);
+	return 1;
 }
 
 unsigned char Cpu::cpl()
 {
-	return 0;
+    // Opcode: 0x2F
+    // Symbol: CPL
+    // Number of Bytes: 1
+    // Number of Cycles: 1
+    // Flags: - 1 1 -
+    // Description
+    // Take the one's complement (i.e., flip all bits) of the contents of register A.
+
+	setZeroFlag(1);
+	setHalfCarryFlag(1);
+
+	A = ~A;
+    return 1;
 }
 
 unsigned char Cpu::scf()
 {
-	return 0;
+    // Opcode: 0x37
+    // Symbol: SCF
+    // Number of Bytes: 1
+    // Number of Cycles: 1
+    // Flags: - 0 0 1
+    // Description
+    // Set the carry flag CY.
+
+	setCarryFlag(1);
+    return 1;
 }
 
 unsigned char Cpu::ccf()
 {
-	return 0;
+    // Opcode: 0x3F
+    // Symbol: CCF
+    // Number of Bytes: 1
+    // Number of Cycles: 1
+    // Flags: - 0 0 !CY
+    // Description
+    // Flip the carry flag CY.
+
+	setCarryFlag(!getCarryFlag());
+    return 1;
 }
