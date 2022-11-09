@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 21:34:37 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 22:33:03 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,31 @@ void Cpu::loadBootRom()
 
 void Cpu::run()
 {
-	int i = 0;
+	//int i = 0;
 	while (true)
 	{
-		std::cout << i++ << std::endl;
-		std::cout << "PC is: 0x" << std::hex << std::setw(4) << PC << std::endl;
+		std::string lol;
+		std::getline(std::cin, lol);
+		std::cout << std::setfill('0') << "Current opcode: 0x";
+		if (mem[PC] == 0xCB)
+			std::cout << std::setw(4) << std::hex << +(((unsigned short)(mem[PC]) << 8) + mem[PC + 1]) << " with PC: 0x" << std::setw(4) << PC << std::endl;
+		else
+			std::cout << std::setw(2) << std::hex << +(int)(mem[PC]) << " with PC: 0x" << std::setw(4) << std::hex << PC << std::endl;
+
+		std::cout << std::setfill('0') << std::uppercase;
+		std::cout << "AF: 0x" << std::setw(2) << +A << std::setw(2) << +F << std::endl;
+		std::cout << "BC: 0x" << std::setw(4) << +BC << std::endl;
+		std::cout << "DE: 0x" << std::setw(4) << +DE << std::endl;
+		std::cout << "HL: 0x" << std::setw(4) << +HL << std::endl;
+		std::cout << "SP: 0x" << std::setw(4) << +SP << std::endl;
+		//std::cout << "FF44: 0x" << std::setw(2) << +(memory[0xFF44]) << std::endl;
+		//std::cout << "clock: " << std::dec << clock * 2 << std::endl;
+		//std::cout << "0xff44: " << std::hex << +memory[0xFF44] << std::endl;
+		std::cout << std::endl << std::endl;
+		//std::cout << i++ << std::endl;
+		//std::cout << "PC is: 0x" << std::hex << std::setw(4) << PC << std::endl;
 		unsigned char opcode = executeInstruction();
-		std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
+		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 	}
 }
 

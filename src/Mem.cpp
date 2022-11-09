@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 21:13:15 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 22:34:05 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ Mem::~Mem()
 		delete[] internalArray;
 }
 
-unsigned char& Mem::operator[](unsigned int i)
+MemWrap Mem::operator[](unsigned int i)
 {
 	if (i >= memSize)
 	{
@@ -99,5 +99,38 @@ unsigned char& Mem::operator[](unsigned int i)
 		std::cerr << "trying to access bad memory" << std::endl;
 		exit(-1);
 	}
-	return internalArray[i];
+	return MemWrap(*this, i, internalArray[i]);
+}
+
+const MemWrap Mem::operator[](unsigned int i) const
+{
+	if (i >= memSize)
+	{
+		std::cerr << "Error, trying to access mem at: " << i <<
+			" but mem size is: " << memSize<< std::endl;
+		exit(-1);
+	}
+	if (!isValid)
+	{
+		std::cerr << "trying to access bad memory" << std::endl;
+		exit(-1);
+	}
+	return MemWrap(*this, i, internalArray[i]);
+}
+
+unsigned char& MemWrap::operator=(unsigned char newValue)
+{
+	value = newValue;
+	if (addr == 0xFF02 && newValue == 0x81)
+	{
+		if (memRef[0xFF01] == ' ')
+		{
+			std::cout << std::endl;
+		}
+		else
+		{
+			std::cout << memRef[0xFF01] << std::endl;
+		}
+	}
+	return value;
 }
