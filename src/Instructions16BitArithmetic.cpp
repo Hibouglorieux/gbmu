@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:03:50 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 17:30:23 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 20:28:45 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ unsigned char Cpu::add_hl_r16(unsigned short opcode)
 	return 2;
 }
 
-unsigned char Cpu::add_sp_s8(unsigned short opcode)
+unsigned char Cpu::add_sp_s8()
 {
 	// Opcode: [0xE8]
 	// Symbol: ADDL

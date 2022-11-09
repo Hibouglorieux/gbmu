@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 19:16:49 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 21:30:25 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,21 @@
 # define CPU_CLASS_H
 
 #include "Mem.hpp"
+#include "Utility.hpp"
 #include <string>
 #include "Clock.hpp"
+#include <iostream>
+#include <iomanip> // setw
 
 #define PHL (mem[HL])
 
 class Cpu {
 public:
 
+	static void run();
+	static bool loadRom(std::string pathToFile);
 	static void loadBootRom();
-	static void executeInstruction();
+	static unsigned char executeInstruction();
 
 	static unsigned char readByte();
 	static unsigned short readShort();
@@ -63,6 +68,10 @@ public:
 	static Clock clock;
 private:
 
+	static unsigned char& getTargetRegister(unsigned short opcode);
+	static unsigned char& getSourceRegister(unsigned short opcode);
+	static unsigned char getTargetBit(unsigned short opcode);
+
 	static bool getHalfCarry8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
 	static bool getHalfCarry16Bit(unsigned short a, unsigned short b);
 	static bool getHalfBorrow8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
@@ -71,10 +80,6 @@ private:
 	static bool underFlow(unsigned char a, unsigned char b, unsigned char c = 0);
 
 	static void logErr(std::string msg);
-
-	static unsigned char& getLoadSource(unsigned int opcode);
-	static unsigned char& getLoadTarget(unsigned int opcode);
-	static unsigned char getTargetBit(unsigned int opcode);
 
 	static unsigned char nop();
 	static unsigned char stop();
@@ -93,7 +98,7 @@ private:
 	static unsigned char dec_r8(unsigned short opcode);
 	static unsigned char load_r_d8(unsigned char& loadTarget);
 	static unsigned char rca(unsigned short opcode);
-	static unsigned char load_sp_to_a16(unsigned short opcode);
+	static unsigned char load_sp_to_a16();
 	static unsigned char add_hl_r16(unsigned short opcode);
 	static unsigned char load_a_r16(unsigned short opcode);
 	static unsigned char dec_r16(unsigned short opcode);
@@ -127,7 +132,7 @@ private:
 	static unsigned char load_a8_a();
 	static unsigned char load_c_a();
 	static unsigned char and_d8();
-	static unsigned char add_sp_s8(unsigned short opcode);
+	static unsigned char add_sp_s8();
 	static unsigned char jp_hl();
 	static unsigned char load_a16_a();
 	static unsigned char xor_d8();

@@ -34,3 +34,5 @@ obj
 obj/*.o
 gbmu
 *.o
+roms
+roms/*

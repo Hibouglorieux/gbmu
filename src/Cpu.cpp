@@ -6,12 +6,11 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 19:16:55 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 21:34:37 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
-#include <iostream>
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
@@ -35,195 +34,6 @@ unsigned short& Cpu::HL = registers[3];
 Mem Cpu::mem = Mem();
 Clock Cpu::clock = Clock();
 
-void	Cpu::setZeroFlag(bool value)
-{
-	if (value)
-		F |= value << 7;
-	else
-		F &= value << 7;
-}
-
-void	Cpu::setSubtractFlag(bool value)
-{
-	if (value)
-		F |= value << 6;
-	else
-		F &= value << 6;
-}
-
-void	Cpu::setHalfCarryFlag(bool value)
-{
-	if (value)
-		F |= value << 5;
-	else
-		F &= value << 5;
-}
-
-void	Cpu::setCarryFlag(bool value)
-{
-	if (value)
-		F |= value << 4;
-	else
-		F &= value << 4;
-}
-
-void	Cpu::setFlags(bool zero, bool sub, bool halfCarry, bool carry)
-{
-	setZeroFlag(zero);
-	setSubtractFlag(sub);
-	setHalfCarryFlag(halfCarry);
-	setCarryFlag(carry);
-}
-
-bool	Cpu::getZeroFlag()
-{
-	return (F >> 7) & 1;
-}
-
-bool	Cpu::getSubtractFlag()
-{
-	return (F >> 6) & 1;
-}
-
-bool	Cpu::getHalfCarryFlag()
-{
-	return (F >> 5) & 1;
-}
-
-bool	Cpu::getCarryFlag()
-{
-	return (F >> 4) & 1;
-}
-
-unsigned char Cpu::readByte()
-{
-	return mem[PC++];
-}
-
-unsigned short Cpu::readShort()
-{
-	unsigned short shortVal = readByte();
-	shortVal += ((unsigned short)readByte() << 7);
-	return shortVal;
-}
-
-const unsigned char& Cpu::getData(int i)
-{
-	return mem[i];
-}
-
-unsigned char& Cpu::getLoadSource(unsigned int opcode)
-{
-	switch (opcode & 0x07)
-	{
-		case 0x7:
-			return A;
-		case 0x0:
-			return B;
-		case 0x1:
-			return C;
-		case 0x2:
-			return D;
-		case 0x3:
-			return E;
-		case 0x4:
-			return H;
-		case 0x5:
-			return L;
-		case 0x6:
-			return PHL;
-	}
-	std::cout << "Error with SourceTarget not in range with opcode: "
-		<< opcode << std::endl;
-	exit(-1);
-}
-
-unsigned char& Cpu::getLoadTarget(unsigned int opcode)
-{
-    if (opcode > 0x40 && opcode <= 0x8F)
-	{
-        switch ((opcode - 0x40) / 0x08)
-		{
-			case 0x7:
-				return A;
-			case 0x0:
-				return B;
-			case 0x1:
-				return C;
-			case 0x2:
-				return D;
-			case 0x3:
-				return E;
-			case 0x4:
-				return H;
-			case 0x5:
-				return L;
-			case 0x6:
-				return PHL;
-			default:
-				std::cout << "Error with LoadTarget not in range with opcode: "
-					<< opcode << std::endl;
-				exit(-1);
-        }
-    }
-    if ((opcode & 0x0F) == 0x0E)
-	{
-        switch (opcode)
-		{
-			case 0x0E:
-			   	return C;
-			case 0x1E:
-				return E;
-			case 0x2E:
-				return L;
-			case 0x3E:
-				return A;
-			default:
-				std::cout << "Error with LoadTarget not in range with opcode: "
-					<< opcode << std::endl;
-				exit(-1);
-        }
-    }
-    if ((opcode & 0x0F) == 0x06)
-	{
-        switch (opcode)
-		{
-			case 0x06:
-				return B;
-			case 0x16:
-				return D;
-			case 0x26:
-				return H;
-			case 0x36:
-				return PHL;
-			default:
-				std::cout << "Error with LoadTarget not in range with opcode: "
-					<< opcode << std::endl;
-				exit(-1);
-        }
-    }
-	std::cout << "Error with LoadTarget not in range with opcode: "
-		<< opcode << std::endl;
-	exit(-1);
-}
-
-unsigned char Cpu::getTargetBit(unsigned int opcode)
-{
-    // opcode % 40 removes the offset for first operation that need this function (0x40-0x7f)
-    // & 0xF0 >> 4 to get the higher bit, multiplied by 2 to get the result
-    unsigned char nb = (((opcode % 0x40) & 0xF0) >> 4) * 2;
-    if ((opcode & 0xF) % 0x7 == 1) {
-        nb++;
-    }
-    return nb;
-}
-
-void Cpu::logErr(std::string msg)
-{
-	std::cerr << msg << std::endl;
-	exit(-1);
-}
-
 void Cpu::loadBootRom()
 {
 	PC = 0x100;
@@ -237,11 +47,27 @@ void Cpu::loadBootRom()
 	clock = 32916 / 2;
 }
 
-void Cpu::executeInstruction()
+void Cpu::run()
+{
+	int i = 0;
+	while (true)
+	{
+		std::cout << i++ << std::endl;
+		std::cout << "PC is: 0x" << std::hex << std::setw(4) << PC << std::endl;
+		unsigned char opcode = executeInstruction();
+		std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
+	}
+}
+
+bool Cpu::loadRom(std::string pathToFile)
+{
+	mem = Mem(pathToFile);
+	return mem.isValid;
+}
+
+unsigned char Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
-	unsigned char& loadSource = getLoadSource(opcode);
-	unsigned char& loadTarget = getLoadTarget(opcode);
 	switch (opcode)
 	{
 		case 0x00:
@@ -317,14 +143,14 @@ void Cpu::executeInstruction()
 		case 0x1E:
 		case 0x2E:
 		case 0x3E:
-			load_r_d8(loadTarget);
+			load_r_d8(getTargetRegister(opcode));
 			break;
 		case 0x07:
 		case 0x0F:
 			rca(opcode);
 			break;
 		case 0x08:
-			load_sp_to_a16(opcode);
+			load_sp_to_a16();
 			break;
 		case 0x09:
 		case 0x19:
@@ -362,46 +188,31 @@ void Cpu::executeInstruction()
 			break;
 		case 0x40 ... 0x75:
 		case 0x77 ... 0x7F:
-			load_r_r(loadTarget, loadSource);
+			load_r_r(getTargetRegister(opcode), getSourceRegister(opcode));
 			break;
-			/*
-		case 0x46:
-		case 0x56:
-		case 0x66:
-		case 0x4E:
-		case 0x5E:
-		case 0x6E:
-		case 0x7E:
-			load_r_hl(loadTarget, loadSource);
-			break;
-		case 0x70 ... 0x75:
-		case 0x77:
-			load_hl_r(loadTarget, loadSource);
-			break;
-			*/
 		case 0x80 ... 0x87:
-			add_a_r8(loadSource);
+			add_a_r8(getSourceRegister(opcode));
 			break;
 		case 0x88 ... 0x8F:
-			adc_a_r8(loadSource);
+			adc_a_r8(getSourceRegister(opcode));
 			break;
 		case 0x90 ... 0x97:
-			sub_r8(loadSource);
+			sub_r8(getSourceRegister(opcode));
 			break;
 		case 0x98 ... 0x9F:
-			sbc_r8(loadSource);
+			sbc_r8(getSourceRegister(opcode));
 			break;
 		case 0xA0 ... 0xA7:
-			and_r8(loadSource);
+			and_r8(getSourceRegister(opcode));
 			break;
 		case 0xA8 ... 0xAF:
-			xor_r8(loadSource);
+			xor_r8(getSourceRegister(opcode));
 			break;
 		case 0xB0 ... 0xB7:
-			or_r8(loadSource);
+			or_r8(getSourceRegister(opcode));
 			break;
 		case 0xB8 ... 0xBF:
-			cp_r8(loadSource);
+			cp_r8(getSourceRegister(opcode));
 			break;
 		case 0xC0:
 		case 0xC8:
@@ -477,7 +288,7 @@ void Cpu::executeInstruction()
 			and_d8();
 			break;
 		case 0xE8:
-			add_sp_s8(opcode);
+			add_sp_s8();
 			break;
 		case 0xE9:
 			jp_hl();
@@ -514,8 +325,8 @@ void Cpu::executeInstruction()
 			{
 				opcode = readByte();
 
-				unsigned char& targetRegister = A;
-				unsigned char targetBit = 1;
+				unsigned char& targetRegister = getTargetRegister(opcode);
+				unsigned char targetBit = getTargetBit(opcode);
 				// name might be confusing but it's correct
 				/*
 				   let targetRegister: Register8BitIdentifier = get_source_register_with_opcode(opcode);
@@ -556,10 +367,15 @@ void Cpu::executeInstruction()
 						set_n_r8(targetBit, targetRegister);
 						break;
 					default:
-						std::cerr << "exec: Error unknown prefix instruction opcode" << std::endl;
-						exit(-1);
+						logErr("exec: Error unknown prefix instruction opcode");
 				}
 			}
 			break;
+		default:
+			{
+				std::cerr << "previuous opcode: 0x" << std::hex << +mem[PC - 2] << std::endl;
+				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
+			}
 	}
+	return opcode;
 }

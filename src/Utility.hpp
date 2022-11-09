@@ -1,33 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Mem.hpp                                            :+:      :+:    :+:   */
+/*   Utility.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 21:01:49 by nallani          ###   ########.fr       */
+/*   Created: 2022/11/09 21:16:08 by nallani           #+#    #+#             */
+/*   Updated: 2022/11/09 21:18:45 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#ifndef MEM_CLASS_H
-# define MEM_CLASS_H
+#ifndef UTILITY_H
+# define UTILITY_H
+
+#include <memory>
 #include <string>
+#include <stdexcept>
 
-class Mem {
-public:
-	Mem();
-	Mem(int size);
-	Mem(std::string pathToRom);
-	Mem(const Mem& rhs);
-	const Mem& operator=(const Mem& rhs);
-	~Mem();
-	unsigned char& operator[](unsigned int i);
-	bool isValid;
-private:
-	unsigned char* internalArray;
-	unsigned int	memSize;
-};
+template <typename ... Args>
+std::string string_format( const std::string& format, Args ... args );
 
+#include "Utility.tpp"
 #endif

@@ -3,6 +3,7 @@ NAME = gbmu
 
 FILES = main.cpp \
 		Cpu.cpp \
+		CpuUtility.cpp \
 		Mem.cpp \
 		InstructionsControl.cpp \
 		InstructionsJumpCalls.cpp \

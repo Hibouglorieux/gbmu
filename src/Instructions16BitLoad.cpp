@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 19:35:22 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 20:28:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ unsigned char Cpu::pop(unsigned short opcode)
     return 3;
 }
 
-unsigned char Cpu::load_sp_to_a16(unsigned short opcode)
+unsigned char Cpu::load_sp_to_a16()
 {
     // Opcode: 0x08
     // Symbol: LD
