@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 16:01:07 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 19:16:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,12 @@ public:
 	static Clock clock;
 private:
 
-	static bool getHalfCarry8Bit(unsigned char a, unsigned char b);
+	static bool getHalfCarry8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
 	static bool getHalfCarry16Bit(unsigned short a, unsigned short b);
+	static bool getHalfBorrow8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
+	static bool getHalfBorrow16Bit(unsigned short a, unsigned short b);
+	static bool overFlow(unsigned char a, unsigned char b, unsigned char c = 0);
+	static bool underFlow(unsigned char a, unsigned char b, unsigned char c = 0);
 
 	static void logErr(std::string msg);
 
@@ -98,19 +102,14 @@ private:
 	static unsigned char jr_s8_flag(unsigned short opcode);
 	static unsigned char load_hl_d8();
 	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char loadSource);
-	static unsigned char add_a_r8(unsigned char& loadSource);
-	static unsigned char add_a_hl();
-	static unsigned char adc_a_r8(unsigned char& loadSource);
-	static unsigned char adc_a_hl();
-	static unsigned char sub_r8(unsigned char& loadSource);
-	static unsigned char sub_hl();
-	static unsigned char sbc_r8(unsigned char& loadSource);
-	static unsigned char sbc_hl();
-	static unsigned char and_r8(unsigned char& loadSource);
-	static unsigned char and_hl();
-	static unsigned char xor_r8(unsigned char& loadSource);
-	static unsigned char or_r8(unsigned char& loadSource);
-	static unsigned char cp_r8(unsigned char& loadSource);
+	static unsigned char add_a_r8(unsigned char& reg);
+	static unsigned char adc_a_r8(unsigned char& reg);
+	static unsigned char sub_r8(unsigned char& reg);
+	static unsigned char sbc_r8(unsigned char& reg);
+	static unsigned char and_r8(unsigned char& reg);
+	static unsigned char xor_r8(unsigned char& reg);
+	static unsigned char or_r8(unsigned char& reg);
+	static unsigned char cp_r8(unsigned char& reg);
 	static unsigned char ret_flag(unsigned short opcode);
 	static unsigned char pop(unsigned short opcode);
 	static unsigned char jp_flag_a16(unsigned short opcode);

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 16:01:01 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/09 19:16:55 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,46 +379,21 @@ void Cpu::executeInstruction()
 			load_hl_r(loadTarget, loadSource);
 			break;
 			*/
-		case 0x80 ... 0x87: // 0x86 problem
+		case 0x80 ... 0x87:
 			add_a_r8(loadSource);
 			break;
-			/*
-		case 0x86:
-			add_a_hl();
-			break;
-			*/
-		case 0x88 ... 0x8F: // 0x8E probllem
+		case 0x88 ... 0x8F:
 			adc_a_r8(loadSource);
 			break;
-			/*
-		case 0x8E:
-			adc_a_hl();
-			break;
-			*/
-		case 0x90 ... 0x97: // 0x96 problem
+		case 0x90 ... 0x97:
 			sub_r8(loadSource);
 			break;
-			/*
-		case 0x96:
-			sub_hl();
-			break;
-			*/
-		case 0x98 ... 0x9F: // 0x9e problem
+		case 0x98 ... 0x9F:
 			sbc_r8(loadSource);
 			break;
-			/*
-		case 0x9E:
-			sbc_hl();
-			break;
-			*/
-		case 0xA0 ... 0xA7: // 0xA6 problem
+		case 0xA0 ... 0xA7:
 			and_r8(loadSource);
 			break;
-			/*
-		case 0xA6:
-			and_hl();
-			break;
-			*/
 		case 0xA8 ... 0xAF:
 			xor_r8(loadSource);
 			break;
