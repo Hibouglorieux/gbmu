@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 19:37:29 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 21:58:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -316,7 +316,7 @@ unsigned char Cpu::sbc_d8()
 	unsigned char d8 = readByte();
 	unsigned char carryFlag = getCarryFlag();
 
-	setFlags(A == (d8 + carryFlag), 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
+	setFlags(A == (unsigned char)(d8 + carryFlag), 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
 
 	A -= (unsigned char)(d8 + carryFlag);
     
