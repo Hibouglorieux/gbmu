@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:03:43 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:37:44 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -321,7 +321,6 @@ unsigned char Cpu::sbc_d8()
     return 2;
 }
 
-
 unsigned char Cpu::and_d8()
 {
     // Opcode: 0xE6
@@ -350,7 +349,7 @@ unsigned char Cpu::xor_d8()
     // Description
     // Take the logical exclusive-OR for each bit of the contents of the 8-bit immediate operand d8 and the contents of register A, and store the results in register A.
 
-	A &= readByte();
+	A ^= readByte();
 	setFlags(A == 0, 0, 0 ,0);
     return 2;
 }
@@ -387,4 +386,3 @@ unsigned char Cpu::cp_d8()
 	setFlags(A == d8, 1, getHalfBorrow8Bit(A, d8), underFlow(A, d8));
     return 2;
 }
-

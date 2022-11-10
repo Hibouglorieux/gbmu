@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:58:53 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:47:21 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ void Cpu::loadBootRom()
 	A = 0x11;
 	F = 0x80;
 	mem[0xFF44] = 0x90;
-	clock = 32916 / 2;
 }
 
 void Cpu::run(int printStart, int printEnd)

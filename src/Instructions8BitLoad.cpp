@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:47:47 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:57:15 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,11 +152,11 @@ unsigned char Cpu::load_a_r16(unsigned short opcode)
             A = mem[DE];
             break;
         case 0x2A:
-            A = PHL;
+            A = mem[HL];
 			HL++;
             break;
         case 0x3A:
-            A = PHL;
+            A = mem[HL];
 			HL--;
             break;
     }
@@ -185,11 +185,11 @@ unsigned char Cpu::load_r16_a(unsigned short opcode)
             mem[DE] = A;
             break;
         case 0x22:
-            mem[PHL] = A;
+            mem[HL] = A;
 			HL++;
             break;
         case 0x32:
-            mem[PHL] = A;
+            mem[HL] = A;
 			HL--;
             break;
     }

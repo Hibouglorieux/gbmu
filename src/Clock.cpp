@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 15:52:16 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:24:30 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ Clock::Clock(Mem& cpuMem) : mem(cpuMem)
 
 Clock::~Clock()
 {
+
 }
 
 int	Clock::operator+(int addValue)
@@ -32,7 +33,7 @@ int	Clock::operator+(int addValue)
 int&	Clock::operator+=(int addValue)
 {
 	clock += addValue;
-	//TODO clear that properly
+	//TODO do it properly
 	unsigned int tmp = clock / 114;
 
 	if (tmp > clockCount)

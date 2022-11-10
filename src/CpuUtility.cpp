@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 15:18:09 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:54:11 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ void	Cpu::printRegisters()
 			std::cout << std::setw(2) << std::hex << +(int)(mem[PC]) << " with PC: 0x" << std::setw(4) << std::hex << PC << std::endl;
 
 		std::cout << std::setfill('0') << std::uppercase;
+		std::cout << "mem[HL]: 0x" << std::setw(2) << (int)mem[HL] << std::endl;
 		std::cout << "AF: 0x" << std::setw(2) << +A << std::setw(2) << +F << std::endl;
 		std::cout << "BC: 0x" << std::setw(4) << +BC << std::endl;
 		std::cout << "DE: 0x" << std::setw(4) << +DE << std::endl;
@@ -108,7 +109,7 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 
 unsigned char&	Cpu::getSourceRegister(unsigned short opcode)
 {
-	switch(opcode & 0x07 )
+	switch (opcode & 0x07)
 	{
 		case 0x07:
 			return A;

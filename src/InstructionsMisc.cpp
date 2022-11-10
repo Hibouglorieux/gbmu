@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 21:48:16 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 15:46:48 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:08:52 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,18 +23,20 @@ unsigned char Cpu::daa()
     // Adjust the accumulator (register A) to a binary-coded decimal (BCD) number after BCD addition and subtraction operations.
     // https://stackoverflow.com/questions/8119577/z80-daa-instruction
     // http://z80-heaven.wikidot.com/instructions-set:daa
-	unsigned char magic = ((getHalfCarryFlag() || getSubtractFlag()) && ((A & 0xF) > 9)) ? 0x6 : 0;
+	unsigned char magic = 0;
 
+	if (getHalfCarryFlag() || (!getSubtractFlag() && ((A & 0xF) > 9)))
+		magic = 0x06;
 	if (getCarryFlag() || (!getSubtractFlag() && A > 0x99))
 	{
 		magic |= 0x60;
 		setCarryFlag(true);
 	}
 
-	A = (getSubtractFlag()) ? (A - magic) : A + magic;
+	A = (getSubtractFlag()) ? (A - magic) : (A + magic);
 
 	setZeroFlag(A == 0);
-	setHalfCarryFlag(false);
+	setHalfCarryFlag(0);
 	return 1;
 }
 
