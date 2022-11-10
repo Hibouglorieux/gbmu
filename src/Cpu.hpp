@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 22:09:40 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:13:21 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 class Cpu {
 public:
 
-	static void run();
+	static void run(int printStart = 0, int printEnd = 0);
 	static bool loadRom(std::string pathToFile);
 	static void loadBootRom();
 	static unsigned char executeInstruction();
@@ -66,7 +66,9 @@ public:
 	static unsigned short& HL;
 	static Mem mem;
 	static Clock clock;
+	static void printRegisters();
 private:
+
 
 	static unsigned char& getTargetRegister(unsigned short opcode);
 	static unsigned char& getSourceRegister(unsigned short opcode);

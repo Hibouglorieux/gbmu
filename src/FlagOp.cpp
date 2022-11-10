@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:25:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 19:10:53 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:26:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,16 +46,16 @@ bool Cpu::getHalfBorrow16Bit(unsigned short a, unsigned short b)
 
 bool Cpu::overFlow(unsigned char a, unsigned char b, unsigned char c)
 {
-	if (b != 0 && c != 0)
-		return (a + b + c) <= A;
+	if (b != 0 || c != 0)
+		return (unsigned char)(a + b + c) <= a;
 	else
 		return false;
 }
 
 bool Cpu::underFlow(unsigned char a, unsigned char b, unsigned char c)
 {
-	if (b != 0 && c != 0)
-		return (a - b - c) >= A;
+	if (b != 0 || c != 0)
+		return (unsigned char)(a - b - c) >= a;
 	else
 		return false;
 }

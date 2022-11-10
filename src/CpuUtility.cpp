@@ -6,12 +6,33 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 22:34:11 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 15:18:09 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include <iostream>
+
+void	Cpu::printRegisters()
+{
+		std::cout << std::setfill('0') << "Current opcode: 0x";
+		if (mem[PC] == 0xCB)
+			std::cout << std::setw(4) << std::hex << +(((unsigned short)(mem[PC]) << 8) + mem[PC + 1]) << " with PC: 0x" << std::setw(4) << PC << std::endl;
+		else
+			std::cout << std::setw(2) << std::hex << +(int)(mem[PC]) << " with PC: 0x" << std::setw(4) << std::hex << PC << std::endl;
+
+		std::cout << std::setfill('0') << std::uppercase;
+		std::cout << "AF: 0x" << std::setw(2) << +A << std::setw(2) << +F << std::endl;
+		std::cout << "BC: 0x" << std::setw(4) << +BC << std::endl;
+		std::cout << "DE: 0x" << std::setw(4) << +DE << std::endl;
+		std::cout << "HL: 0x" << std::setw(4) << +HL << std::endl;
+		std::cout << "SP: 0x" << std::setw(4) << +SP << std::endl;
+		//std::cout << "FF44: 0x" << std::setw(2) << +(memory[0xFF44]) << std::endl;
+		//std::cout << "clock: " << std::dec << clock * 2 << std::endl;
+		//std::cout << "0xff44: " << std::hex << +memory[0xFF44] << std::endl;
+		std::cout << std::endl << std::endl;
+
+}
 
 unsigned char	Cpu::getTargetBit(unsigned short opcode)
 {
@@ -81,7 +102,7 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 				logErr("unkown opcode sent to getTargetRegister");
 		}
 	}
-	logErr("Opcode is too little, should at least 0x40");
+	logErr(string_format("Opcode is too little, should at least 0x40 and is 0x%X", opcode));
 	exit(-1);
 }
 
@@ -114,33 +135,33 @@ unsigned char&	Cpu::getSourceRegister(unsigned short opcode)
 void	Cpu::setZeroFlag(bool value)
 {
 	if (value)
-		F |= value << 7;
+		F |= (1 << 7);
 	else
-		F &= value << 7;
+		F &= ~(1 << 7);
 }
 
 void	Cpu::setSubtractFlag(bool value)
 {
 	if (value)
-		F |= value << 6;
+		F |= (1 << 6);
 	else
-		F &= value << 6;
+		F &= ~(1 << 6);
 }
 
 void	Cpu::setHalfCarryFlag(bool value)
 {
 	if (value)
-		F |= value << 5;
+		F |= (1 << 5);
 	else
-		F &= value << 5;
+		F &= ~(1 << 5);
 }
 
 void	Cpu::setCarryFlag(bool value)
 {
 	if (value)
-		F |= value << 4;
+		F |= (1 << 4);
 	else
-		F &= value << 4;
+		F &= ~(1 << 4);
 }
 
 void	Cpu::setFlags(bool zero, bool sub, bool halfCarry, bool carry)

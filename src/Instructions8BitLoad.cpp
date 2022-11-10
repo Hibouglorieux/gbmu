@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 22:09:48 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:02:21 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,10 @@ unsigned char Cpu::load_a_a8()
     // 0xFF80-0xFFFE: Working & Stack RAM (127 bytes)
     // 0xFFFF: Interrupt Enable Register
 
+	/*
+	std::cout << "read at address: " << (0xFF00 | (unsigned short)mem[PC])
+		<< " value: " << (int)mem[(0xFF00 |(unsigned short)mem[PC])]  << std::endl;
+		*/
     A = mem[0xFF00 | readByte()];
     return 3;
 }
@@ -164,11 +168,11 @@ unsigned char Cpu::load_a_r16(unsigned short opcode)
             break;
         case 0x2A:
             A = PHL;
-            PHL = PHL + 1;
+			HL++;
             break;
         case 0x3A:
-            A = PHL; // TODO SP ?
-            PHL = PHL - 1;
+            A = PHL;
+			HL--;
             break;
     }
     return 2;
@@ -220,18 +224,18 @@ unsigned char Cpu::load_r16_a(unsigned short opcode)
 
     switch (opcode) {
         case 0x02:
-            BC = readShort();
+            mem[BC] = A;
             break;
         case 0x12:
-            DE = readShort();
+            mem[DE] = A;
             break;
         case 0x22:
-            PHL = readShort();
-            PHL = PHL + 1;
+            mem[PHL] = A;
+			HL++;
             break;
         case 0x32:
-            PHL = readShort();
-            PHL = PHL - 1;
+            mem[PHL] = A;
+			HL--;
             break;
     }
     return 2;

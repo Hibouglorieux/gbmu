@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 21:31:11 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:13:04 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
 	(void) argc;
 	(void) argv;
-	if (argc < 2)
+	if (argc == 1 || argc == 3)
 	{
 		if (!Cpu::loadRom(DEFAULT_PATH_TO_FILE))
 		{
@@ -37,6 +37,9 @@ int main(int argc, char** argv)
 	std::cerr << std::hex;
 	std::cout << std::hex;
 	Cpu::loadBootRom();
-	Cpu::run();
+	if (argc == 3)
+		Cpu::run(std::stoi(argv[1]), std::stoi(argv[2]));
+	else
+		Cpu::run();
 	return (0);
 }

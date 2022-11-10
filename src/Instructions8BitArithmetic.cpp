@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 22:08:22 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:22:04 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,13 @@ unsigned char Cpu::inc_r8(unsigned short opcode)
 		default:
 			logErr("Error calling inc_r8 with wrong opcode");
 	}
+
+	setSubtractFlag(false);
+	setHalfCarryFlag(getHalfCarry8Bit(*reg, 1));
+
 	*reg += 1;
 	setZeroFlag(*reg == 0);
-	setSubtractFlag(false);
-	setHalfCarryFlag(getHalfCarry8Bit(*reg - 1, 1));
+
 	return (reg == &PHL) ? (3) : (1);
 }
 
@@ -101,11 +104,12 @@ unsigned char Cpu::dec_r8(unsigned short opcode)
 			logErr("Error calling dec_r8 with wrong opcode");
 	};
 
-	*reg -= 1;
 
-	setZeroFlag(*reg == 0);
 	setSubtractFlag(true);
-	setHalfCarryFlag(getHalfBorrow8Bit(*reg + 1, 1));
+	setHalfCarryFlag(getHalfBorrow8Bit(*reg, 1));
+
+	*reg -= 1;
+	setZeroFlag(*reg == 0);
 
 	return (reg == &PHL) ? (3) : (1);
 }
@@ -174,7 +178,7 @@ unsigned char Cpu::sbc_r8(unsigned char& reg)
     // Subtract the contents of register and the CY flag from the contents of register A, and store the results in register A.
 
 	unsigned char carryFlag = getCarryFlag();
-	setFlags((A - reg - carryFlag) == 0, true, getHalfBorrow8Bit(A, reg, carryFlag), underFlow(A, reg, carryFlag));
+	setFlags((A - reg - carryFlag) == 0, 1, getHalfBorrow8Bit(A, reg, carryFlag), underFlow(A, reg, carryFlag));
 	A = A - reg - carryFlag;
 	return (&reg == &PHL) ? (2) : (1);
 }
@@ -207,7 +211,7 @@ unsigned char Cpu::xor_r8(unsigned char& reg)
     // Take the logical exclusive-OR for each bit of the contents of register and the contents of register A, and store the results in register A.
 
 	A ^= reg;
-	setFlags(A == 0, 0, 1, 0);
+	setFlags(A == 0, 0, 0, 0);
 	return (&reg == &PHL) ? (2) : (1);
 }
 
@@ -223,7 +227,7 @@ unsigned char Cpu::or_r8(unsigned char& reg)
     // Take the logical OR for each bit of the contents of register and the contents of register A, and store the results in register A.
 
 	A |= reg;
-	setFlags(A == 0, 0, 1, 0);
+	setFlags(A == 0, 0, 0, 0);
 	return (&reg == &PHL) ? (2) : (1);
 }
 
@@ -380,7 +384,7 @@ unsigned char Cpu::cp_d8()
     // The execution of this instruction does not affect the contents of register A.
 
 	unsigned char d8 = readByte();
-	setFlags(A == d8, 1, getHalfCarry8Bit(A, d8), overFlow(A, d8));
+	setFlags(A == d8, 1, getHalfBorrow8Bit(A, d8), underFlow(A, d8));
     return 2;
 }
 
