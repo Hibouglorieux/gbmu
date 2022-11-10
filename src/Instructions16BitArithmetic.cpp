@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:03:50 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 20:28:45 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 18:20:28 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,13 +111,12 @@ unsigned char Cpu::add_hl_r16(unsigned short opcode)
 		default:
 			logErr("add_hl_r16 received wrong opcode");
 	}
-	unsigned short oldValue = *reg;
 
 	setSubtractFlag(0);
-	setHalfCarryFlag(getHalfCarry16Bit(oldValue, HL));// TODO
-	setCarryFlag(*reg + HL < oldValue);
+	setHalfCarryFlag(getHalfCarry16Bit(*reg, HL));// TODO
+	setCarryFlag((unsigned short)(*reg + HL) < *reg);
 													  
-	*reg += HL;
+	HL += *reg;
 	return 2;
 }
 
@@ -138,7 +137,7 @@ unsigned char Cpu::add_sp_s8()
 	unsigned char SP_low = SP & 0xFF;
 
 	// special case evaluating operation as two unsigned char
-	setFlags(0, 0, getHalfCarry8Bit(byte, SP_low), SP_low + byte < SP_low); // TODO half carry based as usual
+	setFlags(0, 0, getHalfCarry8Bit(byte, SP_low), overFlow(SP_low, byte));
 
 	SP = SP + signedByte;
 	return 4;

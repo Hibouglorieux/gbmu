@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:37:44 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 19:37:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,8 +315,10 @@ unsigned char Cpu::sbc_d8()
 
 	unsigned char d8 = readByte();
 	unsigned char carryFlag = getCarryFlag();
-	setFlags((A - d8 - carryFlag) == 0, 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
-	A = A - d8 - carryFlag;
+
+	setFlags(A == (d8 + carryFlag), 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
+
+	A -= (unsigned char)(d8 + carryFlag);
     
     return 2;
 }
@@ -365,7 +367,7 @@ unsigned char Cpu::or_d8()
     // Description
     // Take the logical OR for each bit of the contents of the 8-bit immediate operand d8 and the contents of register A, and store the results in register A.
 
-	A ^= readByte();
+	A |= readByte();
 	setFlags(A == 0, 0, 0, 0);
     return 2;
 }

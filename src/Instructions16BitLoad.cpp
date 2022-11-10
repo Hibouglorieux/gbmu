@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:47:55 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 18:22:30 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,11 +135,13 @@ unsigned char Cpu::load_hl_from_sp_plus_s8()
     // Description
     // Add the 8-bit signed operand s8 (values -128 to +127) to the stack pointer SP, and store the result in register pair HL.
 
-	char s8 = (char)readByte();
+	unsigned char s8 = readByte();
 
 	// should be evaluated as unsigned 8 bit operation
-	setFlags(0, 0, getHalfCarry8Bit((unsigned char)s8, (unsigned char)SP), ((SP & 0xFF) + (unsigned char)s8) < (SP & 0xFF));
-	SP += s8;
+	setFlags(0, 0, getHalfCarry8Bit(s8, (unsigned char)(SP & 0xFF)), overFlow((unsigned char)(SP & 0xFF), s8));
+
+	// but is added as signed
+	HL = SP + (char)s8;
 
     return 3;
 }

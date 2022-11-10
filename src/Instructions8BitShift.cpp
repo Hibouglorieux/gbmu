@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:47 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 18:53:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 18:40:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,12 +219,12 @@ unsigned char Cpu::rr_r8(unsigned char& targetRegister)
 
 	bool oldCarryFlag = getCarryFlag();
 
-	setZeroFlag(targetRegister >> 1 == 0);
+	setZeroFlag((targetRegister >> 1) == 0);
 	setSubtractFlag(false);
 	setHalfCarryFlag(false);
 	setCarryFlag(targetRegister & 1);
 
-	targetRegister = (targetRegister >> 1) | ((unsigned char)oldCarryFlag << 7);
+	targetRegister = (targetRegister >> 1) | (((unsigned char)oldCarryFlag) << 7);
 	return (&targetRegister == &PHL) ? 4 : 2;
 }
 

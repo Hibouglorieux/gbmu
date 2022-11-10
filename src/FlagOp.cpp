@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:25:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:26:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 19:34:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,5 @@ bool Cpu::overFlow(unsigned char a, unsigned char b, unsigned char c)
 
 bool Cpu::underFlow(unsigned char a, unsigned char b, unsigned char c)
 {
-	if (b != 0 || c != 0)
-		return (unsigned char)(a - b - c) >= a;
-	else
-		return false;
+	return ((int)(b + c)) > a;
 }
