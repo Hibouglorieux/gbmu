@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:13:21 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:58:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,10 @@ void Cpu::run(int printStart, int printEnd)
 		//std::cout << "PC is: 0x" << std::hex << std::setw(4) << PC << std::endl;
 
 		if (i >= printStart && i < printEnd)
+		{
+			//std::cout << "iteration: " << i << std::endl;
 			printRegisters();
+		}
 		unsigned char opcode = executeInstruction();
 		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 		i++;
@@ -75,7 +78,7 @@ bool Cpu::loadRom(std::string pathToFile)
 unsigned char Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
-	std::function<unsigned char()> instruction;
+	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
 	switch (opcode)
 	{
 		case 0x00:
@@ -147,6 +150,7 @@ unsigned char Cpu::executeInstruction()
 		case 0x06:
 		case 0x16:
 		case 0x26:
+		case 0x36:
 		case 0x0E:
 		case 0x1E:
 		case 0x2E:
@@ -190,9 +194,6 @@ unsigned char Cpu::executeInstruction()
 		case 0x30:
 		case 0x38:
 			instruction = [&](){ return jr_s8_flag(opcode);};
-			break;
-		case 0x36:
-			instruction = [&](){ return load_hl_d8();};
 			break;
 		case 0x40 ... 0x75:
 		case 0x77 ... 0x7F:

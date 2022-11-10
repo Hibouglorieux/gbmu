@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:02:21 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:47:47 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,21 +116,6 @@ unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char loadSource)
     return (&loadTarget == &PHL) ? 2 : 1;
 }
 
-unsigned char Cpu::load_hl_d8()
-{
-    // Opcode: 0x36
-    // Symbol: LD
-    // Operands: [(HL, D8)]
-    // Number of Bytes: 2
-    // Number of Cycles: 3
-    // Flags: - - - -
-    // Description
-    // Store the contents of 8-bit immediate operand d8 in the memory location specified by register pair HL.
-
-    PHL = readByte();
-    return 3;
-}
-
 unsigned char Cpu::load_r_d8(unsigned char& loadTarget)
 {
     // Opcode: [0x06, 0x16, 0x26, 0x0E, 0x1E, 0x2E, 0x3E]
@@ -143,7 +128,7 @@ unsigned char Cpu::load_r_d8(unsigned char& loadTarget)
     // Load the 8-bit immediate operand d8 into register r.
 
     loadTarget = readByte();
-    return (&loadTarget == &PHL) ? 2 : 1;
+    return (&loadTarget == &PHL) ? 3 : 2;
 }
 
 unsigned char Cpu::load_a_r16(unsigned short opcode)
@@ -176,36 +161,6 @@ unsigned char Cpu::load_a_r16(unsigned short opcode)
             break;
     }
     return 2;
-}
-
-unsigned char Cpu::load_r16_from_d16(unsigned short opcode)
-{
-    // Opcode: [0x01, 0x11, 0x21, 0x31]
-    // Symbol: LD
-    // Operands: [(BC, D16), (DE, D16), (HL, D16), (SP, D16)]
-    // Number of Bytes: 3
-    // Number of Cycles: 3
-    // Flags: - - - -
-    // Description
-    // Load the 2 bytes of immediate data into register pair.
-
-    // The first byte of immediate data is the lower byte (i.e., bits 0-7), and the second byte of immediate data is the higher byte (i.e., bits 8-15).
-
-    switch (opcode) {
-        case 0x01:
-            BC = readShort();
-            break;
-        case 0x11:
-            DE = readShort();
-            break;
-        case 0x21:
-            HL = readShort();
-            break;
-        case 0x31:
-            SP = readShort();
-            break;
-    }
-    return 3;
 }
 
 unsigned char Cpu::load_r16_a(unsigned short opcode)

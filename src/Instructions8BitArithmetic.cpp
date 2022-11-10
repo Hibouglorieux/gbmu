@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:22:04 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:03:43 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ unsigned char Cpu::add_a_r8(unsigned char& reg)
     // Description
     // Add the contents of register X to the contents of register A, and store the results in register A.
 
-	setFlags((A + reg) == 0, 0, getHalfCarry8Bit(A, reg), (A + reg) < A);
+	setFlags((unsigned char)(A + reg) == 0, 0, getHalfCarry8Bit(A, reg), overFlow(A, reg));
 	A += reg;
 	return (&reg == &PHL) ? (2) : (1);
 }
@@ -143,7 +143,7 @@ unsigned char Cpu::adc_a_r8(unsigned char& reg)
 
 	unsigned char carryFlag = getCarryFlag();
 
-	setFlags(A + reg + carryFlag == 0, 0, getHalfCarry8Bit(A, reg, carryFlag), overFlow(A, reg, carryFlag));
+	setFlags((unsigned char)(A + reg + carryFlag) == 0, 0, getHalfCarry8Bit(A, reg, carryFlag), overFlow(A, reg, carryFlag));
 
 	A += reg + carryFlag;
 
@@ -161,7 +161,7 @@ unsigned char Cpu::sub_r8(unsigned char& reg)
     // Description
     // Subtract the contents of register B from the contents of register A, and store the results in register A.
 
-	setFlags(A - reg == 0, 1, getHalfBorrow8Bit(A, reg), (A - reg) > 0);
+	setFlags(A == reg, 1, getHalfBorrow8Bit(A, reg), underFlow(A, reg));
 	A -= reg;
 	return (&reg == &PHL) ? (2) : (1);
 }
@@ -261,7 +261,7 @@ unsigned char Cpu::add_a_d8()
     // Add the contents of the 8-bit immediate operand d8 to the contents of register A, and store the results in register A.
 
 	unsigned char d8 = readByte();
-	setFlags((A + d8) == 0, 0, getHalfCarry8Bit(A, d8), (A + d8) < A);
+	setFlags((unsigned char)(A + d8) == 0, 0, getHalfCarry8Bit(A, d8), overFlow(A, d8));
 	A += d8;
     return 2;
 }
@@ -278,7 +278,7 @@ unsigned char Cpu::sub_d8()
     // Subtract the contents of the 8-bit immediate operand d8 from the contents of register A, and store the results in register A.
 
 	unsigned char d8 = readByte();
-	setFlags((A - d8) == 0, 1, getHalfBorrow8Bit(A, d8), (A - d8) > A);
+	setFlags((A - d8) == 0, 1, getHalfBorrow8Bit(A, d8), underFlow(A, d8));
 	A -= d8;
     return 2;
 }
@@ -296,7 +296,7 @@ unsigned char Cpu::adc_a_d8()
 
 	unsigned char d8 = readByte();
 	unsigned char carryFlag = getCarryFlag();
-	setFlags((A + d8 + carryFlag) == 0, 0, getHalfCarry8Bit(A, d8, carryFlag), overFlow(A, d8, carryFlag));
+	setFlags((unsigned char)(A + d8 + carryFlag) == 0, 0, getHalfCarry8Bit(A, d8, carryFlag), overFlow(A, d8, carryFlag));
 	A += d8 + carryFlag;
     
     return 2;
@@ -315,7 +315,7 @@ unsigned char Cpu::sbc_d8()
 
 	unsigned char d8 = readByte();
 	unsigned char carryFlag = getCarryFlag();
-	setFlags((A - d8 - carryFlag)== 0, 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
+	setFlags((A - d8 - carryFlag) == 0, 1, getHalfBorrow8Bit(A, d8, carryFlag), underFlow(A, d8, carryFlag));
 	A = A - d8 - carryFlag;
     
     return 2;

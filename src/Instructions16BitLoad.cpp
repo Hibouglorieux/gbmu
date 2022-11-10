@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/09 20:28:20 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:47:55 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,4 +173,34 @@ unsigned char Cpu::load_a_a16()
     unsigned short addr = readShort();
 	A = mem[addr];
     return 4;
+}
+
+unsigned char Cpu::load_r16_from_d16(unsigned short opcode)
+{
+    // Opcode: [0x01, 0x11, 0x21, 0x31]
+    // Symbol: LD
+    // Operands: [(BC, D16), (DE, D16), (HL, D16), (SP, D16)]
+    // Number of Bytes: 3
+    // Number of Cycles: 3
+    // Flags: - - - -
+    // Description
+    // Load the 2 bytes of immediate data into register pair.
+
+    // The first byte of immediate data is the lower byte (i.e., bits 0-7), and the second byte of immediate data is the higher byte (i.e., bits 8-15).
+
+    switch (opcode) {
+        case 0x01:
+            BC = readShort();
+            break;
+        case 0x11:
+            DE = readShort();
+            break;
+        case 0x21:
+            HL = readShort();
+            break;
+        case 0x31:
+            SP = readShort();
+            break;
+    }
+    return 3;
 }

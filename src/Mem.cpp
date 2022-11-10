@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 15:18:59 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:05:18 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,14 +123,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	value = newValue;
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
-		std::cout << "rom print: ";
 		if (memRef[0xFF01] == ' ')
 		{
 			std::cout << std::endl;
 		}
 		else
 		{
-			std::cout << memRef[0xFF01] << std::endl;
+			std::cout << (char)(memRef[0xFF01]);
 		}
 	}
 	return value;
