@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:54:11 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:36:16 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	Cpu::printRegisters()
 			std::cout << std::setw(2) << std::hex << +(int)(mem[PC]) << " with PC: 0x" << std::setw(4) << std::hex << PC << std::endl;
 
 		std::cout << std::setfill('0') << std::uppercase;
-		std::cout << "mem[HL]: 0x" << std::setw(2) << (int)mem[HL] << std::endl;
+		//std::cout << "mem[HL]: 0x" << std::setw(2) << (int)mem[HL] << std::endl;
 		std::cout << "AF: 0x" << std::setw(2) << +A << std::setw(2) << +F << std::endl;
 		std::cout << "BC: 0x" << std::setw(4) << +BC << std::endl;
 		std::cout << "DE: 0x" << std::setw(4) << +DE << std::endl;
@@ -40,14 +40,14 @@ unsigned char	Cpu::getTargetBit(unsigned short opcode)
     // opcode % 40 removes the offset for first operation that need this function (0x40-0x7f)
     // & 0xF0 >> 4 to get the higher bit, multiplied by 2 to get the result
     unsigned char nb = (((opcode % 0x40) & 0xF0) >> 4) * 2;
-    if (((opcode & 0xF) % 0x7) == 1)
+    if (((opcode & 0xF) - 0x7) > 0)
         nb++;
     return nb;
 }
 
 unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 {
-	if (opcode > 0x40 && opcode <= 0x8f)
+	if (opcode >= 0x40 && opcode <= 0x8f)
 	{
 		switch ((opcode - 0x40) / 0x8)
 		{

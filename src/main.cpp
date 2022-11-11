@@ -6,13 +6,13 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 18:24:27 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:38:50 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include <iostream>
-#define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/04-op r,imm.gb"
+#define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/11-op a,(hl).gb"
 
 int main(int argc, char** argv)
 {

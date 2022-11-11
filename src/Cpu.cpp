@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 21:58:58 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:28:18 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ void Cpu::run(int printStart, int printEnd)
 			//std::cout << "iteration: " << i << std::endl;
 			printRegisters();
 		}
+		if (i >= printEnd && printEnd != 0)
+			return;
 		unsigned char opcode = executeInstruction();
 		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 		i++;
@@ -335,11 +337,6 @@ unsigned char Cpu::executeInstruction()
 
 				unsigned char& targetRegister = getSourceRegister(opcode);
 				unsigned char targetBit = getTargetBit(opcode);
-				// name might be confusing but it's correct
-				/*
-				   instruction = [&](){ return let targetRegister: Register8BitIdentifier = get_source_register_with_opcode(opcode);};
-				   instruction = [&](){ return let targetBit: u8 = get_targetBit(opcode);};
-				   */
 				switch (opcode) {
 					case 0x00 ... 0x07:
 						instruction = [&](){ return rlc_r8(targetRegister);};

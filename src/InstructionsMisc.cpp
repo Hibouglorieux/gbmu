@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 21:48:16 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:08:52 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:09:49 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ unsigned char Cpu::cpl()
     // Description
     // Take the one's complement (i.e., flip all bits) of the contents of register A.
 
-	setZeroFlag(1);
+	setSubtractFlag(1);
 	setHalfCarryFlag(1);
 
 	A = ~A;
@@ -67,6 +67,8 @@ unsigned char Cpu::scf()
     // Description
     // Set the carry flag CY.
 
+	setSubtractFlag(0);
+	setHalfCarryFlag(0);
 	setCarryFlag(1);
     return 1;
 }
@@ -81,6 +83,8 @@ unsigned char Cpu::ccf()
     // Description
     // Flip the carry flag CY.
 
+	setSubtractFlag(0);
+	setHalfCarryFlag(0);
 	setCarryFlag(!getCarryFlag());
     return 1;
 }

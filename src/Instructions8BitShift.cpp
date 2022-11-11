@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:47 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 18:40:20 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:38:21 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,8 @@ unsigned char Cpu::rca(unsigned short opcode)
 		A = (A >> 1) | ((unsigned char)shiftedBitValue << 7);
 	}
 	else
-		logErr("called RCA with wrong opcode"),
-	setZeroFlag(false);
-	setSubtractFlag(false);
-	setHalfCarryFlag(false);
-	setCarryFlag(shiftedBitValue == 1);
+		logErr("called RCA with wrong opcode");
+	setFlags(0, 0, 0, shiftedBitValue);
 	return 1;
 }
 
@@ -151,12 +148,10 @@ unsigned char Cpu::rrc_r8(unsigned char& targetRegister)
 
 	bool bitZeroValue = targetRegister & 1;
 
-	setZeroFlag(targetRegister >> 1 == 0);
-	setSubtractFlag(false);
-	setHalfCarryFlag(false);
-	setCarryFlag(bitZeroValue);
-
 	targetRegister = (targetRegister >> 1) | ((unsigned char) bitZeroValue << 7);
+
+	setFlags(targetRegister == 0, 0, 0, bitZeroValue);
+
 
 	return (&targetRegister == &PHL) ? 4 : 2;
 }
@@ -184,13 +179,11 @@ unsigned char Cpu::rl_r8(unsigned char& targetRegister)
 	// The previous contents of the CY flag are copied into bit 0 of (HL).
 
 	bool oldCarryFlag = getCarryFlag();
+	unsigned char lostBit = targetRegister & (1 << 7);
 
-	setZeroFlag(targetRegister << 1 == 0);
-	setSubtractFlag(false);
-	setHalfCarryFlag(false);
-	setCarryFlag((targetRegister & (1 << 7)) != 0);
 
 	targetRegister = (targetRegister << 1) | oldCarryFlag;
+	setFlags(targetRegister == 0, 0, 0, lostBit);
 
 	return (&targetRegister == &PHL) ? 4 : 2;
 }
@@ -218,13 +211,11 @@ unsigned char Cpu::rr_r8(unsigned char& targetRegister)
 	// The previous contents of the CY flag are copied into bit 7 of (HL).
 
 	bool oldCarryFlag = getCarryFlag();
-
-	setZeroFlag((targetRegister >> 1) == 0);
-	setSubtractFlag(false);
-	setHalfCarryFlag(false);
-	setCarryFlag(targetRegister & 1);
+	bool lostBit = targetRegister & 1;
 
 	targetRegister = (targetRegister >> 1) | (((unsigned char)oldCarryFlag) << 7);
+	setFlags(targetRegister == 0, 0, 0, lostBit);
+
 	return (&targetRegister == &PHL) ? 4 : 2;
 }
 
@@ -250,13 +241,10 @@ unsigned char Cpu::sla_r8(unsigned char& targetRegister)
 	// The same operation is repeated in sequence for the rest of the memory location.
 	// The contents of bit 7 are copied to the CY flag, and bit 0 of (HL) is reset to 0.
 
-
-	setZeroFlag(targetRegister << 1 == 0);
-	setSubtractFlag(false);
-	setHalfCarryFlag(false);
-	setCarryFlag(targetRegister & (1 << 7));
+	bool lostBit = targetRegister & (1 << 7);
 
 	targetRegister <<= 1;
+	setFlags(targetRegister == 0, 0, 0, lostBit);
 
 	return (&targetRegister == &PHL) ? 4 : 2;
 }
@@ -421,7 +409,7 @@ unsigned char Cpu::set_n_r8(unsigned char targetBit, unsigned char& targetRegist
 	// Description
 	// Set bit n in register r to 1.
 
-	targetRegister = (targetRegister & (1 << targetBit));
+	targetRegister = (targetRegister | (1 << targetBit));
 
 	return (&targetRegister == &PHL) ? 4 : 2;
 }

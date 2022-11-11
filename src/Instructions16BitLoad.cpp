@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 18:22:30 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 15:47:26 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,8 @@ unsigned short	Cpu::internalPop()
     // Load the contents of memory specified by stack pointer SP into the lower portion of BC.
     // Add 1 to SP and load the contents from the new memory location into the upper portion of BC.
     // By the end, SP should be 2 more than its initial value.
-	unsigned short value = mem[SP];
-	value |= (mem[SP + 1] << 8);
-	SP += 2;
+	unsigned short value = mem[SP++];
+	value |= (mem[SP++] << 8);
 	return value;
 }
 

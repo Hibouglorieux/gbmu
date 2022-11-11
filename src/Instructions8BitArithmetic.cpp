@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 21:58:29 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:16:10 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,8 +178,8 @@ unsigned char Cpu::sbc_r8(unsigned char& reg)
     // Subtract the contents of register and the CY flag from the contents of register A, and store the results in register A.
 
 	unsigned char carryFlag = getCarryFlag();
-	setFlags((A - reg - carryFlag) == 0, 1, getHalfBorrow8Bit(A, reg, carryFlag), underFlow(A, reg, carryFlag));
-	A = A - reg - carryFlag;
+	setFlags(A == (unsigned char)(reg + carryFlag), 1, getHalfBorrow8Bit(A, reg, carryFlag), underFlow(A, reg, carryFlag));
+	A -= (reg + carryFlag);
 	return (&reg == &PHL) ? (2) : (1);
 }
 
@@ -244,7 +244,7 @@ unsigned char Cpu::cp_r8(unsigned char& reg)
     // Compare the contents of register r8 and the contents of register A by calculating A - r8, and set the Z flag if they are equal.
     // The execution of this instruction does not affect the contents of register A.
 
-	setFlags(A - reg == 0, 1, getHalfBorrow8Bit(A, reg), underFlow(A, reg));
+	setFlags(A == reg, 1, getHalfBorrow8Bit(A, reg), underFlow(A, reg));
 	return (&reg == &PHL) ? (2) : (1);
 }
 }
@@ -278,7 +278,7 @@ unsigned char Cpu::sub_d8()
     // Subtract the contents of the 8-bit immediate operand d8 from the contents of register A, and store the results in register A.
 
 	unsigned char d8 = readByte();
-	setFlags((A - d8) == 0, 1, getHalfBorrow8Bit(A, d8), underFlow(A, d8));
+	setFlags(A == d8, 1, getHalfBorrow8Bit(A, d8), underFlow(A, d8));
 	A -= d8;
     return 2;
 }

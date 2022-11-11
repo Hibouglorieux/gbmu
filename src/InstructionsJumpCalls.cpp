@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:53:28 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 20:50:27 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:06:15 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,13 +84,13 @@ unsigned char Cpu::jp_flag_a16(unsigned short opcode)
         if (!is_flag_set)
             return jp_a16();
     }
-	else if ((opcode & 0x0F) == 0x0C)
+	else if ((opcode & 0x0F) == 0x0A)
 	{
         if (is_flag_set)
             return jp_a16();
     }
 	else
-        logErr("called jp_flag_a16 with the wrong opcode");
+        logErr(string_format("called jp_flag_a16 with the wrong opcode: 0x%X", opcode));
 
 	readShort(); // Used to make sure the PC is correct.
 
@@ -270,7 +270,7 @@ unsigned char Cpu::jr_s8_flag(unsigned short opcode)
 		if (!is_flag_set) 
 			return jr_s8();
 	}
-	else if ((opcode == 0x28) || (opcode == 0x38))
+	else if ((opcode & 0x0F) == 0x08)
 	{
 		if (is_flag_set)
 			return jr_s8();
@@ -323,9 +323,6 @@ unsigned char Cpu::rst_n(unsigned short opcode)
 
     internalPush(PC);
 
-	unsigned short newPCValue = mem[targetByte];
-	newPCValue |= (mem[0] << 8);
-
-	PC = newPCValue;
+	PC = targetByte;
     return 4;
 }
