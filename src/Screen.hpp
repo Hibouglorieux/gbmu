@@ -1,23 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Screen.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
+/*   By: lmariott <lmariott@42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/06 07:57:38 by lmariott         ###   ########.fr       */
+/*   Created: 2022/11/07 20:46:17 by lmariott          #+#    #+#             */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
-#include "Screen.hpp"
+#ifndef SCREEN_CLASS_H
+# define SCREEN_CLASS_H
 
-int main(int argc, char** argv)
-{
-	(void) argc;
-	(void) argv;
+#include <SDL2/SDL.h>
+
+class Screen {
+public:
 	Screen();
-	Cpu::loadBootRom();
-	return (0);
-}
+	~Screen();
+	unsigned char& operator[](int i);
+	static void inputWatcher();
+	static void createWindow();
+private:
+	unsigned char* internalArray;
+	SDL_Window* window;
+};
+
+#endif

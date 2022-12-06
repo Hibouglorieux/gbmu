@@ -12,7 +12,8 @@ FILES = main.cpp \
 		Instructions8BitArithmetic.cpp \
 		Instructions8BitShift.cpp \
 		FlagOp.cpp \
-		Clock.cpp
+		Clock.cpp \
+		Screen.cpp
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
@@ -22,7 +23,7 @@ CXXFLAGS = -std=gnu++14 -Wall -Wextra
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CXX) $^ -o $@
+	$(CXX) $^ -o $@ `sdl2-config --cflags --libs`
 
 obj/%.o:src/%.cpp src/*.hpp
 	@mkdir -p obj
