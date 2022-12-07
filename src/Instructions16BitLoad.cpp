@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 19:35:22 by nallani          ###   ########.fr       */
+/*   Updated: 2022/11/11 15:47:26 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,8 @@ unsigned short	Cpu::internalPop()
     // Load the contents of memory specified by stack pointer SP into the lower portion of BC.
     // Add 1 to SP and load the contents from the new memory location into the upper portion of BC.
     // By the end, SP should be 2 more than its initial value.
-	unsigned short value = mem[SP];
-	value |= (mem[SP + 1] << 8);
-	SP += 2;
+	unsigned short value = mem[SP++];
+	value |= (mem[SP++] << 8);
 	return value;
 }
 
@@ -90,7 +89,7 @@ unsigned char Cpu::pop(unsigned short opcode)
     return 3;
 }
 
-unsigned char Cpu::load_sp_to_a16(unsigned short opcode)
+unsigned char Cpu::load_sp_to_a16()
 {
     // Opcode: 0x08
     // Symbol: LD
@@ -135,11 +134,13 @@ unsigned char Cpu::load_hl_from_sp_plus_s8()
     // Description
     // Add the 8-bit signed operand s8 (values -128 to +127) to the stack pointer SP, and store the result in register pair HL.
 
-	char s8 = (char)readByte();
+	unsigned char s8 = readByte();
 
 	// should be evaluated as unsigned 8 bit operation
-	setFlags(0, 0, getHalfCarry8Bit((unsigned char)s8, (unsigned char)SP), ((SP & 0xFF) + (unsigned char)s8) < (SP & 0xFF));
-	SP += s8;
+	setFlags(0, 0, getHalfCarry8Bit(s8, (unsigned char)(SP & 0xFF)), overFlow((unsigned char)(SP & 0xFF), s8));
+
+	// but is added as signed
+	HL = SP + (char)s8;
 
     return 3;
 }
@@ -173,4 +174,34 @@ unsigned char Cpu::load_a_a16()
     unsigned short addr = readShort();
 	A = mem[addr];
     return 4;
+}
+
+unsigned char Cpu::load_r16_from_d16(unsigned short opcode)
+{
+    // Opcode: [0x01, 0x11, 0x21, 0x31]
+    // Symbol: LD
+    // Operands: [(BC, D16), (DE, D16), (HL, D16), (SP, D16)]
+    // Number of Bytes: 3
+    // Number of Cycles: 3
+    // Flags: - - - -
+    // Description
+    // Load the 2 bytes of immediate data into register pair.
+
+    // The first byte of immediate data is the lower byte (i.e., bits 0-7), and the second byte of immediate data is the higher byte (i.e., bits 8-15).
+
+    switch (opcode) {
+        case 0x01:
+            BC = readShort();
+            break;
+        case 0x11:
+            DE = readShort();
+            break;
+        case 0x21:
+            HL = readShort();
+            break;
+        case 0x31:
+            SP = readShort();
+            break;
+    }
+    return 3;
 }

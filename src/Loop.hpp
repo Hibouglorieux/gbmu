@@ -1,38 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   InstructionsControl.cpp                            :+:      :+:    :+:   */
+/*   Loop.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
+/*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/08 15:52:11 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 21:48:09 by nallani          ###   ########.fr       */
+/*   Created: 2022/12/06 22:45:13 by lmariott          #+#    #+#             */
+/*   Updated: 2022/12/07 01:41:16 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
-
-unsigned char Cpu::nop()
-{
-	return 1;
-}
-
-unsigned char Cpu::stop()
-{
-	return 0;
-}
-
-unsigned char Cpu::halt()
-{
-	return 0;
-}
-
-unsigned char Cpu::di()
-{
-	return 0;
-}
-
-unsigned char Cpu::ei()
-{
-	return 0;
-}
+class Loop {
+public:
+	static void loop();
+private:
+	static bool shouldStop;
+	static double frameTime;
+	static double fpsRefreshTime;
+	static unsigned char frameCount;
+	const static double refreshingRate;
+};

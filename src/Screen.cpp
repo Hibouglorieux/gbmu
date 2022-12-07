@@ -9,11 +9,58 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <iostream>
 #include "Screen.hpp"
 
-Screen::Screen()
+SDL_Window* Screen::window = NULL;
+SDL_Renderer* Screen::renderer = NULL;
+
+
+SDL_Window*	Screen::get(void)
 {
-	internalArray = new unsigned char[160 * 144];
+	return (window);
+}
+
+void	Screen::destroy(void)
+{
+	SDL_DestroyWindow(window);
+}
+
+void	Screen::update(void)
+{
+	SDL_RenderPresent(renderer);
+}
+
+bool	Screen::drawPoint(int x, int y, int r, int g, int b)
+{
+	SDL_Point 	pt[16];
+	int		index = 0;
+
+	if (x > 160 || y > 144) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	x *= 4;
+	y *= 4;
+	for (int i = 0 ; i < 4 ; i++) {
+		for (int j = 0 ; j < 4 ; j++) {
+			pt[index].x = x + i;
+			pt[index].y = y + j;
+			index++;
+		}
+	}
+	if (SDL_SetRenderDrawColor(renderer, r,  g , b , 255) != 0) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	if (SDL_RenderDrawPoints(renderer, pt, 16) != 0) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+}
+
+bool	Screen::create(void)
+{
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow("GBMU",
 			SDL_WINDOWPOS_UNDEFINED,
@@ -21,54 +68,32 @@ Screen::Screen()
 			160 * 4,
 			144 * 4,
 			0);
+	if (!window) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);	
+	if (!renderer) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	// if (SDL_SetRenderDrawColor(renderer, 33,  200 , 33 , 255) != 0) {
+	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
+	// 	return (false);
+	// }
+	// if (SDL_RenderClear(renderer) != 0) {
+	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
+	// 	return (false);
+	// }
+	return (true);
 }
 
-Screen::~Screen()
+void	Screen::handleEvent(SDL_Event *ev)
 {
-	delete[] internalArray;
-}
-
-unsigned char& Screen::operator[](int i)
-{
-	return internalArray[i];
-}
-
-// TODO We need to have 8 bit for each input
-// so we cannot write into memory directly, need a temp buffer,
-// we need to update everytime 0xFF00 bit 0-3 with respect to bit 4-5
-// the update of bit 4-5 is done by sw ROM
-// so, at every write to bit 4 or 5, cpy bit 0-3 accordingly
-// This function should just update the temp buffer and must be run asynchronous (thread ?)
-void	Screen::inputWatcher()
-{
-	SDL_Event ev;
-
-	while (SDL_PollEvent(&ev)) {
-		switch (ev.type) {
-			case SDL_KEYDOWN: { // Key press
-				switch (ev.key.keysym.sym) {
-					case SDLK_DOWN:
-						break;
-					case SDLK_UP:
-						break;
-					case SDLK_LEFT:
-						break;
-					case SDLK_RIGHT:
-						break;
-					case SDLK_KP_0: // A
-						break;
-					case SDLK_KP_3: // B
-						break;
-					case SDLK_KP_1: // Start
-						break;
-					case SDLK_KP_7: // Select
-						break;
-					case SDLK_KP_8:
-						break;
-				}
-				break;
-			}
-			default:
+	if (ev->type == SDL_WINDOWEVENT) {
+		switch (ev->window.event) {
+			case SDL_WINDOWEVENT_CLOSE:
+				Screen::destroy();
 				break;
 		}
 	}

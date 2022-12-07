@@ -3,6 +3,7 @@ NAME = gbmu
 
 FILES = main.cpp \
 		Cpu.cpp \
+		CpuUtility.cpp \
 		Mem.cpp \
 		InstructionsControl.cpp \
 		InstructionsJumpCalls.cpp \
@@ -11,9 +12,12 @@ FILES = main.cpp \
 		Instructions16BitArithmetic.cpp \
 		Instructions8BitArithmetic.cpp \
 		Instructions8BitShift.cpp \
+		InstructionsMisc.cpp \
 		FlagOp.cpp \
 		Clock.cpp \
-		Screen.cpp
+		Screen.cpp \
+		Loop.cpp \
+		Joypad.cpp
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
