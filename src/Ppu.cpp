@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/07 22:04:25 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 00:12:08 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,10 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 	// fetch the 8 pixel of a tile 
 	std::array<int, 8> tilePixels;
 	int lineOfPixelsAddress = tileAddress + yOffset * 2;// looking for real byte
-													 // yOffset * 2 because
-													 // there are two byte per
-													 // "line" of pixel
-													 // TODO might need to think of gameboy bank ?
+							 // yOffset * 2 because
+							 // there are two byte per
+							 // "line" of pixel
+							 // TODO might need to think of gameboy bank ?
 	unsigned char byte1 = (*mem)[lineOfPixelsAddress];
 	unsigned char byte2 = (*mem)[lineOfPixelsAddress + 1];
 	for (int x = 0; x < 8; x++)
@@ -102,8 +102,8 @@ std::array<int, NB_LINES> getBackgroundLine(int yLineToFetch)
 		for (int i = 0; i < 8; i++)
 		{
 			if (!bDrawWindow && i + xPosInLine < (M_SCX % 8))// skip pixel if SCX % 8 != 0
-				continue;									 // if scx == 3 then skip the
-															 // first 3 pixels
+				continue;				 // if scx == 3 then skip the
+									 // first 3 pixels
 			backgroundLine[xPosInLine++] = tilePixels[i];
 			if (xPosInLine >= 159)
 				return backgroundLine;
@@ -126,6 +126,10 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 {
 	//TODO, especially for CGB and to convert with SDL color !
 	//
+	// GB color are encoded in 4 bits : 00, 01, 10 , 11
+	// 4 shade
+	// SDL wrapper only need to wrap that for now	
+	// TODO CGB encode 5bits RGB for color in 2 bytes.
 	unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
 	int color = (*mem)[paletteAddress] & (0b11 << bitPosInPalette);
 	return color;
