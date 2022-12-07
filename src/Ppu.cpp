@@ -208,15 +208,83 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 
 std::array<int, 8> Ppu::getBackgroundTile(unsigned char tileNumber)
 {
-	// WIP TODO
-	return {};
+    unsigned int BGMap;
+    if ((M_LCDC & (1 << 3)) == 0){
+        BGMap = 0x9800;
+    } else {
+        BGMap = 0x9C00;
+    }
+    unsigned int BGDataAddress;
+    if ((M_LCDC & (1 << 4)) == 0) {
+        BGDataAddress = 0x8800;
+    } else
+        BGDataAddress = 0x8000;
+    unsigned int yOffsetInMap = 32 * ((M_SCY + M_LY) / 8);
+    unsigned int xOffsetInMap = 1023;
+    yOffsetInMap &= 1023;
+    unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
+    tileNumber = (*mem)[addrInMap];
+    unsigned int yOffset = 2 * (M_SCY + M_LY) % 8;
+    return Ppu::fetch_tile_color(BGDataAddress + (tileNumber * (2 * 8)), yOffset, M_BGP);
 }
 
-std::array<int, 8> Ppu::getWindowTile(unsigned char tileNumber)
+std::array<int, 8> Ppu::getWindowTile(unsigned char tileNumber, unsigned int xOffsetInMap)
 {
-	// WIP TODO
-	return {};
+  unsigned int windowMap;
+  if ((M_LCDC & (1 << 6)) == 0) {
+      windowMap = 0x9800;
+  } else {
+      windowMap = 0x9C00;
+  }
+  unsigned int windowDataAddress;
+  if ((M_LCDC & (1 << 4)) == 0) {
+      windowDataAddress = 0x8800;
+  } else {
+      windowDataAddress = 0x8000;
+  }
+
+  // 32 is because each line is 32 byte, windowCurrentLine because it may or may not be updated
+  // if it was rendered on previous lines NOTE unsure about this, need to be tested
+  // div by 8 because each tile is 8 * 8 byte
+  unsigned int yOffsetInMap = 32 * (M_LY / 8);
+
+  unsigned int addressInMap = windowMap + xOffsetInMap + yOffsetInMap;
+  if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff) {
+    printf("offset in window tile is superior to 1024 to fetch the tile data and is %d", xOffsetInMap + yOffsetInMap); // panic is there to see if we need to loop over 1024 it should never happen if i understood correctly
+  }
+  tileNumber = (*mem[addressInMap]);
+  unsigned int yOffset = 2 * (M_LY % 8);
+  return Ppu::fetch_tile_color(windowDataAddress + (tileNumber * (2 * 8)), yOffset, M_BGP);
 }
+
+std::array<int, 8> Ppu::fetch_tile_color(int tileAddr, int yOffset, int paletteAddr) {
+       // fetch the 8 pixel of a tile in a tmp buffer
+       std::array<int, 8> spriteLine;
+       int lineOfPixelAddr = tileAddr + yOffset * 2;// looking for real byte
+                                                                // yOffset * 2 because
+                                                                // there are two byte per
+                                                                // "line" of pixel
+       int byte1 = (*mem)[lineOfPixelAddr];
+       int byte2 = (*mem)[lineOfPixelAddr + 1];
+       unsigned int byteColorCode;
+       for(int x =0; x < 8; x++) {
+           // get color based on the merge of the two bytes with the same bit
+           // 0b10001000 0b00010010 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x00
+           if (byte1 & (1 << x)) {
+               byteColorCode = 0b10;
+           } else {
+               byteColorCode = 0;
+           }
+           if (byte2 & (1 << x)) {
+               byteColorCode |= 0b1;
+           } else {
+               byteColorCode |= 0;
+           }
+           spriteLine[x] = Ppu::getColor(byteColorCode, paletteAddr);
+       }
+       return spriteLine;
+}
+
 /*
 
    pub struct PPU {

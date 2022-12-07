@@ -89,8 +89,10 @@ public:
 	static int getSpriteAddressInVRam(int spriteAddrInOAM, unsigned char spriteHeight);
 
 	static std::array<int, 8> getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress);
-	static std::array<int, 8> getWindowTile(unsigned char tileNumber);
+	static std::array<int, 8> getWindowTile(unsigned char tileNumber, unsigned int xOffsetInMap);
 	static std::array<int, 8> getBackgroundTile(unsigned char tileNumber);
+    static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
+
 private:
 	static Mem* mem;
 };
