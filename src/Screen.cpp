@@ -57,6 +57,7 @@ bool	Screen::drawPoint(int x, int y, int r, int g, int b)
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
+	return (true);
 }
 
 bool	Screen::create(void)
