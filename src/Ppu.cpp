@@ -6,12 +6,13 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/07 22:04:25 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 00:03:01 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Ppu.hpp"
 #include <algorithm>
+#include <iostream>
 
 Mem* Ppu::mem = nullptr;
 
@@ -45,7 +46,7 @@ int	Ppu::getPaletteFromOAMFlags(unsigned char flags)
 
 int Ppu::getSpriteAddressInVRam(int spriteAddrInOAM, unsigned char spriteHeight)
 {
-	// DMG ONLY !
+   	// DMG ONLY !
 	// TODO add gameboy additionnal bank !
 	// which might not be 0x8000 (to see with Mem class)
 
@@ -79,7 +80,7 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 	return tilePixels;
 }
 
-std::array<int, NB_LINES> getBackgroundLine(int yLineToFetch)
+std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 {
 	std::array<int, NB_LINES> backgroundLine;
 	bool bWindowEnabled = M_LCDC & (1 << 5);
@@ -92,11 +93,11 @@ std::array<int, NB_LINES> getBackgroundLine(int yLineToFetch)
 		std::array<int, 8> tilePixels;
 		if (bDrawWindow)
 		{
-			tilePixels = getWindowTile((xInLine + WX_OFFSET - mem[WX] as usize) / 8);// should not underflow/panic because of windowDraw bool
+			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8, yLineToFetch - M_WY);// should not underflow/panic because of windowDraw bool
 		}
 		else if (bBackgroundEnabled)
 		{
-			tilePixels = getBackgroundTile(BGTileIT + mem[SCX] as usize / 8);
+			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, yLineToFetch + M_SCY);
 			BGTileIt++;
 		}
 		for (int i = 0; i < 8; i++)
@@ -206,226 +207,43 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	return spriteLine;
 }
 
-std::array<int, 8> Ppu::getBackgroundTile(unsigned char tileNumber)
+std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yLineToDraw)
 {
-    unsigned int BGMap;
-    if ((M_LCDC & (1 << 3)) == 0){
-        BGMap = 0x9800;
-    } else {
-        BGMap = 0x9C00;
-    }
-    unsigned int BGDataAddress;
-    if ((M_LCDC & (1 << 4)) == 0) {
-        BGDataAddress = 0x8800;
-    } else
-        BGDataAddress = 0x8000;
-    unsigned int yOffsetInMap = 32 * ((M_SCY + M_LY) / 8);
-    unsigned int xOffsetInMap = 1023;
-    yOffsetInMap &= 1023;
+    unsigned int BGMap  = M_LCDC & (1 << 3) ? 0x9C00 : 0x9800;
+    unsigned int BGDataAddress = M_LCDC & (1 << 4) ? 0x8000 : 0x8800;
+
+    unsigned int yOffsetInMap = 32 * (yLineToDraw / 8); // 32 is the number of tile per line
+	// it is divided by 8 because there are 8 pixels in a tile and we need to locate the good tile
+	yOffsetInMap %= 32;
+	xOffsetInMap %= 32;
     unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
-    tileNumber = (*mem)[addrInMap];
-    unsigned int yOffset = 2 * (M_SCY + M_LY) % 8;
-    return Ppu::fetch_tile_color(BGDataAddress + (tileNumber * (2 * 8)), yOffset, M_BGP);
+    int tileNumber = (*mem)[addrInMap];
+	// 2 because each line is encoded in two bytes.
+	// modulo 8 to get the line
+	// if we need to draw the line 1 which is the 2nd line of pixels
+	// then 1 % 8 == 1, * 2 == 2, we need to skip 2 byte in order to access
+	// the 2nd line (or line[1]) to get the line we want to draw
+    unsigned int yOffset = 2 * (yLineToDraw % 8);
+	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles
+	// (which have this size)
+    return getTilePixels(BGDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
 }
 
-std::array<int, 8> Ppu::getWindowTile(unsigned char tileNumber, unsigned int xOffsetInMap)
+std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)
 {
-  unsigned int windowMap;
-  if ((M_LCDC & (1 << 6)) == 0) {
-      windowMap = 0x9800;
-  } else {
-      windowMap = 0x9C00;
-  }
-  unsigned int windowDataAddress;
-  if ((M_LCDC & (1 << 4)) == 0) {
-      windowDataAddress = 0x8800;
-  } else {
-      windowDataAddress = 0x8000;
-  }
+  unsigned int windowMap = M_LCDC & (1 << 6) ? 0x9C00 : 0x9800;
+  unsigned int windowDataAddress = M_LCDC & (1 << 4) ? 0x8800 : 0x8000;
 
   // 32 is because each line is 32 byte, windowCurrentLine because it may or may not be updated
   // if it was rendered on previous lines NOTE unsure about this, need to be tested
   // div by 8 because each tile is 8 * 8 byte
-  unsigned int yOffsetInMap = 32 * (M_LY / 8);
+  yOffsetInMap = 32 * (yOffsetInMap / 8);
 
   unsigned int addressInMap = windowMap + xOffsetInMap + yOffsetInMap;
-  if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff) {
-    printf("offset in window tile is superior to 1024 to fetch the tile data and is %d", xOffsetInMap + yOffsetInMap); // panic is there to see if we need to loop over 1024 it should never happen if i understood correctly
-  }
-  tileNumber = (*mem[addressInMap]);
-  unsigned int yOffset = 2 * (M_LY % 8);
-  return Ppu::fetch_tile_color(windowDataAddress + (tileNumber * (2 * 8)), yOffset, M_BGP);
+  // condition is there to see if we need to loop over 1024 it should never happen if i understood correctly
+  if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff)
+	  std::cerr << "offset in window tile is superior to 1024 to fetch the tile data and is: " <<  xOffsetInMap + yOffsetInMap << std::endl;
+  int tileNumber = (*mem)[addressInMap];
+  unsigned int yOffset = 2 * (yOffsetInMap % 8);
+  return getTilePixels(windowDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
 }
-
-std::array<int, 8> Ppu::fetch_tile_color(int tileAddr, int yOffset, int paletteAddr) {
-       // fetch the 8 pixel of a tile in a tmp buffer
-       std::array<int, 8> spriteLine;
-       int lineOfPixelAddr = tileAddr + yOffset * 2;// looking for real byte
-                                                                // yOffset * 2 because
-                                                                // there are two byte per
-                                                                // "line" of pixel
-       int byte1 = (*mem)[lineOfPixelAddr];
-       int byte2 = (*mem)[lineOfPixelAddr + 1];
-       unsigned int byteColorCode;
-       for(int x =0; x < 8; x++) {
-           // get color based on the merge of the two bytes with the same bit
-           // 0b10001000 0b00010010 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x00
-           if (byte1 & (1 << x)) {
-               byteColorCode = 0b10;
-           } else {
-               byteColorCode = 0;
-           }
-           if (byte2 & (1 << x)) {
-               byteColorCode |= 0b1;
-           } else {
-               byteColorCode |= 0;
-           }
-           spriteLine[x] = Ppu::getColor(byteColorCode, paletteAddr);
-       }
-       return spriteLine;
-}
-
-/*
-
-   pub struct PPU {
-FIFO: Vec<u8>,
-screenBuff: Vec<u8>,
-windowCurrentLine: usize,
-}
-
-impl PPU {
-pub fn default() -> Self {
-Self {
-FIFO: vec![0, 16],
-screenBuff: vec![0, 160*144],
-windowCurrentLine: 0,
-}
-}
-fn get_data(mem: &Vec<u8>, loc: usize) -> u8 {
-if mem[VBK] == 0
-{
-return mem[loc];
-}
-else
-{
-todo!();
-}
-}
-
-fn get_vram_location(mem: &mut Vec<u8>) -> usize{
-//TODO need to call get_data to access virtualized memory on CGB
-if mem[LCDC] & (1 << 4) != 0
-{
-return 0x8000;
-}
-else
-{
-return 0x8800;
-}
-}
-
-fn get_window_tile(&mut self, mem: &Vec<u8>, xOffsetInMap: usize) -> [u8; 8] {
-
-let windowMap: usize  = if mem[LCDC] & (1 << 6) == 0 {0x9800} else {0x9C00};
-let windowDataAddress: usize = if mem[LCDC] & (1 << 4) == 0 {0x8800} else {0x8000};
-
-// 32 is because each line is 32 byte, windowCurrentLine because it may or may not be updated
-// if it was rendered on previous lines NOTE unsure about this, need to be tested
-// div by 8 because each tile is 8 * 8 byte
-let yOffsetInMap: usize = 32 * (self.windowCurrentLine / 8);
-
-let addressInMap = windowMap + xOffsetInMap + yOffsetInMap;
-if xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff
-{
-panic!("offset in window tile is superior to 1024 to fetch the tile data and is {}",
-xOffsetInMap + yOffsetInMap); // panic is there to see if we need to loop over 1024
-							  // it should never happen if i understood correctly
-							  }
-
-							  let tileNumber: usize = mem[addressInMap] as usize;
-							  let yOffset: usize = 2 * (self.windowCurrentLine % 8);
-
-							  return PPU::fetch_tile_color(mem, windowDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
-							  }
-
-//TODO WIP
-fn get_background_tile(mem: &Vec<u8>, mut xOffsetInMap: usize) -> [u8; 8] {
-
-let BGMap: usize = if mem[LCDC] & (1 << 3) == 0 {0x9800} else {0x9C00};
-let BGDataAddress: usize = if mem[LCDC] & (1 << 4) == 0 {0x8800} else {0x8000};
-
-let mut yOffsetInMap: usize = 32 * ((mem[SCY] + mem[LY]) as usize / 8);
-
-xOffsetInMap &= 1023;
-yOffsetInMap &= 1023;
-
-let addrInMap: usize = BGMap + xOffsetInMap + yOffsetInMap;
-
-let tileNumber: usize = mem[addrInMap] as usize;
-let yOffset: usize = 2 * (mem[SCY] as usize + mem[LY] as usize) % 8;
-
-return PPU::fetch_tile_color(mem, BGDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
-}
-
-fn fetch_background_line(&mut self, mem: &Vec<u8>) -> [u8; 160]{
-	let mut lineColor: [u8; 160] = [0; 160];
-	let screenStartX = mem[SCX] as usize;
-	let screenStartY = mem[SCY] as usize;
-	let windowEnabled: bool = mem[LCDC] & (1 << 5) == 0;
-	let backgroundEnabled: bool = mem[LCDC] & 1 == 0;
-	let windowOffsetX: i16 = mem[WX] as i16;
-	let windowOffsetY: u8 = mem[WY];
-	let mut BGTileIT: usize = 0;
-	let mut xInLine: usize = 0;
-	let mut windowDraw: bool = windowEnabled && mem[LY] >= mem[WY] && xInLine as i16 >= mem[WX] as i16 - WX_OFFSET;
-	loop
-	{
-		let mut tmpColoBuf: [u8; 8] = [0; 8];
-		//fetch window or background tile
-		if windowDraw
-		{
-			tmpColoBuf = self.get_window_tile(mem, (xInLine + WX_OFFSET - mem[WX] as usize) / 8);// should not underflow/panic because of windowDraw bool
-		}
-		else if backgroundEnabled
-		{
-			tmpColoBuf = PPU::get_background_tile(mem, BGTileIT + mem[SCX] as usize / 8);
-		}
-		{
-			// copy tmpColoBuf in the line buffer
-			for i in 0usize..8
-			{
-				if !windowDraw && i + xInLine < (mem[SCX] as usize % 8) // skip pixel if SCX % 8 != 0
-																		// if scx == 3 then skip the
-																		// first 3 pixels
-				{
-					continue;
-				}
-				lineColor[xInLine] = tmpColoBuf[i];
-				xInLine += 1;
-				if xInLine >= 159 // we have drawn our line
-				{
-					break;
-				}
-				// check if window should be enabled,
-				// if the condition is met restart draw at that pos
-				if !windowDraw && windowEnabled && mem[LY] >= windowOffsetY     // make sure the window has to be rendered with its WX/WY
-					&& xInLine as i16 >= windowOffsetX - WX_OFFSET       // make sure window is in on x axis,
-																		 // WX == 0x07 and WY == 0x00 means the window will be at the top left of the screen
-				{
-					// if this condition is met just redraw with window instead of bg now
-					windowDraw = true;
-					continue;
-				}
-			}
-		}
-		BGTileIT += 1;
-	}
-	//update windowCurrentLine if needed
-	if windowDraw
-	{
-		self.windowCurrentLine += 1;// need to do that in order to fetch the good window line
-	}
-	return lineColor;
-}
-}
-*/

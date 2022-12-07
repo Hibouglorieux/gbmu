@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/07 22:05:05 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/07 23:54:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,8 @@ public:
 	static int getSpriteAddressInVRam(int spriteAddrInOAM, unsigned char spriteHeight);
 
 	static std::array<int, 8> getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress);
-	static std::array<int, 8> getWindowTile(unsigned char tileNumber, unsigned int xOffsetInMap);
-	static std::array<int, 8> getBackgroundTile(unsigned char tileNumber);
+	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
+	static std::array<int, 8> getBackgroundTile(unsigned char xOffsetInMap, unsigned char yLineToDraw);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:
@@ -104,7 +104,6 @@ private:
 #define M_LY ((*mem)[LY]) 
 #define M_LYC ((*mem)[LYC]) 
 #define M_DMA ((*mem)[DMA]) 
-#define M_BGP ((*mem)[BGP]) 
 #define M_OBP0 ((*mem)[OBP0]) 
 #define M_OBP1 ((*mem)[OBP1]) 
 #define M_WY ((*mem)[WY]) 
