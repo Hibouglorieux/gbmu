@@ -17,6 +17,7 @@ FILES = main.cpp \
 		Clock.cpp \
 		Screen.cpp \
 		Loop.cpp \
+		Ppu.cpp \
 		Joypad.cpp
 
 
