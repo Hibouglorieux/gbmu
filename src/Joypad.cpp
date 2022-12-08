@@ -1,4 +1,5 @@
 #include "Joypad.hpp"
+#include "Gameboy.hpp"
 #include <iostream>
 
 // TODO We need to have 8 bit for each input
@@ -75,5 +76,13 @@ void Joypad::handleEvent(SDL_Event *ev)
 			default:
 				break;
 		}
+	}
+	if ((mem[0xFF00] & (1 << 5))) {
+		// Action button (priority TODO unsure)
+		mem[0xFF00] |= ((input >> 4) & 0x0F);
+	}
+	else if ((mem[0xFF00] & (1 << 4))) {
+		// Direction buttons
+		mem[0xFF00] |= (input & 0x0F);
 	}
 }

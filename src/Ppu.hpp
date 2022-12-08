@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 01:25:13 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 22:30:40 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,22 +94,21 @@ public:
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:
-	static Mem *mem;
 };
 
-#define M_LCDC ((*mem)[LCDC])
-#define M_LCDC_STATUS ((*mem)[LCDC_STATUS])
-#define M_SCY ((*mem)[SCY]) 
-#define M_SCX ((*mem)[SCX]) 
-#define M_LY ((*mem)[LY]) 
-#define M_LYC ((*mem)[LYC]) 
-#define M_DMA ((*mem)[DMA]) 
-#define M_OBP0 ((*mem)[OBP0]) 
-#define M_OBP1 ((*mem)[OBP1]) 
-#define M_WY ((*mem)[WY]) 
-#define M_WX ((*mem)[WX]) 
-#define M_LCD_Y ((*mem)[LCD_Y]) 
-#define M_VBK ((*mem)[VBK]) 
+#define M_LCDC (mem[LCDC])
+#define M_LCDC_STATUS (mem[LCDC_STATUS])
+#define M_SCY (mem[SCY]) 
+#define M_SCX (mem[SCX]) 
+#define M_LY (mem[LY]) 
+#define M_LYC (mem[LYC]) 
+#define M_DMA (mem[DMA]) 
+#define M_OBP0 (mem[OBP0]) 
+#define M_OBP1 (mem[OBP1]) 
+#define M_WY (mem[WY]) 
+#define M_WX (mem[WX]) 
+#define M_LCD_Y (mem[LCD_Y]) 
+#define M_VBK (mem[VBK]) 
 
 
 #endif

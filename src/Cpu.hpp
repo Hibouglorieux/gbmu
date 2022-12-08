@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 04:27:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 20:49:54 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,9 @@
 #ifndef CPU_CLASS_H
 # define CPU_CLASS_H
 
-#include "Mem.hpp"
+#include "Gameboy.hpp"
 #include "Utility.hpp"
 #include <string>
-#include "Clock.hpp"
 #include <iostream>
 #include <iomanip> // setw
 
@@ -27,8 +26,6 @@ class Cpu {
 public:
 
 	static int executeClock(int clockStop);
-	static void run(int printStart = 0, int printEnd = 0);
-	static bool loadRom(std::string pathToFile);
 	static void loadBootRom();
 	static unsigned char executeInstruction();
 
@@ -65,9 +62,8 @@ public:
 	static unsigned short& BC;
 	static unsigned short& DE;
 	static unsigned short& HL;
-	static Mem mem;
-	static Clock clock;
 	static void printRegisters();
+	static Clock cpuClock;
 private:
 
 

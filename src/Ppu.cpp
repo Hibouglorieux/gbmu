@@ -6,25 +6,18 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 04:01:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 22:30:15 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Ppu.hpp"
-#include "Mem.hpp"
+#include "Gameboy.hpp"
 #include <algorithm>
 #include <iostream>
 
-Mem* Ppu::mem = nullptr;
-
-void	Ppu::setMem(Mem& cpuMem)
-{
-	mem = &cpuMem;
-}
-
 std::array<int, NB_LINES> Ppu::doOneLine()
 {
-	int currentLine = (*mem)[LY];
+	int currentLine = mem[LY];
 	auto pixelLine = getOamLine(currentLine);
 	auto backgroundLine = getBackgroundLine(currentLine);
 	std::array<int, NB_LINES> finalLine = {};
@@ -51,8 +44,8 @@ int Ppu::getSpriteAddressInVRam(int spriteAddrInOAM, unsigned char spriteHeight)
 	// TODO add gameboy additionnal bank !
 	// which might not be 0x8000 (to see with Mem class)
 
-	int spriteNumber = (*mem)[spriteAddrInOAM + 2];
-	// bool bank1 = (*mem)[spriteAddr + 4] & (1 << 3);
+	int spriteNumber = mem[spriteAddrInOAM + 2];
+	// bool bank1 = mem[spriteAddr + 4] & (1 << 3);
 	// 0x8000 is start of OBJ Vram, multiplied by the number of the tile * size of sprite
 	// sprite is spriteHeight * 2 byte long, added
 	return 0x8000 + spriteNumber * spriteHeight * 2;
@@ -67,8 +60,8 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 							 // there are two byte per
 							 // "line" of pixel
 							 // TODO might need to think of gameboy bank ?
-	unsigned char byte1 = (*mem)[lineOfPixelsAddress];
-	unsigned char byte2 = (*mem)[lineOfPixelsAddress + 1];
+	unsigned char byte1 = mem[lineOfPixelsAddress];
+	unsigned char byte2 = mem[lineOfPixelsAddress + 1];
 	for (int x = 0; x < 8; x++)
 	{
 		// get color based on the merge of the two bytes with the same bit
@@ -133,7 +126,7 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 	// SDL wrapper only need to wrap that for now	
 	// TODO CGB encode 5bits RGB for color in 2 bytes.
 	unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
-	int color = (*mem)[paletteAddress] & (0b11 << bitPosInPalette);
+	int color = mem[paletteAddress] & (0b11 << bitPosInPalette);
 	return color;
 }
 
@@ -141,20 +134,20 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 {
 	std::vector<int> spritesFound;
 	std::array<SpriteData, NB_LINES> spriteLine;
-	if (!((*mem)[LCDC] & (1 << 1))) // if OBJ flag isnt enabled, return empty array
+	if (!(mem[LCDC] & (1 << 1))) // if OBJ flag isnt enabled, return empty array
 	{
 		spriteLine.fill({0, false});
 		return spriteLine;
 	}
 	const int OAM_Addr = 0xFE00;
-	unsigned char spriteHeight = ((*mem)[LCDC] & 1 << 2) ? 16 : 8; // type of sprite from flag
+	unsigned char spriteHeight = (mem[LCDC] & 1 << 2) ? 16 : 8; // type of sprite from flag
 
 	// 1 - fetch the sprites needed for that line
 	for (int i = 0; i < 40; i++)
 	{
 		int address = OAM_Addr + (i * 4);	
-		unsigned char posY = (*mem)[address];
-		unsigned char posX = (*mem)[address + 1];
+		unsigned char posY = mem[address];
+		unsigned char posX = mem[address + 1];
 
 		unsigned char firstPixelDrawn = posY - 16;
 		unsigned char lastPixelDrawn = posY - 16 + spriteHeight;
@@ -174,15 +167,15 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	std::sort(spritesFound.begin(), spritesFound.end(), [](int a, int b){
-			return (*mem)[b + 1] >= (*mem)[a + 1] ? b : a;
+			return mem[b + 1] >= mem[a + 1] ? b : a;
 			});
 
 	// 3 - copy sprite color into the whole line
 	for (int spriteAddr : spritesFound)
 	{
-		unsigned char posY = (*mem)[spriteAddr];
-		unsigned char posX = (*mem)[spriteAddr + 1];
-		unsigned char flags = (*mem)[spriteAddr + 3];
+		unsigned char posY = mem[spriteAddr];
+		unsigned char posX = mem[spriteAddr + 1];
+		unsigned char flags = mem[spriteAddr + 3];
 		int paletteAddress = getPaletteFromOAMFlags(flags);
 		bool bIsAboveBG = !(flags & (1 << 7));
 		bool xFlipped = flags & (1 << 5);
@@ -222,7 +215,7 @@ std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned c
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
     unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
-    int tileNumber = (*mem)[addrInMap];
+    int tileNumber = mem[addrInMap];
 	// 2 because each line is encoded in two bytes.
 	// modulo 8 to get the line
 	// if we need to draw the line 1 which is the 2nd line of pixels
@@ -248,7 +241,7 @@ std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yO
   // condition is there to see if we need to loop over 1024 it should never happen if i understood correctly
   if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff)
 	  std::cerr << "offset in window tile is superior to 1024 to fetch the tile data and is: " <<  xOffsetInMap + yOffsetInMap << std::endl;
-  int tileNumber = (*mem)[addressInMap];
+  int tileNumber = mem[addressInMap];
   unsigned int yOffset = 2 * (yOffsetInMap % 8);
   return getTilePixels(windowDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
 }

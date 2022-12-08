@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 05:12:23 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 20:59:51 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,6 @@ unsigned short& Cpu::BC = registers[1];
 unsigned short& Cpu::DE = registers[2];
 unsigned short& Cpu::HL = registers[3];
 
-Mem Cpu::mem = Mem();
-Clock Cpu::clock = Clock(Cpu::mem);
-
 void Cpu::loadBootRom()
 {
 	PC = 0x100;
@@ -45,35 +42,6 @@ void Cpu::loadBootRom()
 	A = 0x11;
 	F = 0x80;
 	mem[0xFF44] = 0x90;
-}
-
-void Cpu::run(int printStart, int printEnd)
-{
-	int i = 0;
-	while (true)
-	{
-		//std::string lol;
-		//std::getline(std::cin, lol);
-		//std::cout << i << std::endl;
-		//std::cout << "PC is: 0x" << std::hex << std::setw(4) << PC << std::endl;
-
-		if (i >= printStart && i < printEnd)
-		{
-			//std::cout << "iteration: " << i << std::endl;
-			printRegisters();
-		}
-		if (i >= printEnd && printEnd != 0)
-			return;
-		executeInstruction();
-		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
-		i++;
-	}
-}
-
-bool Cpu::loadRom(std::string pathToFile)
-{
-	mem = Mem(pathToFile);
-	return mem.isValid;
 }
 
 unsigned char Cpu::executeInstruction()
@@ -382,25 +350,25 @@ unsigned char Cpu::executeInstruction()
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
-	clock += instruction();
+	g_clock += instruction();
 	return opcode;
 }
 
 int	Cpu::executeClock(int clockStop)
 {
 	int countClock = 0;
-	int clockBegin = clock;
+	int clockBegin = g_clock;
 	if (clockBegin + clockStop >= 17556) {
-		while (clock >= clockBegin) {
+		while (g_clock >= clockBegin) {
 			executeInstruction();
 		}
-		countClock += (17556 - clockBegin) + clock;
+		countClock += (17556 - clockBegin) + g_clock;
 		clockStop -= (17556 - clockBegin);
-		clockBegin = clock;
+		clockBegin = g_clock;
 	}
-	while (clock < clockBegin + clockStop) {
+	while (g_clock < clockBegin + clockStop) {
 		executeInstruction();
 	}
-	countClock += clock - clockBegin;
+	countClock += g_clock - clockBegin;
 	return (countClock);
 }
