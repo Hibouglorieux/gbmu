@@ -18,7 +18,7 @@ FILES = main.cpp \
 		Screen.cpp \
 		Loop.cpp \
 		Ppu.cpp \
-		Joypad.cpp
+		Joypad.cpp 
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))

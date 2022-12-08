@@ -37,6 +37,7 @@ void Loop::loop()
 			}
 		}
 		Screen::update();
+		Screen::updateDebug();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		for (int i = 0 ; i < 8 ; i++) {
 			SDL_PollEvent(&ev);

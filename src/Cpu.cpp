@@ -378,7 +378,7 @@ unsigned char Cpu::executeInstruction()
 			break;
 		default:
 			{
-				std::cerr << "previuous opcode: 0x" << std::hex << +mem[PC - 2] << std::endl;
+				std::cerr << "previuous opcode: 0x" << std::hex << ((int)mem[PC - 2]) << std::endl;
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}

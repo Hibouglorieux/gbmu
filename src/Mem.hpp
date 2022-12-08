@@ -15,6 +15,8 @@
 # define MEM_CLASS_H
 #include <string>
 
+# define BIT(val, bit) (val & (1 << bit))
+
 class Mem;
 
 class MemWrap {

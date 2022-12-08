@@ -109,7 +109,6 @@ private:
 #define M_WY ((*mem)[WY]) 
 #define M_WX ((*mem)[WX]) 
 #define M_LCD_Y ((*mem)[LCD_Y]) 
-#define M_VBK ((*mem)[VBK]) 
-
+#define M_VBK ((*mem)[VBK])
 
 #endif
