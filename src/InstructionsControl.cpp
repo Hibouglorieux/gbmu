@@ -29,10 +29,12 @@ unsigned char Cpu::halt()
 
 unsigned char Cpu::di()
 {
+	Cpu::interrupts_master_enable = false;
 	return 0;
 }
 
 unsigned char Cpu::ei()
 {
+	Cpu::interrupts_master_enable = true;
 	return 0;
 }

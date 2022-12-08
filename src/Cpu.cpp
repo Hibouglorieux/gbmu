@@ -17,6 +17,7 @@ unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
 unsigned short Cpu::registers[4] = {};
 
+bool Cpu::interrupts_master_enable = false;
 
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
@@ -64,6 +65,7 @@ void Cpu::run(int printStart, int printEnd)
 		}
 		if (i >= printEnd && printEnd != 0)
 			return;
+		handle_interrupts();
 		executeInstruction();
 		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 		i++;
@@ -403,4 +405,32 @@ int	Cpu::executeClock(int clockStop)
 	}
 	countClock += clock - clockBegin;
 	return (countClock);
+}
+
+void request_interrupts(unsigned int addr)
+{
+	Cpu::mem[--Cpu::SP] = addr >> 8;
+	Cpu::mem[--Cpu::SP] = addr & 0xFF;
+    Cpu::PC = addr;
+    Cpu::interrupts_master_enable = false;
+}
+
+void Cpu::handle_interrupts() {
+    if (Cpu::interrupts_master_enable) {
+        if (M_EI && M_IF) {
+                if ((M_EI & (1 << 1)) && (M_IF & (1 << 1))) {
+                        request_interrupts(0x40);
+                } else if ((M_EI & (1 << 2)) && (M_IF & (1 << 2))) {
+                        request_interrupts(0x48);
+                } else if ((M_EI & (1 << 3)) && (M_IF & (1 << 3))) {
+                        request_interrupts(0x50);
+                } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
+                        request_interrupts(0x58);
+                } else if ((M_EI & (1 << 5)) && (M_IF & (1 << 5))) {
+                        request_interrupts(0x60);
+                } else {
+                        logErr("exec: Error unknown interrupt");
+                }
+        }
+    }
 }
