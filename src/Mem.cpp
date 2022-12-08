@@ -132,5 +132,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			std::cout << (char)(memRef[0xFF01]);
 		}
 	}
+	if (addr == 0xFF46)
+		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 	return value;
 }

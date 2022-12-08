@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/08 22:57:01 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 00:06:05 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ bool Loop::loop()
 			}
 		}
 		Screen::update();
+		Screen::updateDebug();
+		Screen::updateBG();
 		Gameboy::pollEvent();
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 	}

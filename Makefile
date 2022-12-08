@@ -24,7 +24,7 @@ FILES = main.cpp \
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 
-CXXFLAGS = -std=gnu++14 -Wall -Wextra
+CXXFLAGS = -std=gnu++14 -Wall -Wextra -g
 
 all: $(NAME)
 
