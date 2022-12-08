@@ -14,6 +14,8 @@
 #include "Cpu.hpp"
 #include "Ppu.hpp"
 
+#define QUAD_COLOR 0b11
+
 SDL_Window* Screen::window = NULL;
 SDL_Renderer* Screen::renderer = NULL;
 
@@ -33,15 +35,18 @@ SDL_Window*	Screen::get(void)
 
 void	Screen::destroy(void)
 {
+	SDL_DestroyRenderer(DebugRenderer);
 	SDL_DestroyWindow(DebugWindow);
+	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	SDL_Quit();
 	std::exit(0); // TODO clean properly
 }
 
 void	Screen::update(void)
 {
 	SDL_RenderPresent(renderer);
-	// SDL_RenderPresent(DebugRenderer);
+	SDL_RenderPresent(DebugRenderer);
 }
 
 void Screen::display_tile(unsigned short location, unsigned short tileNum, int x, int y)
@@ -72,6 +77,26 @@ void Screen::display_tile(unsigned short location, unsigned short tileNum, int x
 
 void	Screen::updateDebug(void)
 {
+	int sizePerTile = 2 * 8;
+	for (int i = 0; i < 256; i++)
+	{
+		int tileAddress = 0x8000 + i * sizePerTile;
+		for (int y = 0; y < 8; y++)
+		{
+			std::array<int, 8> tileLine = Ppu::getTilePixels(tileAddress, y, 0xFF47);
+			int yOnWindow = (i / 16) * (8 + 1) + y;
+			for (int x = 0; x < 8; x++)
+			{
+				int xOnWindow = (i % (16)) * (8 + 1) + x;
+				drawPoint(xOnWindow, yOnWindow, tileLine[x], DebugRenderer);
+			}
+			drawPoint((i % 16) * (8 + 1) + 8, yOnWindow, QUAD_COLOR, DebugRenderer);
+		}
+		int yOnWindow = (i / 16) * (8 + 1) + 8;
+		for (int x = 0; x < 16 * 9; x++)
+			drawPoint(x, yOnWindow, QUAD_COLOR, DebugRenderer);
+	}
+	/*
 	int xDraw = 0;
 	int yDraw = 0;
 	int tileNum = 0;
@@ -101,14 +126,17 @@ void	Screen::updateDebug(void)
 	SDL_RenderClear(DebugRenderer);
 	SDL_RenderCopy(DebugRenderer, DebugTexture, NULL, NULL);
 	SDL_RenderPresent(DebugRenderer);
+	*/
 }
 
-bool	Screen::drawPoint(int x, int y, int color)
+bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer)
 {
 	SDL_Point 	pt[16];
 	int		index = 0;
 
-	if (x > 160 || y > 144) {
+	SDL_RendererInfo rendererInfo;
+	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
+	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
@@ -121,11 +149,11 @@ bool	Screen::drawPoint(int x, int y, int color)
 			index++;
 		}
 	}
-	if (SDL_SetRenderDrawColor(renderer, color * 127,  color * 127 , color * 127 , 255) != 0) {
+	if (SDL_SetRenderDrawColor(targetRenderer, color * (255 / 3),  color * (255 / 3) , color * (255 / 3) , 255) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
-	if (SDL_RenderDrawPoints(renderer, pt, 16) != 0) {
+	if (SDL_RenderDrawPoints(targetRenderer, pt, 16) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
@@ -142,22 +170,22 @@ bool	Screen::create(void)
 			144 * 4,
 			0);
 
-
-	SDL_CreateWindowAndRenderer(16 * 8 * scale, 32 * 8 * scale, 0, 
-        &DebugWindow, &DebugRenderer);
-
+	/*
     DebugScreen = SDL_CreateRGBSurface(0, (16 * 8 * scale) + (16 * scale), 
                                             (32 * 8 * scale) + (64 * scale), 32,
                                             0x00FF0000,
                                             0x0000FF00,
                                             0x000000FF,
                                             0xFF000000);
+											*/
 
+	/*
     DebugTexture = SDL_CreateTexture(DebugRenderer,
                                             SDL_PIXELFORMAT_ARGB8888,
                                             SDL_TEXTUREACCESS_STREAMING,
                                             (16 * 8 * scale) + (16 * scale), 
                                             (32 * 8 * scale) + (64 * scale));
+											*/
 
 		
 	if (!window) {
@@ -165,8 +193,30 @@ bool	Screen::create(void)
 		return (false);
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (!renderer) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+
+	DebugWindow = SDL_CreateWindow("VRAM",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			16 * 8 * scale + 16 * scale,
+			16 * 8 * scale + 16 * scale,
+			0);
+	if (!DebugWindow) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	if (!DebugWindow) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+
+	DebugRenderer = SDL_CreateRenderer(DebugWindow, -1, 0);
+	if (!DebugRenderer) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 04:01:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 20:05:42 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 							 // TODO might need to think of gameboy bank ?
 	unsigned char byte1 = (*mem)[lineOfPixelsAddress];
 	unsigned char byte2 = (*mem)[lineOfPixelsAddress + 1];
+	if (lineOfPixelsAddress >= 0x9800 || lineOfPixelsAddress < 0x8000)
+		std::cerr << "access vram not at vram: "<< lineOfPixelsAddress << std::endl;
 	for (int x = 0; x < 8; x++)
 	{
 		// get color based on the merge of the two bytes with the same bit
@@ -76,7 +78,7 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 		bool bit1 = byte1 & (1 << x);
 		bool bit2 = byte2 & (1 << x);
 		unsigned char byteColorCode = (bit1 << 1) | (bit2 << 1);
-		tilePixels[x] = getColor(byteColorCode, paletteAddress);
+		tilePixels[7 - x] = getColor(byteColorCode, paletteAddress);
 	}
 	return tilePixels;
 }
