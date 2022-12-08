@@ -18,7 +18,7 @@ class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create();
-	static bool drawPoint(int x, int y, int r, int g, int b);
+	static bool drawPoint(int x, int y, int color);
 	static void destroy();
 	static void update();
 	static SDL_Window* get();

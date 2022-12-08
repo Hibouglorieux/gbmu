@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:24:30 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 05:09:35 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,12 @@ int&	Clock::operator+=(int addValue)
 	{
 		clockCount += 1;
 		mem[0xFF44]++;
-		if (mem[0xFF44] > 153)
+		if (mem[0xFF44] > 153) // 144 line + V-BLANK (10 lines)
 			mem[0xFF44] = 0;
 	}
-	if (clock >= 70224 / 4)
+	if (clock >= 17556) // 144 line + V-BLANK
 	{
-		clock = 0;
+		clock = clock - 17556;
 		clockCount = 0;
 	}
 	return clock;
@@ -65,5 +65,10 @@ int&	Clock::operator-=(int subValue)
 int&	Clock::operator=(int value)
 {
 	clock = value;
+	return clock;
+}
+
+Clock::operator int()
+{
 	return clock;
 }

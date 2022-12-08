@@ -6,22 +6,25 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/07 06:12:34 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 05:16:11 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Ppu.hpp"
 #include "Loop.hpp"
 #include "Screen.hpp"
 #include <iostream>
 #define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/11-op a,(hl).gb"
+// #define DEFAULT_PATH_TO_FILE "./tetris.gb"
 
 int main(int argc, char** argv)
 {
 	(void) argc;
 	(void) argv;
 
-//	Screen::create();
+	Screen::create();
+	Ppu::setMem(Cpu::mem);
 
 	if (argc == 1 || argc == 3)
 	{
@@ -42,10 +45,6 @@ int main(int argc, char** argv)
 	std::cerr << std::hex;
 	std::cout << std::hex;
 	Cpu::loadBootRom();
-	if (argc == 3)
-		Cpu::run(std::stoi(argv[1]), std::stoi(argv[2]));
-	else
-		Cpu::run();
-	// Loop::loop();
+	Loop::loop();
 	return (0);
 }

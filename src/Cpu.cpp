@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/11 16:28:18 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/08 05:12:23 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void Cpu::run(int printStart, int printEnd)
 		}
 		if (i >= printEnd && printEnd != 0)
 			return;
-		unsigned char opcode = executeInstruction();
+		executeInstruction();
 		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 		i++;
 	}
@@ -384,4 +384,23 @@ unsigned char Cpu::executeInstruction()
 	}
 	clock += instruction();
 	return opcode;
+}
+
+int	Cpu::executeClock(int clockStop)
+{
+	int countClock = 0;
+	int clockBegin = clock;
+	if (clockBegin + clockStop >= 17556) {
+		while (clock >= clockBegin) {
+			executeInstruction();
+		}
+		countClock += (17556 - clockBegin) + clock;
+		clockStop -= (17556 - clockBegin);
+		clockBegin = clock;
+	}
+	while (clock < clockBegin + clockStop) {
+		executeInstruction();
+	}
+	countClock += clock - clockBegin;
+	return (countClock);
 }

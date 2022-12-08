@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:36 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 15:52:38 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 01:49:37 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ public:
 	int& operator+=(int addValue);
 	int& operator-=(int subValue);
 	int& operator=(int value);
+	operator int();
 private:
 	int clock;
 	unsigned int clockCount;

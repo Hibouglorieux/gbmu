@@ -24,6 +24,7 @@ SDL_Window*	Screen::get(void)
 void	Screen::destroy(void)
 {
 	SDL_DestroyWindow(window);
+	std::exit(0); // TODO clean properly
 }
 
 void	Screen::update(void)
@@ -31,7 +32,7 @@ void	Screen::update(void)
 	SDL_RenderPresent(renderer);
 }
 
-bool	Screen::drawPoint(int x, int y, int r, int g, int b)
+bool	Screen::drawPoint(int x, int y, int color)
 {
 	SDL_Point 	pt[16];
 	int		index = 0;
@@ -49,7 +50,7 @@ bool	Screen::drawPoint(int x, int y, int r, int g, int b)
 			index++;
 		}
 	}
-	if (SDL_SetRenderDrawColor(renderer, r,  g , b , 255) != 0) {
+	if (SDL_SetRenderDrawColor(renderer, color * 127,  color * 127 , color * 127 , 255) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}

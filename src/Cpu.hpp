@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 16:46:38 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 04:27:54 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 class Cpu {
 public:
 
+	static int executeClock(int clockStop);
 	static void run(int printStart = 0, int printEnd = 0);
 	static bool loadRom(std::string pathToFile);
 	static void loadBootRom();
