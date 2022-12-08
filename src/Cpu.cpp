@@ -50,6 +50,7 @@ void Cpu::loadBootRom()
 
 void Cpu::run(int printStart, int printEnd)
 {
+
 	int i = 0;
 	while (true)
 	{
@@ -65,9 +66,10 @@ void Cpu::run(int printStart, int printEnd)
 		}
 		if (i >= printEnd && printEnd != 0)
 			return;
-		handle_interrupts();
+
+		// printf("inter requested\n");
 		executeInstruction();
-		//std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
+		// std::cout << "executed opcode: 0x" << std::hex << std::setw(2) << +opcode << std::endl;
 		i++;
 	}
 }
@@ -80,6 +82,8 @@ bool Cpu::loadRom(std::string pathToFile)
 
 unsigned char Cpu::executeInstruction()
 {
+    if (PC == 0x50)
+        std::cout << "PC is equal to 0x50 and is reading opcode: " << (int)mem[PC] << std::endl;
 	unsigned char opcode = readByte();
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
 	switch (opcode)
@@ -392,42 +396,69 @@ int	Cpu::executeClock(int clockStop)
 {
 	int countClock = 0;
 	int clockBegin = clock;
-	if (clockBegin + clockStop >= 17556) {
-		while (clock >= clockBegin) {
-			executeInstruction();
-		}
-		countClock += (17556 - clockBegin) + clock;
-		clockStop -= (17556 - clockBegin);
-		clockBegin = clock;
-	}
-	while (clock < clockBegin + clockStop) {
-		executeInstruction();
-	}
+
+	while (countClock < clockStop)
+    {
+        int prevClock = clock;
+            Cpu::handle_interrupts();
+        executeInstruction();
+        if (prevClock > clock) {
+            countClock += (17556 - prevClock) + clock;
+        }        else {
+            countClock += clock - prevClock;
+        }
+    }
+
+//	if (clockBegin + clockStop >= 17556) {
+//		while (clock >= clockBegin) {
+//            Cpu::handle_interrupts();
+//			executeInstruction();
+//		}
+//		countClock += (17556 - clockBegin) + clock;
+//		clockStop -= (17556 - clockBegin);
+//		clockBegin = clock;
+//	}
+//	while (clock < clockBegin + clockStop) {
+//        Cpu::handle_interrupts();
+//		executeInstruction();
+//	}
 	countClock += clock - clockBegin;
 	return (countClock);
 }
 
-void request_interrupts(unsigned int addr)
+void do_interrupts(unsigned int addr, unsigned char bit)
 {
-	Cpu::mem[--Cpu::SP] = addr >> 8;
-	Cpu::mem[--Cpu::SP] = addr & 0xFF;
+	std::cout << "executed interrupt: " << addr << std::endl;
+    std::cout << "PC " << Cpu::PC << std::endl;
+    std::cout << "EI: "  << (short)Cpu::mem[0xFFFF]  << std::endl;
+    std::cout << "IF: "  << (short)Cpu::mem[0xFF0F]  << std::endl;
+    Cpu::mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
+	Cpu::mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
+    Cpu::mem[0xFF0F] &= ~bit;
     Cpu::interrupts_master_enable = false;
 }
 
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
+
 void Cpu::handle_interrupts() {
+
     if (Cpu::interrupts_master_enable) {
         if (M_EI && M_IF) {
-                if ((M_EI & (1 << 1)) && (M_IF & (1 << 1))) {
-                        request_interrupts(0x40);
+                if ((M_EI & (1)) && (M_IF & (1))) {
+                        do_interrupts(IT_VBLANK,  1);
+                } else if ((M_EI & (1 << 1)) && (M_IF & (1<<1))) {
+                        do_interrupts(IT_LCD_STAT, (1 << 1));
                 } else if ((M_EI & (1 << 2)) && (M_IF & (1 << 2))) {
-                        request_interrupts(0x48);
+                        do_interrupts(IT_TIMER, (1 << 2));
                 } else if ((M_EI & (1 << 3)) && (M_IF & (1 << 3))) {
-                        request_interrupts(0x50);
+                        do_interrupts(IT_SERIAL, (1 << 3));
                 } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
-                        request_interrupts(0x58);
-                } else if ((M_EI & (1 << 5)) && (M_IF & (1 << 5))) {
-                        request_interrupts(0x60);
+                        do_interrupts(IT_JOYPAD, (1 << 4));
                 } else {
                         logErr("exec: Error unknown interrupt");
                 }

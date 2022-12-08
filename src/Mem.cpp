@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Mem.hpp"
+#include "Cpu.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -121,6 +122,13 @@ const MemWrap Mem::operator[](unsigned int i) const
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
 	value = newValue;
+    int test = Cpu::PC -2;
+    if (addr == 0xFFFF || addr == 0xFF0F) {
+        std::cout << "EI ds MEME " << (short) memRef[0xFFFF] << "PC " << test << " with opcode: " << +memRef[test]
+                  << std::endl;
+        std::cout << "IF ds MEME " << (short) memRef[0xFF0F] << "PC " << test << " with opcode: " << +memRef[test]
+                      << std::endl;
+    }
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
 		if (memRef[0xFF01] == ' ')

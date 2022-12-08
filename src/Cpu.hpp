@@ -22,6 +22,8 @@
 #include <iomanip> // setw
 
 #define PHL (mem[HL])
+#define M_EI (mem[0xFFFF])
+#define M_IF (mem[0xFF0F])
 
 class Cpu {
 public:
@@ -167,8 +169,5 @@ private:
 	static void internalPush(unsigned short valueToPush);
 	static unsigned short internalPop();
 };
-
-#define M_EI mem[0xFFFF]
-#define M_IF mem[0xFF0F]
 
 #endif

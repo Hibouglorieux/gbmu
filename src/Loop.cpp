@@ -27,13 +27,13 @@ int Loop::getState()
 	return (state);
 }
 
-void Loop::loop()
+[[noreturn]] void Loop::loop()
 {
 	SDL_Event ev;
-	std::array<int, NB_LINES> finalLine;
+	std::array<int, NB_LINES> finalLine{};
 	int clockDiff = 0;
 
-	while (1)
+	while (true)
 	{
 		state = GBSTATE_V_BLANK;
 		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
@@ -50,6 +50,8 @@ void Loop::loop()
 			}
 		}
 		Screen::update();
+
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		for (int i = 0 ; i < 8 ; i++) {
 			SDL_PollEvent(&ev);

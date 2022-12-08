@@ -17,7 +17,7 @@
 
 class Loop {
 public:
-	static void loop();
+    [[noreturn]] static void loop();
 	static int getState();
 private:
 	static bool shouldStop;
