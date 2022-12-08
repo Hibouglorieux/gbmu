@@ -22,11 +22,15 @@ SDL_Renderer* Screen::renderer = NULL;
 SDL_Window* Screen::DebugWindow = NULL;
 SDL_Renderer* Screen::DebugRenderer = NULL;
 
+SDL_Window* Screen::backgroundWindow = NULL;
+SDL_Renderer* Screen::backgroundRenderer = NULL;
+
 SDL_Texture* Screen::DebugTexture = NULL;
 SDL_Surface* Screen::DebugScreen = NULL;
 
 static unsigned long tile_colors[4] = {0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555, 0xFF000000};
 int scale = 4;
+int scaleBG = 2;
 
 SDL_Window*	Screen::get(void)
 {
@@ -39,6 +43,8 @@ void	Screen::destroy(void)
 	SDL_DestroyWindow(DebugWindow);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(backgroundRenderer);
+	SDL_DestroyWindow(backgroundWindow);
 	SDL_Quit();
 	std::exit(0); // TODO clean properly
 }
@@ -47,6 +53,38 @@ void	Screen::update(void)
 {
 	SDL_RenderPresent(renderer);
 	SDL_RenderPresent(DebugRenderer);
+	SDL_RenderPresent(backgroundRenderer);
+}
+
+void	Screen::updateBG()
+{
+	for (int y = 0; y < 32; y++)
+	{
+		for (int tmpX = 0; tmpX < 32 * 8 * scaleBG + 32 * scaleBG; tmpX++)
+		{
+			if (y)
+				drawPoint(tmpX, y * (8 + 1) - 1,
+						QUAD_COLOR, backgroundRenderer, scaleBG);
+		}
+		for (int x = 0; x < 32; x++)
+		{
+			for (int yy = 0; yy < 8; yy++)
+			{
+				int yOnWindow = y * (8 + 1) + yy;
+				if (x)
+				drawPoint(x * (8 + 1) - 1, yOnWindow,
+						QUAD_COLOR, backgroundRenderer, scaleBG);
+
+				std::array<int, 8> backgroundLine = Ppu::getBackgroundTile(x, y, yy);
+				for (int xx = 0; xx < 8; xx++)
+				{
+					int xOnWindow = x * (8 + 1) + xx;
+					drawPoint(xOnWindow, yOnWindow,
+							backgroundLine[xx], backgroundRenderer, scaleBG);
+				}
+			}
+		}
+	}
 }
 
 void Screen::display_tile(unsigned short location, unsigned short tileNum, int x, int y)
@@ -73,7 +111,6 @@ void Screen::display_tile(unsigned short location, unsigned short tileNum, int x
         }
 	}
 }
-
 
 void	Screen::updateDebug(void)
 {
@@ -129,21 +166,22 @@ void	Screen::updateDebug(void)
 	*/
 }
 
-bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer)
+bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, int pixelScale)
 {
-	SDL_Point 	pt[16];
+	std::vector<SDL_Point> pt(pixelScale * pixelScale);
 	int		index = 0;
 
 	SDL_RendererInfo rendererInfo;
 	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
-	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height
+			|| x < 0 || y < 0) {
+		std::cerr << __func__ << ":" << std::dec << __LINE__ << std::hex << std::endl;
 		return (false);
 	}
-	x *= 4;
-	y *= 4;
-	for (int i = 0 ; i < 4 ; i++) {
-		for (int j = 0 ; j < 4 ; j++) {
+	x *= pixelScale;
+	y *= pixelScale;
+	for (int i = 0 ; i < pixelScale ; i++) {
+		for (int j = 0 ; j < pixelScale ; j++) {
 			pt[index].x = x + i;
 			pt[index].y = y + j;
 			index++;
@@ -153,7 +191,7 @@ bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer)
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
-	if (SDL_RenderDrawPoints(targetRenderer, pt, 16) != 0) {
+	if (SDL_RenderDrawPoints(targetRenderer, pt.data(), pixelScale * pixelScale) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
@@ -206,17 +244,30 @@ bool	Screen::create(void)
 			16 * 8 * scale + 16 * scale,
 			16 * 8 * scale + 16 * scale,
 			0);
+
 	if (!DebugWindow) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
-	if (!DebugWindow) {
+	DebugRenderer = SDL_CreateRenderer(DebugWindow, -1, 0);
+	if (!DebugRenderer) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
 
-	DebugRenderer = SDL_CreateRenderer(DebugWindow, -1, 0);
-	if (!DebugRenderer) {
+	backgroundWindow = SDL_CreateWindow("BGMap",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			(32) * 8 * scaleBG + 32 * scaleBG,
+			(32) * 8 * scaleBG + 32 * scaleBG,
+			0);
+
+	if (!backgroundWindow) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+	backgroundRenderer = SDL_CreateRenderer(backgroundWindow, -1, 0);
+	if (!backgroundRenderer) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}

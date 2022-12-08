@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 19:03:01 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 22:31:21 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,8 @@ public:
 
 	static std::array<int, 8> getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress);
 	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
-	static std::array<int, 8> getBackgroundTile(unsigned char xOffsetInMap, unsigned char yLineToDraw);
+	static std::array<int, 8> getBackgroundTile(unsigned char xOffsetInMap,
+			unsigned char yOffsetInMap, unsigned char yOffsetInTile);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:

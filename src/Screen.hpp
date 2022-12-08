@@ -18,11 +18,13 @@ class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create();
-	static bool drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer = renderer);
+	static bool drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer = renderer, int pixelScale = 4);
 	static void destroy();
 	static void update();
 
 
+
+	static void updateBG();
 	static void updateDebug();
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
@@ -32,6 +34,8 @@ private:
 	static SDL_Renderer*	renderer;
 	static SDL_Window*		DebugWindow;
 	static SDL_Renderer*	DebugRenderer;
+	static SDL_Window*		backgroundWindow;
+	static SDL_Renderer*	backgroundRenderer;
 	static SDL_Texture*		DebugTexture;
 	static SDL_Surface*		DebugScreen;
 };

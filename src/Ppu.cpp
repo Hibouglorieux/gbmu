@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:05:42 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 22:36:12 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 		}
 		else if (bBackgroundEnabled)
 		{
-			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, yLineToFetch + M_SCY);
+			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, (yLineToFetch + M_SCY) / 8, (yLineToFetch + M_SCY) % 8);
 			BGTileIt++;
 		}
 		for (int i = 0; i < 8; i++)
@@ -214,26 +214,19 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	return spriteLine;
 }
 
-std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yLineToDraw)
+std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap,
+		unsigned char yOffsetInTile)
 {
     unsigned int BGMap  = M_LCDC & (1 << 3) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = M_LCDC & (1 << 4) ? 0x8000 : 0x8800;
 
-    unsigned int yOffsetInMap = 32 * (yLineToDraw / 8); // 32 is the number of tile per line
-	// it is divided by 8 because there are 8 pixels in a tile and we need to locate the good tile
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
     unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
     int tileNumber = (*mem)[addrInMap];
-	// 2 because each line is encoded in two bytes.
-	// modulo 8 to get the line
-	// if we need to draw the line 1 which is the 2nd line of pixels
-	// then 1 % 8 == 1, * 2 == 2, we need to skip 2 byte in order to access
-	// the 2nd line (or line[1]) to get the line we want to draw
-    unsigned int yOffset = 2 * (yLineToDraw % 8);
 	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles
 	// (which have this size)
-    return getTilePixels(BGDataAddress + (tileNumber * (2 * 8)), yOffset, BGP);
+    return getTilePixels(BGDataAddress + (tileNumber * (2 * 8)), yOffsetInTile, BGP);
 }
 
 std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)
