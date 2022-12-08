@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/08 22:21:37 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 23:50:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void Loop::loop()
 			}
 		}
 		Screen::update();
-		Screen::updateDebug();
+		Screen::updateVRam();
 		Screen::updateBG();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		for (int i = 0 ; i < 8 ; i++) {

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 22:36:12 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/08 23:54:44 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 		// 0b10001000 0b00010010 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x00
 		bool bit1 = byte1 & (1 << x);
 		bool bit2 = byte2 & (1 << x);
-		unsigned char byteColorCode = (bit1 << 1) | (bit2 << 1);
+		unsigned char byteColorCode = (bit1 << 1) | (bit2);
 		tilePixels[7 - x] = getColor(byteColorCode, paletteAddress);
 	}
 	return tilePixels;
@@ -136,6 +136,7 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 	// TODO CGB encode 5bits RGB for color in 2 bytes.
 	unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
 	int color = (*mem)[paletteAddress] & (0b11 << bitPosInPalette);
+	color >>= bitPosInPalette;
 	return color;
 }
 
