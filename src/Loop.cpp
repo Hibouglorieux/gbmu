@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/08 04:55:38 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/08 18:29:28 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,13 @@
 #include <thread>
 #include <iostream>
 
+int Loop::state = 0;
+
+int Loop::getState()
+{
+	return (state);
+}
+
 void Loop::loop()
 {
 	SDL_Event ev;
@@ -28,10 +35,16 @@ void Loop::loop()
 
 	while (1)
 	{
+		state = GBSTATE_V_BLANK;
 		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
 		for (int i = 0 ; i < 144 ; i++) {
 			finalLine = Ppu::doOneLine();
-			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff));
+			state = GBSTATE_OAM_SEARCH;
+			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
+			state = GBSTATE_PX_TRANSFERT;
+			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
+			state = GBSTATE_H_BLANK;
+			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
 			for (int j = 0 ; j < 160 ; j++) {
 				Screen::drawPoint(j, i, finalLine[j]);
 			}
