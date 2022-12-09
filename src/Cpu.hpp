@@ -51,6 +51,8 @@ public:
 	static void setData(int i);
 
 	static bool interrupts_master_enable;
+	static bool interrupts_flag;
+	static bool halted;
 	static void handle_interrupts();
 
 

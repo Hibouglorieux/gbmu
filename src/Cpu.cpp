@@ -18,6 +18,8 @@ unsigned short Cpu::SP = 0;
 unsigned short Cpu::registers[4] = {};
 
 bool Cpu::interrupts_master_enable = false;
+bool Cpu::interrupts_flag = false;
+bool Cpu::halted = false;
 
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
@@ -45,12 +47,29 @@ void Cpu::loadBootRom()
 	mem[0xFF44] = 0x90;
 }
 
+bool  interrupt_halt(unsigned char opcode) {
+    if (Cpu::interrupts_flag && opcode != 0xf3) {
+        Cpu::interrupts_master_enable = true;
+    }
+    if (Cpu::halted) {
+        if (Cpu::interrupts_master_enable || (M_EI & M_IF)) {
+            Cpu::halted = false;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
-	switch (opcode)
+    if (!interrupt_halt(opcode)) {
+	    return std::pair<unsigned char, int>((int)opcode, clock);
+    }
+    switch (opcode)
 	{
 		case 0x00:
 			instruction = [&](){ return nop();};
@@ -377,6 +396,7 @@ void	Cpu::updateLY(int iter)
 	if (mem[0xFF44] > 153) {
 		// 144 line + V-BLANK (10 lines)
 		mem[0xFF44] = 0;
+        //TODO TEST shall i raise INT_IF bit 2 for INT ?
 	}
 }
 
@@ -387,6 +407,7 @@ void do_interrupts(unsigned int addr, unsigned char bit)
     Cpu::PC = addr;
     mem[0xFF0F] &= ~bit;
     Cpu::interrupts_master_enable = false;
+    Cpu::interrupts_flag = false;
 }
 
 #define IT_VBLANK 0x40
@@ -410,7 +431,9 @@ void Cpu::handle_interrupts() {
                 } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
                         do_interrupts(IT_JOYPAD, (1 << 4));
                 } else {
-                        logErr("exec: Error unknown interrupt");
+                    std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
+	                Cpu::interrupts_master_enable = false;
+//                        logErr("exec: Error unknown interrupt");
                 }
         }
     }

@@ -133,12 +133,12 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			std::cout << (char)(memRef[0xFF01]);
 		}
 	}
-	if (addr == 0xFF46) {
+    if (addr == 0xFF46) {
 		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
 			std::cout << "DMA transfert done" << std::endl;
-		}
+		} //TODO CGB DMA FF51->FF55
 	}
 	return value;
 }
