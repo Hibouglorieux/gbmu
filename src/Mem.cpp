@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:10:09 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/09 05:57:44 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,12 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			std::cout << (char)(memRef[0xFF01]);
 		}
 	}
-	if (addr == 0xFF46)
+	if (addr == 0xFF46) {
 		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
+		if (newValue <= 0xF1) {
+			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
+			std::cout << "DMA transfert done" << std::endl;
+		}
+	}
 	return value;
 }
