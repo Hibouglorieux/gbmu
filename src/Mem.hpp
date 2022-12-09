@@ -15,7 +15,7 @@
 # define MEM_CLASS_H
 #include <string>
 
-# define BIT(val, bit) (val & (1 << bit))
+# define BIT(val, bit) ((val & (1 << bit)) >> bit)
 
 class Mem;
 
