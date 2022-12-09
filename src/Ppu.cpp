@@ -178,14 +178,14 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	}
 
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
+	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::sort(spritesFound.begin(), spritesFound.end(), [](struct OAM_entry a, struct OAM_entry b){
-			return a.posX < b.posX;
+			return a.posX > b.posX;
 			});
 
 	// 3 - copy sprite color into the whole line
 	for (struct OAM_entry spriteEntry : spritesFound)
 	{
-		
 		int paletteAddress = getPaletteFromOAMEntry(spriteEntry);
 		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
 		int tileAddress = getSpriteAddressInVRam(spriteEntry, spriteHeight);
