@@ -22,10 +22,10 @@
 
 bool Loop::loop()
 {
-	std::array<int, NB_LINES> finalLine;
+	std::array<int, NB_LINES> finalLine{};
 	int clockDiff = 0;
 
-	while (1)
+	while (true)
 	{
 		Gameboy::setState(GBSTATE_V_BLANK);
 		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start

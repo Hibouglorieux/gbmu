@@ -21,6 +21,8 @@
 #include <iomanip> // setw
 
 #define PHL (mem[HL])
+#define M_EI (mem[0xFFFF])
+#define M_IF (mem[0xFF0F])
 
 class Cpu {
 public:
@@ -45,6 +47,10 @@ public:
 
 	static const unsigned char& getData(int i);
 	static void setData(int i);
+
+	static bool interrupts_master_enable;
+	static void handle_interrupts();
+
 
 	static unsigned short PC;
 	static unsigned short SP;

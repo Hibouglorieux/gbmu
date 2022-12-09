@@ -22,6 +22,7 @@
 class Loop {
 public:
 	static bool loop();
+
 private:
 	static bool shouldStop;
 	static double frameTime;
