@@ -20,11 +20,9 @@ std::array<int, NB_LINES> Ppu::doOneLine()
 	int currentLine = mem[LY];
 	auto pixelLine = getOamLine(currentLine);
 
-	for (auto tmp : pixelLine) {
-		if (tmp.bShouldBeDisplayed)
-			std::cout << tmp.bShouldBeDisplayed << '\n';
-	}
 	auto backgroundLine = getBackgroundLine(currentLine);
+
+
 	std::array<int, NB_LINES> finalLine = {0};
 	for (int i = 0; i < NB_LINES; i++)
 	{
@@ -85,8 +83,8 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 {
 	std::array<int, NB_LINES> backgroundLine;
-	bool bWindowEnabled = M_LCDC & (1 << 5);
-	bool bBackgroundEnabled = M_LCDC & 1;
+	bool bWindowEnabled = BIT(M_LCDC, 5);
+	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int BGTileIt = 0;
 	int xPosInLine = 0;
 	bool bDrawWindow = bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET);
@@ -151,9 +149,9 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	unsigned char spriteHeight = BIT(M_LCDC, 2) ? 16 : 8; // type of sprite from flag
 
 	// 1 - fetch the sprites needed for that line
-	for (int i = 0; i < 40; i++)
+	for (int i = 0; i < MAX_SPRITES; i++)
 	{
-		int address = OAM_Addr + (i * 4);	
+		int address = OAM_Addr + (i * sizeof(OAM_entry));	
 		struct OAM_entry *entry = (struct OAM_entry *)(&mem[address]);
 
 		unsigned char firstPixelDrawn = entry->posY - 16;
@@ -175,8 +173,10 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::sort(spritesFound.begin(), spritesFound.end(), [](struct OAM_entry a, struct OAM_entry b){
+		if (a.posX != b.posX)
 			return a.posX > b.posX;
-			});
+		
+	});
 
 	// 3 - copy sprite color into the whole line
 	for (struct OAM_entry spriteEntry : spritesFound)
@@ -212,11 +212,14 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap,
 		unsigned char yOffsetInTile)
 {
-    unsigned int BGMap  = M_LCDC & (1 << 3) ? 0x9C00 : 0x9800;
-    unsigned int BGDataAddress = M_LCDC & (1 << 4) ? 0x8000 : 0x8800;
+    unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
+    unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
+	std::cout << "Avant : " << (int)xOffsetInMap << " et " << (int)yOffsetInMap << '\n';
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
+	std::cout << "Apres : " << (int)xOffsetInMap << " et " << (int)yOffsetInMap << "\n\n";
+
     unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
     int tileNumber = mem[addrInMap];
 	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles

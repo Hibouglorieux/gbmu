@@ -102,9 +102,11 @@ void	Screen::drawVRam(void)
 		for (int y = 0; y < 8; y++)
 		{
 			std::array<int, 8> tileLine = Ppu::getTilePixels(tileAddress, y, 0xFF47);
+			// mem[tileAddress];
 			int yOnWindow = (i / 16) * (8 + 1) + y;
 			for (int x = 0; x < 8; x++)
 			{
+				// bool bit = mem[tileAddress]
 				int xOnWindow = (i % (16)) * (8 + 1) + x;
 				drawPoint(xOnWindow, yOnWindow, tileLine[x], vRamRenderer);
 			}

@@ -86,6 +86,10 @@ struct OAM_entry {
 	unsigned char getPaletteNumberCGB() {return (attributes & 0b111);}
 };
 
+struct Tile_data {
+	unsigned char data[2];
+};
+
 struct SpriteData {
 	int color;
 	bool bShouldBeDisplayed;
@@ -123,6 +127,8 @@ private:
 #define M_WY (mem[WY]) 
 #define M_WX (mem[WX]) 
 #define M_LCD_Y (mem[LCD_Y]) 
-#define M_VBK (mem[VBK]) 
+#define M_VBK (mem[VBK])
+
+#define MAX_SPRITES 40
 
 #endif
