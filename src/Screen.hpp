@@ -21,9 +21,10 @@ public:
 	static bool drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer = renderer, int pixelScale = 4);
 	static void destroy();
 	static void update();
+	static void clear();
 
-	static void updateBG();
-	static void updateVRam();
+	static void drawBG();
+	static void drawVRam();
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static SDL_Window* get();

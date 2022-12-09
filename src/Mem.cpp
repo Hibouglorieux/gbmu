@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Mem.hpp"
+#include "Cpu.hpp"
 #include <fstream>
 #include <iostream>
 

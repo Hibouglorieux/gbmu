@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 00:11:02 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 02:59:05 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,15 @@ std::array<int, NB_LINES> Ppu::doOneLine()
 	int currentLine = mem[LY];
 	auto pixelLine = getOamLine(currentLine);
 	auto backgroundLine = getBackgroundLine(currentLine);
-	std::array<int, NB_LINES> finalLine = {};
+	std::array<int, NB_LINES> finalLine = {0};
 	for (int i = 0; i < NB_LINES; i++)
 	{
-		if (pixelLine[i].bShouldBeDisplayed)
+		if (pixelLine[i].bShouldBeDisplayed) {
 			finalLine[i] = pixelLine[i].color;
-		else
+		}
+		else {
 			finalLine[i] = backgroundLine[i];
+		}
 	}
 	return finalLine;
 }
@@ -137,6 +139,9 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 {
 	std::vector<int> spritesFound;
 	std::array<SpriteData, NB_LINES> spriteLine;
+
+	// Workaround : px is not display by default
+	spriteLine.fill({0, false});
 	if (!(mem[LCDC] & (1 << 1))) // if OBJ flag isnt enabled, return empty array
 	{
 		spriteLine.fill({0, false});

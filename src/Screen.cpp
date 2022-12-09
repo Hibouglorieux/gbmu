@@ -47,19 +47,22 @@ void	Screen::destroy(void)
 
 void	Screen::update(void)
 {
-// if (SDL_SetRenderDrawColor(renderer, 0, 
-	// 					0, 
-	// 					0 , 255) != 0) {
-	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
-	// 	return ;
-	// }
 	SDL_RenderPresent(renderer);
-	SDL_RenderClear(renderer);
 	SDL_RenderPresent(vRamRenderer);
 	SDL_RenderPresent(backgroundRenderer);
 }
 
-void	Screen::updateBG()
+void	Screen::clear(void)
+{
+	SDL_SetRenderDrawColor(renderer,0, 0, 0, 255);
+	SDL_SetRenderDrawColor(vRamRenderer,0, 0, 0, 255);
+	SDL_SetRenderDrawColor(backgroundRenderer,0, 0, 0, 255);
+	SDL_RenderClear(renderer);
+	SDL_RenderClear(vRamRenderer);
+	SDL_RenderClear(backgroundRenderer);
+}
+
+void	Screen::drawBG()
 {
 	for (int y = 0; y < 32; y++)
 	{
@@ -90,7 +93,7 @@ void	Screen::updateBG()
 	}
 }
 
-void	Screen::updateVRam(void)
+void	Screen::drawVRam(void)
 {
 	int sizePerTile = 2 * 8;
 	for (int i = 0; i < 256; i++)

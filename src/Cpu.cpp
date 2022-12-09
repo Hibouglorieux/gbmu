@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 01:58:22 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 02:21:32 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
 unsigned short Cpu::registers[4] = {};
 
+bool Cpu::interrupts_master_enable = false;
 
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
@@ -44,9 +45,10 @@ void Cpu::loadBootRom()
 	mem[0xFF44] = 0x90;
 }
 
-unsigned char Cpu::executeInstruction()
+std::pair<unsigned char, int> Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
+	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
 	switch (opcode)
 	{
@@ -350,31 +352,22 @@ unsigned char Cpu::executeInstruction()
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
-	g_clock += instruction();
-	return opcode;
+	clock = instruction();
+	g_clock += clock;
+	return std::pair<unsigned char, int>((int)opcode, clock);
 }
 
 int	Cpu::executeClock(int clockStop)
 {
 	int countClock = 0;
-	int clockBegin = g_clock;
-	// int clockFirst;
-	// while (countClock < clockStop) {
-	// 	clockFirst = g_clock;
-	// 	
-	// }
-	if (clockBegin + clockStop >= 17556) {
-		while (g_clock >= clockBegin) {
-			executeInstruction();
-		}
-		countClock += (17556 - clockBegin) + g_clock;
-		clockStop -= (17556 - clockBegin);
-		clockBegin = g_clock;
-	}
-	while (g_clock < clockBegin + clockStop) {
-		executeInstruction();
-	}
-	countClock += g_clock - clockBegin;
+	std::pair<unsigned char, int>r;
+
+	while (countClock < clockStop)
+    	{
+        	Cpu::handle_interrupts();
+        	r = executeInstruction();
+		countClock += r.second;
+    	}
 	return (countClock);
 }
 
@@ -387,3 +380,38 @@ void	Cpu::updateLY(int iter)
 	}
 }
 
+void do_interrupts(unsigned int addr, unsigned char bit)
+{
+    mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
+	mem[--Cpu::SP] = Cpu::PC & 0xFF;
+    Cpu::PC = addr;
+    mem[0xFF0F] &= ~bit;
+    Cpu::interrupts_master_enable = false;
+}
+
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
+
+void Cpu::handle_interrupts() {
+
+    if (Cpu::interrupts_master_enable) {
+        if (M_EI && M_IF) {
+                if ((M_EI & (1)) && (M_IF & (1))) {
+                        do_interrupts(IT_VBLANK,  1);
+                } else if ((M_EI & (1 << 1)) && (M_IF & (1<<1))) {
+                        do_interrupts(IT_LCD_STAT, (1 << 1));
+                } else if ((M_EI & (1 << 2)) && (M_IF & (1 << 2))) {
+                        do_interrupts(IT_TIMER, (1 << 2));
+                } else if ((M_EI & (1 << 3)) && (M_IF & (1 << 3))) {
+                        do_interrupts(IT_SERIAL, (1 << 3));
+                } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
+                        do_interrupts(IT_JOYPAD, (1 << 4));
+                } else {
+                        logErr("exec: Error unknown interrupt");
+                }
+        }
+    }
+}

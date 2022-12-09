@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 01:58:47 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 02:19:03 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,18 @@
 #include <string>
 #include <iostream>
 #include <iomanip> // setw
+#include <utility>
 
 #define PHL (mem[HL])
+#define M_EI (mem[0xFFFF])
+#define M_IF (mem[0xFF0F])
 
 class Cpu {
 public:
 
 	static int executeClock(int clockStop);
 	static void loadBootRom();
-	static unsigned char executeInstruction();
+	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
 
 	static unsigned char readByte();
@@ -46,6 +49,10 @@ public:
 
 	static const unsigned char& getData(int i);
 	static void setData(int i);
+
+	static bool interrupts_master_enable;
+	static void handle_interrupts();
+
 
 	static unsigned short PC;
 	static unsigned short SP;
