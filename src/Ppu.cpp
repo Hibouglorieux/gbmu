@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 02:59:05 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 03:05:38 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 				continue;				 // if scx == 3 then skip the
 									 // first 3 pixels
 			backgroundLine[xPosInLine++] = tilePixels[i];
-			if (xPosInLine >= 159)
+			if (xPosInLine >= 160)
 				return backgroundLine;
 			// check if window should be enabled,
 			// if the condition is met restart draw at that pos
