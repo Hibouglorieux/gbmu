@@ -22,22 +22,18 @@ public:
 	static void destroy();
 	static void update();
 
-
-
 	static void updateBG();
-	static void updateDebug();
+	static void updateVRam();
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static SDL_Window* get();
 private:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
-	static SDL_Window*		DebugWindow;
-	static SDL_Renderer*	DebugRenderer;
+	static SDL_Window*		vRamWindow;
+	static SDL_Renderer*	vRamRenderer;
 	static SDL_Window*		backgroundWindow;
 	static SDL_Renderer*	backgroundRenderer;
-	static SDL_Texture*		DebugTexture;
-	static SDL_Surface*		DebugScreen;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:59:51 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:01:42 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,7 +357,11 @@ unsigned char Cpu::executeInstruction()
 int	Cpu::executeClock(int clockStop)
 {
 	int countClock = 0;
-	int clockBegin = g_clock;
+	int clockFirst;
+	while (countClock < clockStop) {
+		clockFirst = g_clock;
+		
+	}
 	if (clockBegin + clockStop >= 17556) {
 		while (g_clock >= clockBegin) {
 			executeInstruction();
