@@ -72,6 +72,19 @@
 
 #define NB_LINES 160
 
+struct OAM_entry {
+	unsigned char posY;
+	unsigned char posX;
+	unsigned char tileIndex;
+	unsigned char attributes;
+	#define bgw_over_window BIT(attributes, 7)
+	#define flipY BIT(attributes, 6)
+	#define flipX BIT(attributes, 5)
+	#define paletteNumber BIT(attributes, 4)
+	#define tileVramBank BIT(attributes, 3)
+	#define paletteNumberCGB (attributes & (0b111))
+};
+
 struct SpriteData {
 	int color;
 	bool bShouldBeDisplayed;

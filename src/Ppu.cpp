@@ -144,30 +144,29 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 {
 	std::vector<int> spritesFound;
 	std::array<SpriteData, NB_LINES> spriteLine;
-	if (!((*mem)[LCDC] & (1 << 1))) // if OBJ flag isnt enabled, return empty array
+	if (!BIT(M_LCDC, 1)) // if OBJ flag isnt enabled, return empty array
 	{
 		spriteLine.fill({0, false});
 		return spriteLine;
 	}
 	const int OAM_Addr = 0xFE00;
-	unsigned char spriteHeight = ((*mem)[LCDC] & 1 << 2) ? 16 : 8; // type of sprite from flag
+	unsigned char spriteHeight = BIT(M_LCDC, 2) ? 16 : 8; // type of sprite from flag
 
 	// 1 - fetch the sprites needed for that line
 	for (int i = 0; i < 40; i++)
 	{
 		int address = OAM_Addr + (i * 4);	
-		unsigned char posY = (*mem)[address];
-		unsigned char posX = (*mem)[address + 1];
+		struct OAM_entry *entry = (struct OAM_entry *)(&(*mem)[address]);
 
-		unsigned char firstPixelDrawn = posY - 16;
-		unsigned char lastPixelDrawn = posY - 16 + spriteHeight;
+		unsigned char firstPixelDrawn = entry->posY - 16;
+		unsigned char lastPixelDrawn = entry->posY - 16 + spriteHeight;
 
 		// verify if the sprite should be rendered on this line
 		// if posX == 0 then sprite is totally off the screen.
 		// same goes for posY that starts at 0x10 (as it can be 16 height)
 		if (firstPixelDrawn <= yLineToFetch &&
 				lastPixelDrawn > yLineToFetch
-				&& posX > 0)
+				&& entry->posX > 0)
 		{
 			spritesFound.push_back(address);
 			if (spritesFound.size() >= 10) // exit if we already found 10 sprites to render
