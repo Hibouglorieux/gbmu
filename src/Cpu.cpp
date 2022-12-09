@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 01:39:09 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:58:22 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,9 +378,9 @@ int	Cpu::executeClock(int clockStop)
 	return (countClock);
 }
 
-void	Cpu::updateLY()
+void	Cpu::updateLY(int iter)
 {
-	mem[0xFF44]++;
+	mem[0xFF44] += iter;
 	if (mem[0xFF44] > 153) {
 		// 144 line + V-BLANK (10 lines)
 		mem[0xFF44] = 0;
