@@ -134,12 +134,9 @@ bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, in
 			index++;
 		}
 	}
-	if (SDL_SetRenderDrawColor(targetRenderer, 0, 
-						0, 
-						0 , 255) != 0) {
-	//if (SDL_SetRenderDrawColor(targetRenderer, 255 - color * (255 / 3), 
-	//					255 - color * (255 / 3), 
-	//					255 - color * (255 / 3) , 255) != 0) {
+	if (SDL_SetRenderDrawColor(targetRenderer, 255 - color * (255 / 3), 
+						255 - color * (255 / 3), 
+						255 - color * (255 / 3) , 255) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}

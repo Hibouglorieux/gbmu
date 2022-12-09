@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 22:29:40 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:08:02 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ int&	Clock::operator+=(int addValue)
 	}
 	if (clock >= 17556) // 144 line + V-BLANK
 	{
+		// TODO Interrupt
 		clock = clock - 17556;
 		clockCount = 0;
 	}
