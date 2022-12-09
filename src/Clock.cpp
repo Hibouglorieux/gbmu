@@ -6,16 +6,15 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 01:08:02 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:55:28 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Clock.hpp"
 
-Clock::Clock(std::function<void()> f)
+Clock::Clock()
 {
 	//TODO change that, after boot rom state
-	LYCallback = f;
 	clock = 32916 / 2;
 	clockCount = clock / 114;
 }
@@ -34,13 +33,13 @@ int&	Clock::operator+=(int addValue)
 {
 	clock += addValue;
 	//TODO do it properly
-	unsigned int tmp = clock / 114;
 
-	if (tmp > clockCount)
-	{
-		clockCount += 1;
-		LYCallback();
-	}
+       unsigned int tmp = clock / 114;
+
+       if (tmp > clockCount)
+       {
+               clockCount += 1;
+       }
 	if (clock >= 17556) // 144 line + V-BLANK
 	{
 		// TODO Interrupt

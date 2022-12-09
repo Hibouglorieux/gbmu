@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:49:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:39:02 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ public:
 	static int executeClock(int clockStop);
 	static void loadBootRom();
 	static unsigned char executeInstruction();
+	static void	updateLY();
 
 	static unsigned char readByte();
 	static unsigned short readShort();

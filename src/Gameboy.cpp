@@ -1,17 +1,8 @@
 #include "Gameboy.hpp"
 
 Mem Gameboy::gbMem = Mem();
-Clock Gameboy::gbClock = Clock([](){Gameboy::LYCallback();});
+Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
-
-void	Gameboy::LYCallback()
-{
-	mem[0xFF44]++;
-	if (mem[0xFF44] > 153) {
-		// 144 line + V-BLANK (10 lines)
-		mem[0xFF44] = 0;
-	}
-}
 
 Mem& Gameboy::getMem()
 {

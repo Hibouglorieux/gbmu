@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/09 00:10:30 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/09 01:52:17 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ bool Loop::loop()
 			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
 			Gameboy::setState(GBSTATE_H_BLANK);
 			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
+			Cpu::updateLY();
 			for (int j = 0 ; j < 160 ; j++) {
 				Screen::drawPoint(j, i, finalLine[j]);
 			}
