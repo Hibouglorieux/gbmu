@@ -26,6 +26,11 @@ std::array<int, NB_LINES> Ppu::doOneLine()
 {
 	int currentLine = (*mem)[LY];
 	auto pixelLine = getOamLine(currentLine);
+
+	for (auto tmp : pixelLine) {
+		if (tmp.bShouldBeDisplayed)
+			std::cout << tmp.bShouldBeDisplayed << '\n';
+	}
 	auto backgroundLine = getBackgroundLine(currentLine);
 	std::array<int, NB_LINES> finalLine = {};
 	for (int i = 0; i < NB_LINES; i++)
@@ -38,24 +43,23 @@ std::array<int, NB_LINES> Ppu::doOneLine()
 	return finalLine;
 }
 
-int	Ppu::getPaletteFromOAMFlags(unsigned char flags)
+int	Ppu::getPaletteFromOAMEntry(struct OAM_entry entry)
 {
 	//this is for DMG only !!
-	return ((flags & (1 << 4)) != 0) ? OBP1 : OBP0;
+	return (entry.getPaletteNumber() ? OBP1 : OBP0);
 	// TODO add gameboy flags (bit 	0-2 OPB0 to OBP7)
 }
 
-int Ppu::getSpriteAddressInVRam(int spriteAddrInOAM, unsigned char spriteHeight)
+int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight)
 {
    	// DMG ONLY !
 	// TODO add gameboy additionnal bank !
 	// which might not be 0x8000 (to see with Mem class)
 
-	int spriteNumber = (*mem)[spriteAddrInOAM + 2];
 	// bool bank1 = (*mem)[spriteAddr + 4] & (1 << 3);
 	// 0x8000 is start of OBJ Vram, multiplied by the number of the tile * size of sprite
 	// sprite is spriteHeight * 2 byte long, added
-	return 0x8000 + spriteNumber * spriteHeight * 2;
+	return 0x8000 + entry.tileIndex * spriteHeight * 2;
 }
 
 std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress)
@@ -142,11 +146,10 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 
 std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 {
-	std::vector<int> spritesFound;
+	std::vector<struct OAM_entry> spritesFound;
 	std::array<SpriteData, NB_LINES> spriteLine;
-	if (!BIT(M_LCDC, 1)) // if OBJ flag isnt enabled, return empty array
-	{
-		spriteLine.fill({0, false});
+	spriteLine.fill({0, false}); // Init first the sprite line
+	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
 	}
 	const int OAM_Addr = 0xFE00;
@@ -168,35 +171,32 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 				lastPixelDrawn > yLineToFetch
 				&& entry->posX > 0)
 		{
-			spritesFound.push_back(address);
+			spritesFound.push_back(*entry);
 			if (spritesFound.size() >= 10) // exit if we already found 10 sprites to render
 				break;
 		}
 	}
 
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
-	std::sort(spritesFound.begin(), spritesFound.end(), [](int a, int b){
-			return (*mem)[b + 1] >= (*mem)[a + 1] ? b : a;
+	std::sort(spritesFound.begin(), spritesFound.end(), [](struct OAM_entry a, struct OAM_entry b){
+			return a.posX < b.posX;
 			});
 
 	// 3 - copy sprite color into the whole line
-	for (int spriteAddr : spritesFound)
+	for (struct OAM_entry spriteEntry : spritesFound)
 	{
-		unsigned char posY = (*mem)[spriteAddr];
-		unsigned char posX = (*mem)[spriteAddr + 1];
-		unsigned char flags = (*mem)[spriteAddr + 3];
-		int paletteAddress = getPaletteFromOAMFlags(flags);
-		bool bIsAboveBG = !(flags & (1 << 7));
-		bool xFlipped = flags & (1 << 5);
-		bool yFlipped = flags & (1 << 6);
-		int tileAddress = getSpriteAddressInVRam(spriteAddr, spriteHeight);
+		
+		int paletteAddress = getPaletteFromOAMEntry(spriteEntry);
+		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
+		int tileAddress = getSpriteAddressInVRam(spriteEntry, spriteHeight);
 
-		unsigned char yOffset = yLineToFetch - (posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
-		if (yFlipped) // reverse offset if flipped
+		// TODO : le 16 doit etre remplace par spriteHeight * 2 ???
+		unsigned char yOffset = yLineToFetch - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
+		if (spriteEntry.getFlipY()) // reverse offset if flipped
 			yOffset = spriteHeight - 1 - yOffset;
 		// fetch the 8 pixel of the sprite in a tmp buffer
 		std::array<int, 8> spritePixels = getTilePixels(tileAddress, yOffset, paletteAddress);
-		if (xFlipped)
+		if (spriteEntry.getFlipX())
 		{
 			std::array<int, 8> tmpArray = spritePixels;
 			for (int i=0, j=7; i < 8; i++, j--)
@@ -204,7 +204,7 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 		}
 
 		// copy the sprite on the line
-		for (int x=posX, i=0; (x < posX + 8) && (x < 160); x++, i++)
+		for (int x=spriteEntry.posX, i=0; (x < spriteEntry.posX + 8) && (x < 160); x++, i++)
 			spriteLine[x] = {spritePixels[i], bIsAboveBG}; // might need to check color 0 
 														   // which is not winning over BG
 														   // is it after or before palette ?
