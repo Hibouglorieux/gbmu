@@ -100,8 +100,8 @@ public:
 	static void setMem(Mem& cpuMem);
 
 	static std::array<int, NB_LINES> doOneLine();
-	static std::array<SpriteData, NB_LINES> getOamLine(int yLineToFetch);
-	static std::array<int, NB_LINES> getBackgroundLine(int yLinetoFetch); // TODO add virtual clocks
+	static std::array<SpriteData, NB_LINES> getOamLine();
+	static std::array<int, NB_LINES> getBackgroundLine(); // TODO add virtual clocks
 	static int getColor(unsigned char byteColorCode, int paletteAddress);
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);

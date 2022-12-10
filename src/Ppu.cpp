@@ -17,19 +17,18 @@
 
 std::array<int, NB_LINES> Ppu::doOneLine()
 {
-	int currentLine = mem[LY];
-	auto pixelLine = getOamLine(currentLine);
+	auto pixelLine = getOamLine();
 
-	auto backgroundLine = getBackgroundLine(currentLine);
+	auto backgroundLine = getBackgroundLine();
 
 
 	std::array<int, NB_LINES> finalLine = {0};
 	for (int i = 0; i < NB_LINES; i++)
 	{
-		if (pixelLine[i].bShouldBeDisplayed) {
+		if (pixelLine[i].bShouldBeDisplayed && pixelLine[i].color) {
 			finalLine[i] = pixelLine[i].color;
 		}
-		else {
+		else if (BIT(M_LCDC, 0)) {
 			finalLine[i] = backgroundLine[i];
 		}
 	}
@@ -80,7 +79,7 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 	return tilePixels;
 }
 
-std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
+std::array<int, NB_LINES> Ppu::getBackgroundLine()
 {
 	std::array<int, NB_LINES> backgroundLine;
 	bool bWindowEnabled = BIT(M_LCDC, 5);
@@ -93,11 +92,11 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 		std::array<int, 8> tilePixels;
 		if (bDrawWindow)
 		{
-			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8, yLineToFetch - M_WY);// should not underflow/panic because of windowDraw bool
+			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8, M_LY - M_WY);// should not underflow/panic because of windowDraw bool
 		}
 		else if (bBackgroundEnabled)
 		{
-			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, (yLineToFetch + M_SCY) / 8, (yLineToFetch + M_SCY) % 8);
+			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, (M_LY + M_SCY) / 8, (M_LY + M_SCY) % 8);
 			BGTileIt++;
 		}
 		for (int i = 0; i < 8; i++)
@@ -113,7 +112,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 			// make sure the window has to be rendered with its WX/WY
 			// make sure window is in on x axis,
 			// WX == 0x07 and WY == 0x00 means the window will be at the top left of the screen
-			if (bWindowEnabled && yLineToFetch >= M_WY && xPosInLine >= (M_WX - WX_OFFSET))
+			if (bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET))
 			{
 				bDrawWindow = true;
 				break;
@@ -137,7 +136,7 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 	return color;
 }
 
-std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
+std::array<SpriteData, NB_LINES> Ppu::getOamLine()
 {
 	std::vector<struct OAM_entry> spritesFound;
 	std::array<SpriteData, NB_LINES> spriteLine;
@@ -148,34 +147,27 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 	const int OAM_Addr = 0xFE00;
 	unsigned char spriteHeight = BIT(M_LCDC, 2) ? 16 : 8; // type of sprite from flag
 
+	struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr]);
 	// 1 - fetch the sprites needed for that line
 	for (int i = 0; i < MAX_SPRITES; i++)
 	{
-		int address = OAM_Addr + (i * sizeof(OAM_entry));	
-		struct OAM_entry *entry = (struct OAM_entry *)(&mem[address]);
-
-		unsigned char firstPixelDrawn = entry->posY - 16;
-		unsigned char lastPixelDrawn = entry->posY - 16 + spriteHeight;
-
 		// verify if the sprite should be rendered on this line
 		// if posX == 0 then sprite is totally off the screen.
 		// same goes for posY that starts at 0x10 (as it can be 16 height)
-		if (firstPixelDrawn <= yLineToFetch &&
-				lastPixelDrawn > yLineToFetch
+		if ((M_LY + 16 >= entry->posY && (M_LY + 16 < entry->posY + 8)) // TODO : change 8 to height
 				&& entry->posX > 0)
 		{
 			spritesFound.push_back(*entry);
 			if (spritesFound.size() >= 10) // exit if we already found 10 sprites to render
 				break;
 		}
+		entry++;
 	}
 
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::sort(spritesFound.begin(), spritesFound.end(), [](struct OAM_entry a, struct OAM_entry b){
-		if (a.posX != b.posX)
-			return a.posX > b.posX;
-		
+		return a.posX > b.posX;
 	});
 
 	// 3 - copy sprite color into the whole line
@@ -186,7 +178,7 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 		int tileAddress = getSpriteAddressInVRam(spriteEntry, spriteHeight);
 
 		// TODO : le 16 doit etre remplace par spriteHeight * 2 ???
-		unsigned char yOffset = yLineToFetch - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
+		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
 		if (spriteEntry.getFlipY()) // reverse offset if flipped
 			yOffset = spriteHeight - 1 - yOffset;
 		// fetch the 8 pixel of the sprite in a tmp buffer
@@ -199,8 +191,9 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 		}
 
 		// copy the sprite on the line
-		for (int x=spriteEntry.posX, i=0; (x < spriteEntry.posX + 8) && (x < 160); x++, i++)
-			spriteLine[x] = {spritePixels[i], bIsAboveBG}; // might need to check color 0 
+		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < 160); x++, i++)
+			if (x > 0)
+				spriteLine[x] = {spritePixels[i], bIsAboveBG}; // might need to check color 0 
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about 
@@ -216,11 +209,11 @@ std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned c
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	std::cout << "Avant : " << (int)xOffsetInMap << " et " << (int)yOffsetInMap << '\n';
-	yOffsetInMap %= 32;
-	xOffsetInMap %= 32;
+	// yOffsetInMap %= 32;
+	// xOffsetInMap %= 32;
 	std::cout << "Apres : " << (int)xOffsetInMap << " et " << (int)yOffsetInMap << "\n\n";
 
-    unsigned int addrInMap = BGMap + xOffsetInMap + yOffsetInMap;
+    unsigned int addrInMap = BGMap + xOffsetInMap + (yOffsetInMap * 32);
     int tileNumber = mem[addrInMap];
 	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles
 	// (which have this size)
