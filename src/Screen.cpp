@@ -81,7 +81,7 @@ void	Screen::drawBG()
 					drawPoint(x * (8 + 1) - 1, yOnWindow,
 							QUAD_COLOR, backgroundRenderer, scaleBG);
 
-				std::array<int, 8> backgroundLine = Ppu::getBackgroundTile(x, y, yy);
+				std::array<int, 8> backgroundLine = Ppu::getBackgroundTile(x, y)[yy];
 				for (int xx = 0; xx < 8; xx++)
 				{
 					int xOnWindow = x * (8 + 1) + xx;
@@ -101,7 +101,7 @@ void	Screen::drawVRam(void)
 		int tileAddress = 0x8000 + i * sizePerTile;
 		for (int y = 0; y < 8; y++)
 		{
-			std::array<int, 8> tileLine = Ppu::getTilePixels(tileAddress, y, 0xFF47);
+			std::array<int, 8> tileLine = Ppu::getTile(tileAddress, 0, 0xFF47)[y];
 			// mem[tileAddress];
 			int yOnWindow = (i / 16) * (8 + 1) + y;
 			for (int x = 0; x < 8; x++)

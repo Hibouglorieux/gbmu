@@ -84,11 +84,30 @@ struct OAM_entry {
 	unsigned char getPaletteNumber() {return BIT(attributes, 4);}
 	unsigned char getTileVramBank() {return BIT(attributes, 3);}
 	unsigned char getPaletteNumberCGB() {return (attributes & 0b111);}
+
+	friend bool operator==(const OAM_entry &a, const OAM_entry &b) {
+		return ((a.posX == b.posX) && (a.posY == b.posY) && (a.tileIndex == b.tileIndex) && (a.attributes == b.attributes));
+	}
 };
 
-struct Tile_data {
-	unsigned char data[2];
-};
+
+struct TilePixels {
+		std::array<std::array<int, 8>, 8> data;
+
+		std::array<int, 8> getLine(int y) { return data[y]; }
+		void flipX() {
+			for (int i = 0; i < 8; i++)
+				std::reverse(data[i].begin(), data[i].end());
+		}
+		void flipY() {
+			std::reverse(data.begin(), data.end());
+		}
+
+		std::array<int, 8> operator[](int y) { return getLine(y); }
+
+		TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
+		{}
+	};
 
 struct SpriteData {
 	int color;
@@ -106,10 +125,9 @@ public:
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
-	static std::array<int, 8> getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress);
+	static TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
 	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
-	static std::array<int, 8> getBackgroundTile(unsigned char xOffsetInMap,
-			unsigned char yOffsetInMap, unsigned char yOffsetInTile);
+	static TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:
