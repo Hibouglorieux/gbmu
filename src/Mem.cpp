@@ -30,13 +30,13 @@ Mem::Mem(int size)
 	memSize = size;
 }
 
-void Mem::write_u8(uint16_t addr, int value) {
-    mem[addr] = value;
-}
-
-int Mem::read_u8(int addr) {
-    return mem[addr];
-}
+//void Mem::write_u8(uint16_t addr, int value) {
+//    mem[addr] = value;
+//}
+//
+//int Mem::read_u8(int addr) {
+//    return mem[addr];
+//}
 
 Mem::Mem(std::string pathToRom)
 {

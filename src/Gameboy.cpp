@@ -40,15 +40,16 @@ bool Gameboy::run()
 
     Gameboy::quit = false;
     while (!Gameboy::quit) {
+        SDL_GetError();
 	/* Render clear */
 		Screen::clear();
 //		Gameboy::setState(GBSTATE_V_BLANK);
 //		Cpu::updateLY(10);
         cpu_cycle = Cpu::run();
+        Cpu::handle_timer(cpu_cycle);
 //		cycle = (Cpu::executeClock(1140 - cycle) - (1140 - cycle)); // V-BLANK first as LY=0x90 at start
 	    Ppu::run(cpu_cycle);
-        Cpu::handle_interrupts();
-        Cpu::handle_timer(cpu_cycle);
+        Cpu::handle_interrupts(cpu_cycle);
 		Screen::drawVRam();
 		Screen::drawBG();
 		/* Manage events */

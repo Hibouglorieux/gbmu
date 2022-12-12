@@ -47,9 +47,9 @@ public:
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
-    static void write_u8(uint16_t addr, int value);
+//    static void write_u8(uint16_t addr, int value);
 //    void write_u16(uint16_t addr, uint16_t value);
-    static int read_u8(int addr);
+//    static int read_u8(int addr);
 //    uint16_t read_u16(uint16_t addr);
 private:
 	unsigned char* internalArray;

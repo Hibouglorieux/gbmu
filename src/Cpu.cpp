@@ -22,6 +22,10 @@ bool Cpu::interrupts_master_enable = false;
 bool Cpu::interrupts_flag = false;
 bool Cpu::halted = false;
 
+uint32_t Cpu::divReg = 0;
+uint16_t Cpu::TimaCounter = 0;
+uint16_t Cpu::ClockSpeed = 0;
+
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
 unsigned char& Cpu::B = reinterpret_cast<unsigned char*>(registers)[3];
@@ -45,15 +49,15 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-    Mem::write_u8(LY, 0x90); //mem[0xFF44] = 0x90;
+    mem[LY] = 0x90; //mem[0xFF44] = 0x90;
 }
 
-bool  interrupt_halt(unsigned char opcode) {
+auto  interrupt_halt(unsigned char opcode) -> bool {
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
     }
     if (Cpu::halted) {
-        if (Cpu::interrupts_master_enable || (Mem::read_u8(EI) & (Mem::read_u8(IF)))) {
+        if (Cpu::interrupts_master_enable || (mem[EI] & (mem[IF]))) {
             Cpu::halted = false;
         } else {
             return false;
@@ -62,7 +66,40 @@ bool  interrupt_halt(unsigned char opcode) {
     return true;
 }
 
-std::pair<unsigned char, int> Cpu::executeInstruction()
+void Cpu::handle_timer(unsigned int cpu_cycle) {
+    uint32_t const prev_div = divReg;
+
+    divReg++;
+
+    bool timer_update = false;
+
+    switch(mem[TAC] & (0b11)) {
+        case 0b00:
+            timer_update = (prev_div & (1 << 9)) && (!(divReg & (1 << 9)));
+            break;
+        case 0b01:
+            timer_update = (prev_div & (1 << 3)) && (!(divReg & (1 << 3)));
+            break;
+        case 0b10:
+            timer_update = (prev_div & (1 << 5)) && (!(divReg & (1 << 5)));
+            break;
+        case 0b11:
+            timer_update = (prev_div & (1 << 7)) && (!(divReg & (1 << 7)));
+            break;
+    }
+
+    if (timer_update && mem[TAC] & (1 << 2)) {
+        TimaCounter++;
+
+        if (TimaCounter == 0xFF) {
+            TimaCounter = mem[TMA];
+            Cpu::request_interrupts(TIMER_INT_BIT);
+        }
+    }
+}
+
+
+auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 {
 	unsigned char opcode = readByte();
 	int clock = 0;
@@ -374,7 +411,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	}
 	clock = instruction();
 	g_clock += clock;
-	return std::pair<unsigned char, int>((int)opcode, clock);
+	return {(int)opcode, clock};
 }
 
 unsigned int Cpu::run() {
@@ -390,47 +427,47 @@ unsigned int Cpu::run() {
 
 void	Cpu::updateLY(int iter)
 {
-    int ly_data = Mem::read_u8(LY);
-    Mem::write_u8(LY, ly_data + iter);
-    ly_data = Mem::read_u8(LY);
+    int ly_data = mem[LY];
+    mem[LY] = ly_data + iter;
+    ly_data = mem[LY];
 	if (ly_data > 153) {
 		// 144 line + V-BLANK (10 lines)
-        Mem::write_u8(LY, ly_data + iter);
+        mem[LY] =  ly_data + iter;
     //TODO TEST shall i raise INT_IF bit 2 for INT ?
 	}
 }
 
-void do_interrupts(unsigned int addr, unsigned char bit)
+void do_interrupts(unsigned int addr, unsigned char bit, unsigned int cycle)
 {
-    Mem::write_u8(--Cpu::SP, Cpu::PC >> 8);
-    Mem::write_u8(--Cpu::SP, Cpu::PC & 0xFF);
+    mem[--Cpu::SP] = Cpu::PC >> 8;
+    mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
-    int if_data = Mem::read_u8(IF);
-    Mem::write_u8(IF, if_data & ~bit);
+    mem[IF] &= ~bit;
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
+    cycle += 20;
 }
 
 void Cpu::request_interrupts(int interrupt) {
-    Mem::write_u8(IF, interrupt);
+    mem[IF] = interrupt;
 }
 
-void Cpu::handle_interrupts() {
+void Cpu::handle_interrupts(unsigned int cycle) {
 
     if (Cpu::interrupts_master_enable) {
-        int m_ei = Mem::read_u8(EI);
-        int m_if = Mem::read_u8(IF);
+        int m_ei = mem[EI];
+        int m_if = mem[IF];
         if (m_ei && m_if) {
                 if ((m_ei & (1)) && (m_if & (1))) {
-                        do_interrupts(IT_VBLANK,  VBLANK_INT_BIT);
+                        do_interrupts(IT_VBLANK,  VBLANK_INT_BIT, cycle);
                 } else if ((m_ei & (1 << 1)) && (m_if & STAT_INT_BIT)) {
-                        do_interrupts(IT_LCD_STAT, STAT_INT_BIT);
+                        do_interrupts(IT_LCD_STAT, STAT_INT_BIT, cycle);
                 } else if ((m_ei & (1 << 2)) && (m_if & TIMER_INT_BIT)) {
-                        do_interrupts(IT_TIMER, TIMER_INT_BIT);
+                        do_interrupts(IT_TIMER, TIMER_INT_BIT, cycle);
                 } else if ((m_ei & (1 << 3)) && (m_if & SERIAL_INT_BIT)) {
-                        do_interrupts(IT_SERIAL, SERIAL_INT_BIT);
+                        do_interrupts(IT_SERIAL, SERIAL_INT_BIT, cycle);
                 } else if ((m_ei & (1 << 4)) && (m_if & JOYPAD_INT_BIT)) {
-                        do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT);
+                        do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT, cycle);
                 } else {
                     std::cout << "m_ei : " << std::hex << (short)m_ei << " M_IF " << std::hex << (short)m_if << std::endl;
 	                Cpu::interrupts_master_enable = false;
