@@ -11,10 +11,10 @@
 
 #include <iostream>
 #include "Screen.hpp"
+#include "define.hpp"
 #include "Cpu.hpp"
 #include "Ppu.hpp"
 
-#define QUAD_COLOR 0b11
 
 SDL_Window* Screen::window = NULL;
 SDL_Renderer* Screen::renderer = NULL;

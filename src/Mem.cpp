@@ -12,10 +12,9 @@
 
 #include "Mem.hpp"
 #include "Cpu.hpp"
+#include "define.hpp"
 #include <fstream>
 #include <iostream>
-
-#define MEM_SIZE (0xFFFF + 1)
 
 Mem::Mem()
 {

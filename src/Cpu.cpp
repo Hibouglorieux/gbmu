@@ -12,6 +12,7 @@
 
 #include "Cpu.hpp"
 #include <functional>
+#include "define.hpp"
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
@@ -410,11 +411,6 @@ void do_interrupts(unsigned int addr, unsigned char bit)
     Cpu::interrupts_flag = false;
 }
 
-#define IT_VBLANK 0x40
-#define IT_LCD_STAT 0x48
-#define IT_TIMER 0x50
-#define IT_SERIAL 0x58
-#define IT_JOYPAD 0x60
 
 void Cpu::handle_interrupts() {
 

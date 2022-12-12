@@ -12,6 +12,7 @@
 
 #include "Clock.hpp"
 #include "Gameboy.hpp"
+#include "define.hpp"
 
 bool Clock::cgbMode = false;
 int Clock::timaClock = 0;
@@ -33,10 +34,7 @@ Clock::~Clock()
 {
 }
 
-#define M_DIV	mem[0xFF04]
-#define M_TIMA	mem[0xFF05]
-#define M_TMA	mem[0xFF06]
-#define M_TAC	mem[0xFF07]
+
 
 int&	Clock::operator+=(int addValue)
 {
