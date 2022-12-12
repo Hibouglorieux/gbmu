@@ -21,9 +21,9 @@ int Clock::divClock = 0;
 Clock::Clock()
 {
 	/* Init DIV at 0 */
-	mem[0xFF04] = 0;
+	Mem::write_u8(DIV, 0); //   mem[DIV] = 0;
 	/* Init TIMA at 0 */
-	mem[0xFF05] = 0;
+	Mem::write_u8(DIV, 0); //   mem[TIMA] = 0;
 	clock = 0;
 
 	// TODO LMA whats this ?
@@ -44,29 +44,31 @@ int&	Clock::operator+=(int addValue)
 
 	/* Handle DIV */
 	divClock += addValue;
-	M_DIV += divClock / 256;
+    Mem::write_u8(DIV, Mem::read_u8(DIV) + divClock / 256); //   mem[DIV] = 0;
 	divClock %= 256;
 
 	/* Handle TIMA */
-	if ((M_TAC & (1 << 2)) != 0) {
+    uint8_t tac = Mem::read_u8(TAC);
+	if ((tac & (1 << 2)) != 0) {
 		/* Calculate TIMA frequency divider TODO CGB Mode is not handled */
-		if ((M_TAC & 0x3) == 1) {
+		if ((tac & 0x3) == 1) {
 			timaFreqDivider = 16;
-		} else if ((M_TAC & 0x3) == 2) {
+		} else if ((tac & 0x3) == 2) {
 			timaFreqDivider = 64;
-		} else if ((M_TAC & 0x3) == 3) {
+		} else if ((tac & 0x3) == 3) {
 			timaFreqDivider = 256;
 		}
 		timaClock += addValue;
-		if ((int)M_TIMA + timaClock / timaFreqDivider > 0xFF) {
+        int tima = (Mem::read_u8(TIMA));
+		if (tima + timaClock / timaFreqDivider > 0xFF) {
 			/* Request Interrupt */
-			mem[0xFF0F] |= (1 << 2);
+			Cpu:: request_interrupts(TIMER_INT_BIT); // mem[0xFF0F] |= (1 << 2); // TODO request interrupts fct
 			/* Reset TIMA to TMA and add the rest */
-			M_TIMA = (int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider));
+            Mem::write_u8(TIMA, Mem::read_u8(TMA) + (256 -  Mem::read_u8(TIMA) + timaClock / timaFreqDivider)); //			M_TIMA = (int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider));
 			timaClock %= timaFreqDivider;
 		}
 		else {
-			M_TIMA += timaClock / timaFreqDivider;
+            Mem::write_u8(TIMA, tima + timaClock / timaFreqDivider); //			M_TIMA += timaClock / timaFreqDivider;
 			timaClock %= timaFreqDivider;
 		}
 	}

@@ -1,12 +1,13 @@
+#include "Mem.hpp"
 /* Gameboy */
 #define g_clock (Gameboy::getClock())
 //#define mem Gameboy::getMem()
 
 /* TIMER*/
-#define M_DIV	mem[0xFF04]
-#define M_TIMA	mem[0xFF05]
-#define M_TMA	mem[0xFF06]
-#define M_TAC	mem[0xFF07]
+#define DIV	0xFF04
+#define TIMA 0xFF05
+#define TMA	0xFF06
+#define TAC	0xFF07
 
  /* Interrupts */
 
@@ -15,10 +16,14 @@
 #define IT_TIMER 0x50
 #define IT_SERIAL 0x58
 #define IT_JOYPAD 0x60
-
+#define VBLANK_INT_BIT 1
+#define STAT_INT_BIT 1 << 1
+#define TIMER_INT_BIT 1 << 2
+#define SERIAL_INT_BIT 1 << 3
+#define JOYPAD_INT_BIT 1 << 4
 /* Memory */
 
-#define MEM_SIZE (0xFFFF + 1)
+#define MEM_SIZE (0xFFFF+ 1)
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
 
 /*Screen */
@@ -53,7 +58,7 @@
 // 2 : OBJ size (0 is 8x8 | 1 is 8x16) (obj == sprite)
 // 1: OBJ enable (0 off, 1 on)
 // 0: Background Enable (0 off, 1 on) (always true in CGB)
-#define LCDC (0xFF40)
+#define LCDC 0xFF40
 
 
 
@@ -78,20 +83,20 @@
 // 3: Mode 0 H-Blank Interrupt
 // 2: LYC = LY Flag
 // 1: Mode 00 => ram access, 10 OBJ search, 01 V-Blank, 11 LCD transfer
-#define LCDC_STATUS (0xFF41)
-#define SCY (0xFF42) // scroll Y // LCD viewport offset
-#define SCX (0xFF43) // scroll X // LCD viewport offset
-#define LY (0xFF44) // LCDC Y coordinate // (which line is currently rendered)
-#define LYC (0xFF45) //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
-#define DMA (0xFF46) // DMA transfer and start
-#define BGP (0xFF47) // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
-#define OBP0 (0xFF48) // Object/Sprite palette 0
-#define OBP1 (0xFF49) // Object/Sprite palette 1
-#define WY (0xFF4A) // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
-#define WX (0xFF4B) // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
+#define LCDC_STATUS 0xFF41
+#define SCY 0xFF42 // scroll Y // LCD viewport offset
+#define SCX 0xFF43 // scroll X // LCD viewport offset
+#define LY 0xFF44 // LCDC Y coordinate // (which line is currently rendered)
+#define LYC 0xFF45 //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
+#define DMA 0xFF46 // DMA transfer and start
+#define BGP 0xFF47 // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
+#define OBP0 0xFF48 // Object/Sprite palette 0
+#define OBP1 0xFF49 // Object/Sprite palette 1
+#define WY 0xFF4 // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
+#define WX 0xFF4 // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
 #define WX_OFFSET (7)
-#define LCD_Y (0xFB00) //Top edge when == 10
-#define VBK (0xFF4F) // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
+#define LCD_Y 0xFB00 //Top edge when == 10
+#define VBK 0xFF4 // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
 
 #define NB_LINES 160
 
@@ -110,6 +115,6 @@
 #define M_VBK (mem[VBK])
 
 /* CPU */
-#define PHL (mem[HL])
-#define M_EI (mem[0xFFFF])
-#define M_IF (mem[0xFF0F])
+#define PHL (mem[HL])//Mem::read_u8(Cpu::HL)
+#define EI 0xFFFF
+#define IF 0xFF0F

@@ -51,7 +51,7 @@ public:
 	static bool interrupts_flag;
 	static bool halted;
 	static void handle_interrupts();
-
+    static void request_interrupts(int interrupt);
 
 	static unsigned short PC;
 	static unsigned short SP;
