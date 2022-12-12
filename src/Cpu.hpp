@@ -46,6 +46,8 @@ public:
 	static const unsigned char& getData(int i);
 	static void setData(int i);
 
+    static void handle_timer(unsigned int cycle);
+
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;

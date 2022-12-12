@@ -43,11 +43,12 @@ bool Gameboy::run()
 	/* Render clear */
 		Screen::clear();
 //		Gameboy::setState(GBSTATE_V_BLANK);
-		Cpu::updateLY(10);
+//		Cpu::updateLY(10);
         cpu_cycle = Cpu::run();
 //		cycle = (Cpu::executeClock(1140 - cycle) - (1140 - cycle)); // V-BLANK first as LY=0x90 at start
 	    Ppu::run(cpu_cycle);
         Cpu::handle_interrupts();
+        Cpu::handle_timer(cpu_cycle);
 		Screen::drawVRam();
 		Screen::drawBG();
 		/* Manage events */
@@ -61,12 +62,15 @@ bool Gameboy::run()
     return true ; //no need to return ??
 }
 
+
+
 //void Gameboy::setState(int newState)
 //{
 //	currentState = newState;
 //	mem[0xFF41] &= ~GBSTATE_MSK;
 //	mem[0xFF41] |= newState;
 //}
+
 
 //int Gameboy::getState()
 //{
