@@ -14,8 +14,8 @@
 #ifndef MEM_CLASS_H
 # define MEM_CLASS_H
 #include <string>
+#include "define.hpp"
 
-# define BIT(val, bit) ((val & (1 << bit)) >> bit)
 
 class Mem;
 

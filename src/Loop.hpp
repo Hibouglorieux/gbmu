@@ -13,11 +13,7 @@
 #ifndef LOOP_CLASS_H
 # define LOOP_CLASS_H
 
-#define GBSTATE_MSK 0x03
-#define GBSTATE_H_BLANK 0
-#define GBSTATE_V_BLANK 1
-#define GBSTATE_OAM_SEARCH 2
-#define GBSTATE_PX_TRANSFERT 3
+#include "define.hpp"
 
 class Loop {
 public:

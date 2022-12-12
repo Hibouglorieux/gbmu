@@ -17,13 +17,10 @@
 #include "Gameboy.hpp"
 #include "Utility.hpp"
 #include <string>
+#include "define.hpp"
 #include <iostream>
 #include <iomanip> // setw
 #include <utility>
-
-#define PHL (mem[HL])
-#define M_EI (mem[0xFFFF])
-#define M_IF (mem[0xFF0F])
 
 class Cpu {
 public:
