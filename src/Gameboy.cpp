@@ -1,8 +1,14 @@
 #include "Gameboy.hpp"
 
+#include <chrono>
+#include <thread>
+#include <iostream>
+
+
 Mem Gameboy::gbMem = Mem();
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
+bool Gameboy::quit = false;
 
 Mem& Gameboy::getMem()
 {
@@ -28,7 +34,26 @@ bool Gameboy::loadRom(std::string pathToFile)
 
 bool Gameboy::run()
 {
-	return (Loop::loop());
+    int cycle = 0;
+
+    Gameboy::quit = false;
+    while (!Gameboy::quit) {
+	/* Render clear */
+		Screen::clear();
+		Gameboy::setState(GBSTATE_V_BLANK);
+		Cpu::updateLY(10);
+		cycle = (Cpu::executeClock(1140 - cycle) - (1140 - cycle)); // V-BLANK first as LY=0x90 at start
+	    Ppu::run(cycle);
+		Screen::drawVRam();
+		Screen::drawBG();
+		/* Manage events */
+		Gameboy::pollEvent();
+		/* Render present */
+		Screen::update();
+		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+    }
+    return true ; //no need to return ??
 }
 
 void Gameboy::setState(int newState)

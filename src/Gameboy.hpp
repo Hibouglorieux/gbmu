@@ -18,7 +18,6 @@
 #include "Cpu.hpp"
 #include "define.hpp"
 #include "Ppu.hpp"
-#include "Loop.hpp"
 #include "Screen.hpp"
 #include "Joypad.hpp"
 
@@ -26,6 +25,7 @@
 
 class Gameboy {
 public:
+    static bool quit;
 	static Mem gbMem;
 	static Clock gbClock;
 	static void init();
