@@ -24,8 +24,8 @@
 
 class Cpu {
 public:
+    static unsigned int run();
 
-	static int executeClock(int clockStop);
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
@@ -42,7 +42,6 @@ public:
 	static bool getSubtractFlag();
 	static bool getHalfCarryFlag();
 	static bool getCarryFlag();
-
 
 	static const unsigned char& getData(int i);
 	static void setData(int i);

@@ -22,7 +22,6 @@ int main(int argc, char** argv)
 {
 	(void) argc;
 	(void) argv;
-    new Gameboy;
 
 	if (argc == 1 || argc == 3)
 	{

@@ -377,18 +377,15 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	return std::pair<unsigned char, int>((int)opcode, clock);
 }
 
-int	Cpu::executeClock(int clockStop)
-{
-	int countClock = 0;
-	std::pair<unsigned char, int>r;
+unsigned int Cpu::run() {
+	std::pair<unsigned char, unsigned int>r;
 
-	while (countClock < clockStop)
-    	{
-        	Cpu::handle_interrupts();
-        	r = executeInstruction();
-		countClock += r.second;
-    	}
-	return (countClock);
+//	while (cpu_cycle < MAX_CPU_CYCLE)
+//    	{
+     r = executeInstruction();
+//		cpu_cycle += r.second;
+//    	}
+	return (r.second);
 }
 
 void	Cpu::updateLY(int iter)
