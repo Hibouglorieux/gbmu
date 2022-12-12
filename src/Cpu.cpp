@@ -427,12 +427,10 @@ unsigned int Cpu::run() {
 
 void	Cpu::updateLY(int iter)
 {
-    int ly_data = mem[LY];
-    mem[LY] = ly_data + iter;
-    ly_data = mem[LY];
-	if (ly_data > 153) {
+    mem[LY] += + iter;
+	if (mem[LY] > 153) {
 		// 144 line + V-BLANK (10 lines)
-        mem[LY] =  ly_data + iter;
+        mem[LY] = 0;
     //TODO TEST shall i raise INT_IF bit 2 for INT ?
 	}
 }
