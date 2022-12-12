@@ -99,6 +99,7 @@
 #define VBK 0xFF4 // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
 
 #define NB_LINES 160
+#define NB_COLUMN 144
 
 #define M_LCDC (mem[LCDC])
 #define M_LCDC_STATUS (mem[LCDC_STATUS])

@@ -15,6 +15,25 @@
 #include <algorithm>
 #include <iostream>
 
+void Ppu::run(int cycle) {
+    std::array<int, NB_LINES> finalLine{};
+
+    for (int i = 0 ; i < NB_COLUMN ; i++) {
+			finalLine = Ppu::doOneLine();
+			Gameboy::setState(GBSTATE_OAM_SEARCH);
+			cycle = (Cpu::executeClock(20 - cycle) - (20 - cycle));
+			Gameboy::setState(GBSTATE_PX_TRANSFERT);
+			cycle = (Cpu::executeClock(43 - cycle) - (43 - cycle));
+			Gameboy::setState(GBSTATE_H_BLANK);
+			cycle = (Cpu::executeClock(51 - cycle) - (51 - cycle));
+			Cpu::updateLY(1);
+			/* Drawing time */
+			for (int j = 0 ; j < NB_LINES ; j++) {
+				Screen::drawPoint(j, i, finalLine[j]);
+			}
+		}
+}
+
 std::array<int, NB_LINES> Ppu::doOneLine()
 {
 	int currentLine = mem[LY];
