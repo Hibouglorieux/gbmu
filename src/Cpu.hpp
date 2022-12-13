@@ -17,6 +17,7 @@
 #include "Gameboy.hpp"
 #include "Utility.hpp"
 #include <string>
+#include <deque>
 #include <iostream>
 #include <iomanip> // setw
 #include <utility>
@@ -27,6 +28,11 @@
 
 class Cpu {
 public:
+
+	static std::deque<int> FIFO_stack(int opcode);
+	static void printFIFO(std::deque<int> fifo);
+	static std::deque<int> fifo;
+
 
 	static int executeClock(int clockStop);
 	static void loadBootRom();

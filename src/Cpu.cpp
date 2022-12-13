@@ -13,6 +13,9 @@
 #include "Cpu.hpp"
 #include <functional>
 
+std::deque<int> Cpu::fifo;
+
+
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
 unsigned short Cpu::registers[4] = {};
@@ -61,11 +64,27 @@ bool  interrupt_halt(unsigned char opcode) {
     return true;
 }
 
+void Cpu::printFIFO(std::deque<int> fifo)
+{
+	for (int i : fifo)
+	{
+		std::cout << "OPCODE :" << i << std::endl;
+	}
+}
+
+std::deque<int> Cpu::FIFO_stack(int opcode){
+	std::deque<int> fifo;
+
+	fifo.push_front(opcode);
+	return fifo;
+}
+
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
 	unsigned char opcode = readByte();
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
+   	fifo = FIFO_stack(opcode);
     if (!interrupt_halt(opcode)) {
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }

@@ -54,6 +54,7 @@ bool Loop::loop()
 		Screen::update();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+		Cpu::printFIFO(Cpu::fifo);	
 	}
 	return (true);
 }
