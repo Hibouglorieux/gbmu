@@ -24,7 +24,7 @@
 
 class Cpu {
 public:
-    static unsigned int run();
+    static void run();
 
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
@@ -46,7 +46,7 @@ public:
 	static const unsigned char& getData(int i);
 	static void setData(int i);
 
-    static void handle_timer(unsigned int cycle);
+    static void handle_timer();
     static uint32_t divReg;
     static uint16_t TimaCounter;
     static uint16_t ClockSpeed;
@@ -55,7 +55,7 @@ public:
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;
-	static void handle_interrupts(unsigned int  cycle);
+	static void handle_interrupts();
     static void request_interrupts(int interrupt);
 
 	static unsigned short PC;

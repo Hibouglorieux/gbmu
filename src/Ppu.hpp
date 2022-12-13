@@ -40,7 +40,7 @@ struct SpriteData {
 
 class Ppu {
 public:
-    static void run(unsigned int cycle);
+    static void run();
 	static void setMem(Mem& cpuMem);
 
 	static std::array<int, NB_LINES> doOneLine();

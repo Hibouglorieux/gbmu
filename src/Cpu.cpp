@@ -66,7 +66,7 @@ auto  interrupt_halt(unsigned char opcode) -> bool {
     return true;
 }
 
-void Cpu::handle_timer(unsigned int cpu_cycle) {
+void Cpu::handle_timer() {
     uint32_t const prev_div = divReg;
 
     divReg++;
@@ -414,7 +414,7 @@ auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 	return {(int)opcode, clock};
 }
 
-unsigned int Cpu::run() {
+void Cpu::run() {
 	std::pair<unsigned char, unsigned int>r;
 
 //	while (cpu_cycle < MAX_CPU_CYCLE)
@@ -422,7 +422,7 @@ unsigned int Cpu::run() {
      r = executeInstruction();
 //		cpu_cycle += r.second;
 //    	}
-	return (r.second);
+    Gameboy::gbClock += r.second;
 }
 
 void	Cpu::updateLY(int iter)
@@ -435,7 +435,7 @@ void	Cpu::updateLY(int iter)
 	}
 }
 
-void do_interrupts(unsigned int addr, unsigned char bit, unsigned int cycle)
+void do_interrupts(unsigned int addr, unsigned char bit)
 {
     mem[--Cpu::SP] = Cpu::PC >> 8;
     mem[--Cpu::SP] = Cpu::PC & 0xFF;
@@ -443,29 +443,30 @@ void do_interrupts(unsigned int addr, unsigned char bit, unsigned int cycle)
     mem[IF] &= ~bit;
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
-    cycle += 20;
+    Cpu::halted = false;
+    Gameboy::gbClock += 20;
 }
 
 void Cpu::request_interrupts(int interrupt) {
     mem[IF] = interrupt;
 }
 
-void Cpu::handle_interrupts(unsigned int cycle) {
+void Cpu::handle_interrupts() {
 
     if (Cpu::interrupts_master_enable) {
         int m_ei = mem[EI];
         int m_if = mem[IF];
         if (m_ei && m_if) {
                 if ((m_ei & (1)) && (m_if & (1))) {
-                        do_interrupts(IT_VBLANK,  VBLANK_INT_BIT, cycle);
+                        do_interrupts(IT_VBLANK,  VBLANK_INT_BIT);
                 } else if ((m_ei & (1 << 1)) && (m_if & STAT_INT_BIT)) {
-                        do_interrupts(IT_LCD_STAT, STAT_INT_BIT, cycle);
+                        do_interrupts(IT_LCD_STAT, STAT_INT_BIT);
                 } else if ((m_ei & (1 << 2)) && (m_if & TIMER_INT_BIT)) {
-                        do_interrupts(IT_TIMER, TIMER_INT_BIT, cycle);
+                        do_interrupts(IT_TIMER, TIMER_INT_BIT);
                 } else if ((m_ei & (1 << 3)) && (m_if & SERIAL_INT_BIT)) {
-                        do_interrupts(IT_SERIAL, SERIAL_INT_BIT, cycle);
+                        do_interrupts(IT_SERIAL, SERIAL_INT_BIT);
                 } else if ((m_ei & (1 << 4)) && (m_if & JOYPAD_INT_BIT)) {
-                        do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT, cycle);
+                        do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT);
                 } else {
                     std::cout << "m_ei : " << std::hex << (short)m_ei << " M_IF " << std::hex << (short)m_if << std::endl;
 	                Cpu::interrupts_master_enable = false;
