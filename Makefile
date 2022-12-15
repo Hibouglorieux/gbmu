@@ -112,6 +112,7 @@ HDR					+=	Mem.hpp
 HDR					+=	Ppu.hpp
 HDR					+=	Screen.hpp
 HDR					+=	Utility.hpp
+HDR					+=	Utility.tpp
 
 ###############################################################################
 #                                                                             #
@@ -119,9 +120,11 @@ HDR					+=	Utility.hpp
 
 # Objects
 
-OBJ					=	$(patsubst $(S_PATH)%.c, $(O_PATH)%.o, $(SRC))
+OBJ					=	$(patsubst $(S_PATH)%.cpp, $(O_PATH)%.o, $(SRC))
 LIB					=	$(LNAME)
 vpath %.h $(H_PATH)
+vpath %.hpp $(H_PATH)
+vpath %.tpp $(H_PATH)
 
 # Variables
 
@@ -155,11 +158,10 @@ GCSUC				=	echo "$(G_C)=====>     SUCCESS$(RESET_C)"
 CLSUC				=	echo "$(R_C)=====>     DONE$(RESET_C)"
 NORMD				=	echo "$(G_C)=====>     DONE$(RESET_C)"
 
-.PHONY: all norme clean fclean re test
+.PHONY: all norme clean fclean re
 
 # Rules
 make:
-
 	$(MAKE) --no-print-directory all
 
 all:  $(BUILD) $(NAME)
@@ -179,7 +181,7 @@ $(NAME): $(OBJ) $(TEST)
 	echo "---\nCFLAGS - =$(B_C) $(CFLAGS)$(RESET_C)\n---"
 	cp $(NAME) $(B_PATH)$(NAME)
 
-$(OBJ): $(O_PATH)%.o: $(S_PATH)%.c $(HDR)
+$(OBJ): $(O_PATH)%.o: $(S_PATH)%.cpp $(HDR)
 	$(CMPLC) $< -o $@
 	$(ECHO) $(GCFIL) $<
 
@@ -192,7 +194,8 @@ clean:
 	$(CLSUC)
 
 fclean:
-	for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
+
+	clear ; for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	for i in $(PATHS); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	$(RM_RF) $(NAME)
 	$(ECHO) $(RMSHW) $(NAME)
