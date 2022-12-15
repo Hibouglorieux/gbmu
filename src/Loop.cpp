@@ -15,6 +15,7 @@
 #include "../includes/Ppu.hpp"
 //#include "../includes/Screen.hpp"
 //#include "../includes/Joypad.hpp"
+#include "../includes/Debugger.hpp"
 
 #include <chrono>
 #include <thread>
@@ -52,6 +53,7 @@ bool Loop::loop()
 		Gameboy::pollEvent();
 		/* Render present */
 		Screen::update();
+        Debugger::start();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 		Cpu::printFIFO(Cpu::fifo);	
