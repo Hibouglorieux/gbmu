@@ -54,29 +54,10 @@ int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeig
 	return 0x8000 + entry.tileIndex * spriteHeight * 2;
 }
 
-TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddress)
+struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddress)
 {
 	// fetch the 64 pixels of a tile 
-
-	std::array<std::array<int, 8>, 8> pixels;
-	for (int y = 0; y < 8; y++) {
-
-		unsigned char byte1 = mem[tileAddress + (tileIndex * 2 * 8) + (y * 2)];
-		unsigned char byte2 = mem[tileAddress + (tileIndex * 2 * 8) + (y * 2) + 1];
-		if (tileAddress >= 0x9800 || tileAddress < 0x8000)
-			std::cerr << "access vram not at vram: "<< tileAddress << std::endl;
-
-		for (int x = 0; x < 8; x++)
-		{
-			// get color based on the merge of the two bytes with the same bit
-			// 0b10001000 0b00010010 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x00
-			bool bit1 = byte1 & (1 << x);
-			bool bit2 = byte2 & (1 << x);
-			unsigned char byteColorCode = (bit1 << 1) | (bit2);
-			pixels[y][7 - x] = getColor(byteColorCode, paletteAddress);
-		}
-	}
-	return TilePixels(pixels);
+	return TilePixels(tileAddress + (tileIndex * 2 * 8), paletteAddress);
 }
 
 std::array<int, NB_LINES> Ppu::getBackgroundLine()
@@ -84,9 +65,16 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 	std::array<int, NB_LINES> backgroundLine;
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
-	int BGTileIt = 0;
 	int xPosInLine = 0;
 	bool bDrawWindow = bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET);
+
+	// unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
+	// for (int i = 0; i < 20 * 18; i++) {
+	// 	if (i && !(i%20))
+	// 		std::cout << "\n";
+	// 	std::cout << std::dec << (int)mem[BGMap + i] << "\t";
+	// }
+	// std::cout << "\n\n";
 	while (xPosInLine < 160)
 	{
 		std::array<int, 8> tilePixels;
@@ -96,8 +84,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 		}
 		else if (bBackgroundEnabled)
 		{
-			tilePixels = getBackgroundTile(BGTileIt + M_SCX / 8, (M_LY + M_SCY) / 8)[(M_LY + M_SCY) % 8];
-			BGTileIt++;
+			tilePixels = getBackgroundTile((xPosInLine / 8) + M_SCX / 8, (M_LY + M_SCY) / 8)[(M_LY + M_SCY) % 8];
 		}
 		for (int i = 0; i < 8; i++)
 		{
@@ -120,20 +107,6 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 		}
 	}
 	return backgroundLine;
-}
-
-int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
-{
-	//TODO, especially for CGB and to convert with SDL color !
-	//
-	// GB color are encoded in 4 bits : 00, 01, 10 , 11
-	// 4 shade
-	// SDL wrapper only need to wrap that for now	
-	// TODO CGB encode 5bits RGB for color in 2 bytes.
-	unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
-	int color = mem[paletteAddress] & (0b11 << bitPosInPalette);
-	color >>= bitPosInPalette;
-	return color;
 }
 
 std::array<SpriteData, NB_LINES> Ppu::getOamLine()
@@ -185,7 +158,7 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine()
 		int paletteAddress = getPaletteFromOAMEntry(spriteEntry);
 		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
 		int tileAddress = getSpriteAddressInVRam(spriteEntry, spriteHeight);
-		TilePixels spritePixels = getTile(tileAddress, 0, paletteAddress);
+		struct TilePixels spritePixels = getTile(tileAddress, 0, paletteAddress);
 
 		// TODO : le 16 doit etre remplace par spriteHeight * 2 ???
 		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
@@ -207,10 +180,13 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine()
 	return spriteLine;
 }
 
-TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap)
+struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap)
 {
     unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
+
+	if (BIT(M_LCDC, 4) == 0)
+		std::cout << "BGDataAddress : " << (int)BIT(M_LCDC, 4) << "\n";
 
 	// yOffsetInMap %= 32;
 	// xOffsetInMap %= 32;
@@ -219,7 +195,7 @@ TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOff
     int tileNumber = mem[addrInMap];
 	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles
 	// (which have this size)
-    return getTile(BGDataAddress, tileNumber, OBP0);
+    return getTile(BGDataAddress, tileNumber, BGP);
 }
 
 std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)

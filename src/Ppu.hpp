@@ -17,6 +17,8 @@
 #ifndef PPU_CLASS_H
 # define PPU_CLASS_H
 
+#include "TilePixels.hpp"
+
 //VRAM:
 //starts at 8000 to 97FF
 //0x8000 is always sprites, background can be either at 0x8000 or 0x8800
@@ -90,25 +92,6 @@ struct OAM_entry {
 	}
 };
 
-
-struct TilePixels {
-		std::array<std::array<int, 8>, 8> data;
-
-		std::array<int, 8> getLine(int y) { return data[y]; }
-		void flipX() {
-			for (int i = 0; i < 8; i++)
-				std::reverse(data[i].begin(), data[i].end());
-		}
-		void flipY() {
-			std::reverse(data.begin(), data.end());
-		}
-
-		std::array<int, 8> operator[](int y) { return getLine(y); }
-
-		TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
-		{}
-	};
-
 struct SpriteData {
 	int color;
 	bool bShouldBeDisplayed;
@@ -121,13 +104,12 @@ public:
 	static std::array<int, NB_LINES> doOneLine();
 	static std::array<SpriteData, NB_LINES> getOamLine();
 	static std::array<int, NB_LINES> getBackgroundLine(); // TODO add virtual clocks
-	static int getColor(unsigned char byteColorCode, int paletteAddress);
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
-	static TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
+	static struct TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
 	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
-	static TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
+	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:
