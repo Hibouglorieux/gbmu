@@ -64,55 +64,36 @@ void	Screen::clear(void)
 
 void	Screen::drawBG()
 {
-	for (int y = 0; y < 32; y++)
-	{
-		for (int tmpX = 0; tmpX < 32 * 8 * scaleBG + 32 * scaleBG; tmpX++)
-		{
-			if (y)
-				drawPoint(tmpX, y * (8 + 1) - 1,
-						QUAD_COLOR, backgroundRenderer, scaleBG);
-		}
-		for (int x = 0; x < 32; x++)
-		{
-			for (int yy = 0; yy < 8; yy++)
-			{
-				int yOnWindow = y * (8 + 1) + yy;
-				if (x)
-					drawPoint(x * (8 + 1) - 1, yOnWindow,
-							QUAD_COLOR, backgroundRenderer, scaleBG);
+	unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
+    unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
-				std::array<int, 8> backgroundLine = Ppu::getBackgroundTile(x, y, yy);
-				for (int xx = 0; xx < 8; xx++)
-				{
-					int xOnWindow = x * (8 + 1) + xx;
-					drawPoint(xOnWindow, yOnWindow,
-							backgroundLine[xx], backgroundRenderer, scaleBG);
-				}
+	for (int i = 0; i < 256; i++) {
+		struct TilePixels tile = TilePixels(BGDataAddress + (i * 8 * 2), BGP);
+		int x_offset = (i % 16) * 9;
+		int y_offset = (i / 16) * 9;
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
+				drawPoint(x + x_offset, y + y_offset, tile[y][x], backgroundRenderer);
 			}
 		}
+		
 	}
 }
 
 void	Screen::drawVRam(void)
 {
-	int sizePerTile = 2 * 8;
-	for (int i = 0; i < 256; i++)
-	{
-		int tileAddress = 0x8000 + i * sizePerTile;
-		for (int y = 0; y < 8; y++)
-		{
-			std::array<int, 8> tileLine = Ppu::getTilePixels(tileAddress, y, 0xFF47);
-			int yOnWindow = (i / 16) * (8 + 1) + y;
-			for (int x = 0; x < 8; x++)
-			{
-				int xOnWindow = (i % (16)) * (8 + 1) + x;
-				drawPoint(xOnWindow, yOnWindow, tileLine[x], vRamRenderer);
+    unsigned int vRamAddress = 0x8000;
+
+	for (int i = 0; i < 256; i++) {
+		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), BGP);
+		int x_offset = (i % 16) * 9;
+		int y_offset = (i / 16) * 9;
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
+				drawPoint(x + x_offset, y + y_offset, tile[y][x], vRamRenderer);
 			}
-			drawPoint((i % 16) * (8 + 1) + 8, yOnWindow, QUAD_COLOR, vRamRenderer);
 		}
-		int yOnWindow = (i / 16) * (8 + 1) + 8;
-		for (int x = 0; x < 16 * 9; x++)
-			drawPoint(x, yOnWindow, QUAD_COLOR, vRamRenderer);
+		
 	}
 }
 

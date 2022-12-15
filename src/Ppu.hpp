@@ -17,6 +17,8 @@
 #ifndef PPU_CLASS_H
 # define PPU_CLASS_H
 
+#include "TilePixels.hpp"
+
 //VRAM:
 //starts at 8000 to 97FF
 //0x8000 is always sprites, background can be either at 0x8000 or 0x8800
@@ -84,6 +86,10 @@ struct OAM_entry {
 	unsigned char getPaletteNumber() {return BIT(attributes, 4);}
 	unsigned char getTileVramBank() {return BIT(attributes, 3);}
 	unsigned char getPaletteNumberCGB() {return (attributes & 0b111);}
+
+	friend bool operator==(const OAM_entry &a, const OAM_entry &b) {
+		return ((a.posX == b.posX) && (a.posY == b.posY) && (a.tileIndex == b.tileIndex) && (a.attributes == b.attributes));
+	}
 };
 
 struct SpriteData {
@@ -96,16 +102,14 @@ public:
 	static void setMem(Mem& cpuMem);
 
 	static std::array<int, NB_LINES> doOneLine();
-	static std::array<SpriteData, NB_LINES> getOamLine(int yLineToFetch);
-	static std::array<int, NB_LINES> getBackgroundLine(int yLinetoFetch); // TODO add virtual clocks
-	static int getColor(unsigned char byteColorCode, int paletteAddress);
+	static std::array<SpriteData, NB_LINES> getOamLine();
+	static std::array<int, NB_LINES> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
-	static std::array<int, 8> getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress);
+	static struct TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
 	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
-	static std::array<int, 8> getBackgroundTile(unsigned char xOffsetInMap,
-			unsigned char yOffsetInMap, unsigned char yOffsetInTile);
+	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
 private:
@@ -123,6 +127,8 @@ private:
 #define M_WY (mem[WY]) 
 #define M_WX (mem[WX]) 
 #define M_LCD_Y (mem[LCD_Y]) 
-#define M_VBK (mem[VBK]) 
+#define M_VBK (mem[VBK])
+
+#define MAX_SPRITES 40
 
 #endif
