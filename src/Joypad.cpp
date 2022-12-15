@@ -1,5 +1,5 @@
-#include "Joypad.hpp"
-#include "Gameboy.hpp"
+#include "../includes/Joypad.hpp"
+#include "../includes/Gameboy.hpp"
 #include <iostream>
 
 // TODO We need to have 8 bit for each input

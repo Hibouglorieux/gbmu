@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Mem.hpp"
-#include "Cpu.hpp"
+#include "../includes/Mem.hpp"
+#include "../includes/Cpu.hpp"
 #include <fstream>
 #include <iostream>
 

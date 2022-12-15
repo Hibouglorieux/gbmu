@@ -1,4 +1,4 @@
-#include "Gameboy.hpp"
+#include "../includes/Gameboy.hpp"
 
 Mem Gameboy::gbMem = Mem();
 Clock Gameboy::gbClock = Clock();

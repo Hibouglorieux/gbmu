@@ -48,6 +48,7 @@ O_PATH				=	build/objs/
 CPU				=	CPU/
 DBG				=	debugger/
 IMGUI			=	imgui/
+FONTS			=	fonts/
 
 
 # Add previous custom dir with $(O_PATH){custom dir} to PATH varriable
@@ -57,6 +58,8 @@ PATHS				+=	$(O_PATH)
 PATHS				+=	$(O_PATH)$(CPU)
 PATHS				+=	$(O_PATH)$(DBG)
 PATHS				+=	$(O_PATH)$(IMGUI)
+#PATHS				+=	$(O_PATH)$(IMGUI)$(FONTS)
+
 
 # Files
 
@@ -88,8 +91,10 @@ SRC					+= $(S_PATH)$(IMGUI)imgui_demo.cpp
 SRC					+= $(S_PATH)$(IMGUI)imgui_draw.cpp
 SRC					+= $(S_PATH)$(IMGUI)imgui_impl_sdl.cpp
 SRC					+= $(S_PATH)$(IMGUI)imgui_impl_sdlrenderer.cpp
+SRC					+= $(S_PATH)$(IMGUI)imgui_stdlib.cpp
 SRC					+= $(S_PATH)$(IMGUI)imgui_tables.cpp
 SRC					+= $(S_PATH)$(IMGUI)imgui_widgets.cpp
+
 
 # Headers
 
@@ -102,6 +107,7 @@ HDR					+=	imgui.h
 HDR					+=	imgui_impl_sdl.h
 HDR					+=	imgui_impl_sdlrenderer.h
 HDR					+=	imgui_internal.h
+HDR					+=	imgui_stdlib.h
 HDR					+=	imstb_rectpack.h
 HDR					+=	imstb_textedit.h
 HDR					+=	imstb_truetype.h
@@ -122,6 +128,7 @@ HDR					+=	Utility.tpp
 
 OBJ					=	$(patsubst $(S_PATH)%.cpp, $(O_PATH)%.o, $(SRC))
 LIB					=	$(LNAME)
+#VPATH				=	includes/
 vpath %.h $(H_PATH)
 vpath %.hpp $(H_PATH)
 vpath %.tpp $(H_PATH)
@@ -129,7 +136,7 @@ vpath %.tpp $(H_PATH)
 # Variables
 
 DEBUG				=
-CFLAGS				=	-Wall -Wextra -Werror -std=gnu++14 `sdl2-config --cflags --libs`
+CFLAGS				=	-Wall -Wextra -Werror -std=gnu++14
 ifeq ($(DEBUG), g)
 	CFLAGS			=	-g
 else ifeq ($(DEBUG), fsanitize)
@@ -176,13 +183,13 @@ endif
 
 $(NAME): $(OBJ) $(TEST)
 	$(ECHO) $(GCFIL) $(NAME)
-	$(CMPLO) $(NAME) $(OBJ) $(LIB)
+	$(CMPLO) $(NAME) $(OBJ) $(LIB) `sdl2-config --cflags --libs`
 	$(GCSUC)
 	echo "---\nCFLAGS - =$(B_C) $(CFLAGS)$(RESET_C)\n---"
 	cp $(NAME) $(B_PATH)$(NAME)
 
 $(OBJ): $(O_PATH)%.o: $(S_PATH)%.cpp $(HDR)
-	$(CMPLC) $< -o $@
+	$(CMPLC) $< -o $@ `sdl2-config --cflags --libs`
 	$(ECHO) $(GCFIL) $<
 
 $(PATHS):
@@ -194,7 +201,6 @@ clean:
 	$(CLSUC)
 
 fclean:
-
 	clear ; for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	for i in $(PATHS); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	$(RM_RF) $(NAME)
