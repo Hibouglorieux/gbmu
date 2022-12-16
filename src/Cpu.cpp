@@ -50,10 +50,7 @@ void Cpu::loadBootRom()
 	mem[0xFF44] = 0x90;
 }
 
-bool  interrupt_halt(unsigned char opcode) {
-    if (Cpu::interrupts_flag && opcode != 0xf3) {
-        Cpu::interrupts_master_enable = true;
-    }
+bool  interrupt_halt(void) {
     if (Cpu::halted) {
         if (Cpu::interrupts_master_enable || (M_EI & M_IF)) {
             Cpu::halted = false;
@@ -81,12 +78,19 @@ std::deque<int> Cpu::FIFO_stack(int opcode){
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
-	unsigned char opcode = readByte();
+	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
    	fifo = FIFO_stack(opcode);
-    if (!interrupt_halt(opcode)) {
+    if (!interrupt_halt()) {
+	    /* Increment one cycle */
+	    clock = 1;
+	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
+    }
+    opcode = readByte();
+    if (Cpu::interrupts_flag && opcode != 0xf3) {
+        Cpu::interrupts_master_enable = true;
     }
     switch (opcode)
 	{

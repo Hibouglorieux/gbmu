@@ -38,33 +38,29 @@ Clock::~Clock()
 #define M_TMA	mem[0xFF06]
 #define M_TAC	mem[0xFF07]
 
+// NOTE : addValue is in cycle in this context
 int&	Clock::operator+=(int addValue)
 {
-	int timaFreqDivider = 1024;
+	static int clocks_array[4] = {1024, 16, 64, 256};
+	int timaFreqDivider = 0;
 
-	clock += addValue;
+	clock += addValue * 4;
 
 	/* Handle DIV */
-	divClock += addValue;
+	divClock += addValue * 4;
 	M_DIV += divClock / 256;
 	divClock %= 256;
 
 	/* Handle TIMA */
 	if ((M_TAC & (1 << 2)) != 0) {
 		/* Calculate TIMA frequency divider TODO CGB Mode is not handled */
-		if ((M_TAC & 0x3) == 1) {
-			timaFreqDivider = 16;
-		} else if ((M_TAC & 0x3) == 2) {
-			timaFreqDivider = 64;
-		} else if ((M_TAC & 0x3) == 3) {
-			timaFreqDivider = 256;
-		}
-		timaClock += addValue;
+		timaFreqDivider = clocks_array[M_TAC & 3];
+		timaClock += addValue * 4;
 		if ((int)M_TIMA + timaClock / timaFreqDivider > 0xFF) {
 			/* Request Interrupt */
 			mem[0xFF0F] |= (1 << 2);
 			/* Reset TIMA to TMA and add the rest */
-			M_TIMA = (int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider));
+			M_TIMA = (uint8_t)((int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider)));
 			timaClock %= timaFreqDivider;
 		}
 		else {
