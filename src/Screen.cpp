@@ -11,10 +11,15 @@
 
 #include <iostream>
 #include "../includes/Screen.hpp"
-#include "../includes/Cpu.hpp"
 #include "../includes/Ppu.hpp"
+#include "../includes/imgui.h"
+#include "../includes//imgui_impl_sdlrenderer.h"
+#include <SDL2/SDL.h>
 #include "../includes/define.hpp"
+#include "../includes/imgui_impl_sdl.h"
 
+SDL_Window* Screen::DBG_win = NULL;
+SDL_Renderer* Screen::DBG_rend = NULL;
 
 SDL_Window* Screen::window = NULL;
 SDL_Renderer* Screen::renderer = NULL;
@@ -35,6 +40,13 @@ SDL_Window*	Screen::get(void)
 
 void	Screen::destroy(void)
 {
+    ImGui_ImplSDLRenderer_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+
+	SDL_DestroyRenderer(DBG_rend);
+	SDL_DestroyWindow(DBG_win);
+
 	SDL_DestroyRenderer(vRamRenderer);
 	SDL_DestroyWindow(vRamWindow);
 	SDL_DestroyRenderer(renderer);
@@ -152,7 +164,44 @@ bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, in
 
 bool	Screen::create(void)
 {
-	SDL_Init(SDL_INIT_VIDEO);
+//	SDL_Init(SDL_INIT_VIDEO);
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		printf("Error: %s\n", SDL_GetError());
+		return -1;
+	}
+
+	// Setup window
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	DBG_win = SDL_CreateWindow("Debugger", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+
+	// Setup SDL_Renderer instance
+    DBG_rend = SDL_CreateRenderer(DBG_win, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+	if (DBG_rend == NULL)
+	{
+		SDL_Log("Error creating SDL_Renderer!");
+		return 0;
+	}
+
+    //SDL_RendererInfo info;
+	//SDL_GetRendererInfo(renderer, &info);
+	//SDL_Log("Current SDL_Renderer: %s", info.name);
+
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplSDL2_InitForSDLRenderer(DBG_win, DBG_rend);
+	ImGui_ImplSDLRenderer_Init(DBG_rend);
+
 	window = SDL_CreateWindow("GBMU",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,

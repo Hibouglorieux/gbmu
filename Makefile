@@ -125,7 +125,6 @@ HDR					+=	Utility.tpp
 
 OBJ					=	$(patsubst $(S_PATH)%.cpp, $(O_PATH)%.o, $(SRC))
 LIB					=	$(LNAME)
-#VPATH				=	includes/
 vpath %.h $(H_PATH)
 vpath %.hpp $(H_PATH)
 vpath %.tpp $(H_PATH)

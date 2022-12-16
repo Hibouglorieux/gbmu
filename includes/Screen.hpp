@@ -28,6 +28,9 @@ public:
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static SDL_Window* get();
+
+    static SDL_Window*      DBG_win;
+    static SDL_Renderer*	DBG_rend;
 private:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;

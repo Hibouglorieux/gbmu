@@ -55,19 +55,7 @@ void Cpu::loadBootRom()
     mem[LY] = 0x90; //mem[0xFF44] = 0x90;
 }
 
-auto  interrupt_halt(unsigned char opcode) -> bool {
-    if (Cpu::interrupts_flag && opcode != 0xf3) {
-        Cpu::interrupts_master_enable = true;
-    }
-    if (Cpu::halted) {
-        if (Cpu::interrupts_master_enable || (mem[EI] & (mem[IF]))) {
-            Cpu::halted = false;
-        } else {
-            return false;
-        }
-    }
-    return true;
-}
+
 
 void Cpu::printFIFO(std::deque<int> fifo)
 {
@@ -116,6 +104,20 @@ void Cpu::handle_timer() {
     }
 }
 
+
+auto  interrupt_halt(unsigned char opcode) -> bool {
+    if (!Cpu::halted && Cpu::interrupts_flag && opcode != 0xf3) {
+        Cpu::interrupts_master_enable = true;
+    }
+    if (Cpu::halted) {
+        if (Cpu::interrupts_master_enable || (mem[EI] & (mem[IF]))) {
+            Cpu::halted = false;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
 
 auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 {
@@ -478,13 +480,13 @@ void Cpu::handle_interrupts() {
         if (m_ei && m_if) {
                 if ((m_ei & (1)) && (m_if & (1))) {
                         do_interrupts(IT_VBLANK,  VBLANK_INT_BIT);
-                } else if ((m_ei & (1 << 1)) && (m_if & STAT_INT_BIT)) {
+                } else if ((m_ei & STAT_INT_BIT) && (m_if & STAT_INT_BIT)) {
                         do_interrupts(IT_LCD_STAT, STAT_INT_BIT);
-                } else if ((m_ei & (1 << 2)) && (m_if & TIMER_INT_BIT)) {
+                } else if ((m_ei & TIMER_INT_BIT) && (m_if & TIMER_INT_BIT)) {
                         do_interrupts(IT_TIMER, TIMER_INT_BIT);
-                } else if ((m_ei & (1 << 3)) && (m_if & SERIAL_INT_BIT)) {
+                } else if ((m_ei & SERIAL_INT_BIT) && (m_if & SERIAL_INT_BIT)) {
                         do_interrupts(IT_SERIAL, SERIAL_INT_BIT);
-                } else if ((m_ei & (1 << 4)) && (m_if & JOYPAD_INT_BIT)) {
+                } else if ((m_ei & JOYPAD_INT_BIT) && (m_if & JOYPAD_INT_BIT)) {
                         do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT);
                 } else {
                     std::cout << "m_ei : " << std::hex << (short)m_ei << " M_IF " << std::hex << (short)m_if << std::endl;

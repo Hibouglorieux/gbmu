@@ -10,11 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include "Cpu.hpp"
-// #include "Ppu.hpp"
-// #include "Loop.hpp"
-// #include "Screen.hpp"
-
 #include "../includes/Gameboy.hpp"
 #include "../includes/define.hpp"
 #include <iostream>
