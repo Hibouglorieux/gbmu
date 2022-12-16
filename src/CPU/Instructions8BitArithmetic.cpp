@@ -23,7 +23,7 @@ unsigned char Cpu::inc_r8(unsigned short opcode)
 	// Description
 	// Increment the contents of memory specified by register by 1.
 
-	unsigned char* reg;
+	unsigned char* reg = nullptr;
 	switch (opcode) {
 		case 0x04:
 			reg = &B;
@@ -73,7 +73,7 @@ unsigned char Cpu::dec_r8(unsigned short opcode)
     // Description
     // Decrement the contents of the register by 1.
     
-    unsigned char *reg;
+    unsigned char *reg = nullptr;
 	switch (opcode)
 	{
 		case 0x05:

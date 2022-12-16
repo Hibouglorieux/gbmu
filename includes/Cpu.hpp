@@ -18,16 +18,14 @@
 #include "Utility.hpp"
 #include <string>
 #include <deque>
+#include "define.hpp"
 #include <iostream>
 #include <iomanip> // setw
 #include <utility>
 
-#define PHL (mem[HL])
-#define M_EI (mem[0xFFFF])
-#define M_IF (mem[0xFF0F])
-
 class Cpu {
 public:
+    static void run();
 
 	static std::deque<int> FIFO_stack(int opcode);
 	static void printFIFO(std::deque<int> fifo);
@@ -52,15 +50,20 @@ public:
 	static bool getHalfCarryFlag();
 	static bool getCarryFlag();
 
-
 	static const unsigned char& getData(int i);
 	static void setData(int i);
+
+    static void handle_timer();
+    static uint32_t divReg;
+    static uint16_t TimaCounter;
+    static uint16_t ClockSpeed;
+
 
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;
 	static void handle_interrupts();
-
+    static void request_interrupts(int interrupt);
 
 	static unsigned short PC;
 	static unsigned short SP;

@@ -15,6 +15,25 @@
 #include <algorithm>
 #include <iostream>
 
+void Ppu::run() {
+    std::array<int, NB_LINES> finalLine{};
+
+    for (int i = 0 ; i < NB_COLUMN ; i++) {
+			finalLine = Ppu::doOneLine();
+			Gameboy::setState(GBSTATE_OAM_SEARCH);
+			Cpu::run();
+			Gameboy::setState(GBSTATE_PX_TRANSFERT);
+			Cpu::run();
+			Gameboy::setState(GBSTATE_H_BLANK);
+			Cpu::run();
+			Cpu::updateLY(1);
+			/* Drawing time */
+			for (int j = 0 ; j < NB_LINES ; j++) {
+				Screen::drawPoint(j, i, finalLine[j]);
+			}
+		}
+}
+
 std::array<int, NB_LINES> Ppu::doOneLine()
 {
 	int currentLine = mem[LY];
@@ -60,7 +79,7 @@ int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeig
 std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, int paletteAddress)
 {
 	// fetch the 8 pixel of a tile 
-	std::array<int, 8> tilePixels;
+	std::array<int, 8> tilePixels{};
 	int lineOfPixelsAddress = tileAddress + yOffset * 2;// looking for real byte
 							 // yOffset * 2 because
 							 // there are two byte per
@@ -84,7 +103,7 @@ std::array<int, 8> Ppu::getTilePixels(int tileAddress, unsigned char yOffset, in
 
 std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 {
-	std::array<int, NB_LINES> backgroundLine;
+	std::array<int, NB_LINES> backgroundLine{};
 	bool bWindowEnabled = M_LCDC & (1 << 5);
 	bool bBackgroundEnabled = M_LCDC & 1;
 	int BGTileIt = 0;
@@ -92,7 +111,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine(int yLineToFetch)
 	bool bDrawWindow = bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET);
 	while (xPosInLine < 160)
 	{
-		std::array<int, 8> tilePixels;
+		std::array<int, 8> tilePixels{};
 		if (bDrawWindow)
 		{
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8, yLineToFetch - M_WY);// should not underflow/panic because of windowDraw bool
@@ -142,7 +161,7 @@ int Ppu::getColor(unsigned char byteColorCode, int paletteAddress)
 std::array<SpriteData, NB_LINES> Ppu::getOamLine(int yLineToFetch)
 {
 	std::vector<struct OAM_entry> spritesFound;
-	std::array<SpriteData, NB_LINES> spriteLine;
+	std::array<SpriteData, NB_LINES> spriteLine{};
 	spriteLine.fill({0, false}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
@@ -213,7 +232,7 @@ std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned c
 		unsigned char yOffsetInTile)
 {
     unsigned int BGMap  = M_LCDC & (1 << 3) ? 0x9C00 : 0x9800;
-    unsigned int BGDataAddress = M_LCDC & (1 << 4) ? 0x8000 : 0x8800;
+    int BGDataAddress = M_LCDC & (1 << 4) ? 0x8000 : 0x8800;
 
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
@@ -227,7 +246,7 @@ std::array<int, 8> Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned c
 std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)
 {
   unsigned int windowMap = M_LCDC & (1 << 6) ? 0x9C00 : 0x9800;
-  unsigned int windowDataAddress = M_LCDC & (1 << 4) ? 0x8800 : 0x8000;
+  int windowDataAddress = M_LCDC & (1 << 4) ? 0x8800 : 0x8000;
 
   // 32 is because each line is 32 byte, windowCurrentLine because it may or may not be updated
   // if it was rendered on previous lines NOTE unsure about this, need to be tested

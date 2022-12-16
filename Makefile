@@ -7,6 +7,7 @@ ifneq ($(words $(MAKECMDGOALS)),1)
 	  @$(MAKE) $@ --no-print-directory -rRf $(firstword $(MAKEFILE_LIST))
 else
 
+
 ifndef ECHO
 T					:=	$(shell $(MAKE) $(MAKECMDGOALS) --no-print-directory \
 	  -nrRf $(firstword $(MAKEFILE_LIST)) \
@@ -48,8 +49,6 @@ O_PATH				=	build/objs/
 CPU				=	CPU/
 DBG				=	debugger/
 IMGUI			=	imgui/
-FONTS			=	fonts/
-
 
 # Add previous custom dir with $(O_PATH){custom dir} to PATH varriable
 
@@ -58,15 +57,12 @@ PATHS				+=	$(O_PATH)
 PATHS				+=	$(O_PATH)$(CPU)
 PATHS				+=	$(O_PATH)$(DBG)
 PATHS				+=	$(O_PATH)$(IMGUI)
-#PATHS				+=	$(O_PATH)$(IMGUI)$(FONTS)
-
 
 # Files
 
 SRC					+= $(S_PATH)Clock.cpp
 SRC					+= $(S_PATH)Gameboy.cpp
 SRC					+= $(S_PATH)Joypad.cpp
-SRC					+= $(S_PATH)Loop.cpp
 SRC					+= $(S_PATH)main.cpp
 SRC					+= $(S_PATH)Mem.cpp
 SRC					+= $(S_PATH)Ppu.cpp
@@ -101,6 +97,7 @@ SRC					+= $(S_PATH)$(IMGUI)imgui_widgets.cpp
 HDR					+=	Clock.hpp
 HDR					+=	Cpu.hpp
 HDR					+=	Debugger.hpp
+HDR					+=	define.hpp
 HDR					+=	Gameboy.hpp
 HDR					+=	imconfig.h
 HDR					+=	imgui.h

@@ -16,16 +16,16 @@
 #include "Mem.hpp"
 #include "Clock.hpp"
 #include "Cpu.hpp"
+#include "define.hpp"
 #include "Ppu.hpp"
-#include "Loop.hpp"
 #include "Screen.hpp"
 #include "Joypad.hpp"
 
-#define g_clock (Gameboy::getClock())
-#define mem (Gameboy::getMem())
+#define mem Gameboy::getMem()
 
 class Gameboy {
 public:
+    static bool quit;
 	static Mem gbMem;
 	static Clock gbClock;
 	static void init();

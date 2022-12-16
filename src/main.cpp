@@ -16,9 +16,8 @@
 // #include "Screen.hpp"
 
 #include "../includes/Gameboy.hpp"
+#include "../includes/define.hpp"
 #include <iostream>
-#define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/11-op a,(hl).gb"
-// #define DEFAULT_PATH_TO_FILE "./tetris.gb"
 
 int main(int argc, char** argv)
 {

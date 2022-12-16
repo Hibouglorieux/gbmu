@@ -13,8 +13,8 @@
 #include "../includes/Screen.hpp"
 #include "../includes/Cpu.hpp"
 #include "../includes/Ppu.hpp"
+#include "../includes/define.hpp"
 
-#define QUAD_COLOR 0b11
 
 SDL_Window* Screen::window = NULL;
 SDL_Renderer* Screen::renderer = NULL;

@@ -12,10 +12,10 @@
 
 #include "../includes/Mem.hpp"
 #include "../includes/Cpu.hpp"
+
+#include "../includes/define.hpp"
 #include <fstream>
 #include <iostream>
-
-#define MEM_SIZE (0xFFFF + 1)
 
 Mem::Mem()
 {
@@ -30,6 +30,14 @@ Mem::Mem(int size)
 	internalArray = new unsigned char[size];
 	memSize = size;
 }
+
+//void Mem::write_u8(uint16_t addr, int value) {
+//    mem[addr] = value;
+//}
+//
+//int Mem::read_u8(int addr) {
+//    return mem[addr];
+//}
 
 Mem::Mem(std::string pathToRom)
 {

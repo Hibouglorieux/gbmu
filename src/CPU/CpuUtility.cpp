@@ -17,12 +17,12 @@ void	Cpu::printRegisters()
 {
 		std::cout << std::setfill('0') << "Current opcode: 0x";
 		if (mem[PC] == 0xCB)
-			std::cout << std::setw(4) << std::hex << +(((unsigned short)(mem[PC]) << 8) + mem[PC + 1]) << " with PC: 0x" << std::setw(4) << PC << std::endl;
+			std::cout << std::setw(4) << std::hex << +(((unsigned short)(mem[PC])) << 8) + mem[PC] + 1 << " with PC: 0x" << std::setw(4) << PC << std::endl;
 		else
 			std::cout << std::setw(2) << std::hex << +(int)(mem[PC]) << " with PC: 0x" << std::setw(4) << std::hex << PC << std::endl;
 
 		std::cout << std::setfill('0') << std::uppercase;
-		//std::cout << "mem[HL]: 0x" << std::setw(2) << (int)mem[HL] << std::endl;
+		//std::cout << "mem[HL]): 0x" << std::setw(2) << (int)mem[HL]) << std::endl;
 		std::cout << "AF: 0x" << std::setw(2) << +A << std::setw(2) << +F << std::endl;
 		std::cout << "BC: 0x" << std::setw(4) << +BC << std::endl;
 		std::cout << "DE: 0x" << std::setw(4) << +DE << std::endl;

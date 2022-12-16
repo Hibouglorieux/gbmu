@@ -14,8 +14,8 @@
 #ifndef MEM_CLASS_H
 # define MEM_CLASS_H
 #include <string>
+#include "define.hpp"
 
-# define BIT(val, bit) ((val & (1 << bit)) >> bit)
 
 class Mem;
 
@@ -28,6 +28,7 @@ class MemWrap {
 		unsigned char* operator&() {return &value;}
 		operator unsigned char&() { return value; }
 		operator const unsigned char&() const { return value; }
+
 	private:
 		const unsigned short addr;
 		unsigned char& value;
@@ -46,6 +47,10 @@ public:
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
+//    static void write_u8(uint16_t addr, int value);
+//    void write_u16(uint16_t addr, uint16_t value);
+//    static int read_u8(int addr);
+//    uint16_t read_u16(uint16_t addr);
 private:
 	unsigned char* internalArray;
 	unsigned int	memSize;
