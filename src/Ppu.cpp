@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 03:05:38 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/17 15:46:38 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,15 @@
 #include <algorithm>
 #include <iostream>
 
-std::array<int, NB_LINES> Ppu::doOneLine()
+std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
 {
 	auto pixelLine = getOamLine();
 
 	auto backgroundLine = getBackgroundLine();
 
 
-	std::array<int, NB_LINES> finalLine = {0};
-	for (int i = 0; i < NB_LINES; i++)
+	std::array<int, PIXEL_PER_LINE> finalLine = {0};
+	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
 		if (pixelLine[i].bShouldBeDisplayed && pixelLine[i].color) {
 			finalLine[i] = pixelLine[i].color;
@@ -60,9 +60,9 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 	return TilePixels(tileAddress + (tileIndex * 2 * 8), paletteAddress);
 }
 
-std::array<int, NB_LINES> Ppu::getBackgroundLine()
+std::array<int, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 {
-	std::array<int, NB_LINES> backgroundLine;
+	std::array<int, PIXEL_PER_LINE> backgroundLine;
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int xPosInLine = 0;
@@ -75,7 +75,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 	// 	std::cout << std::dec << (int)mem[BGMap + i] << "\t";
 	// }
 	// std::cout << "\n\n";
-	while (xPosInLine < 160)
+	while (xPosInLine < PIXEL_PER_LINE)
 	{
 		std::array<int, 8> tilePixels;
 		if (bDrawWindow)
@@ -92,7 +92,7 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 				continue;				 // if scx == 3 then skip the
 									 // first 3 pixels
 			backgroundLine[xPosInLine++] = tilePixels[i];
-			if (xPosInLine >= 160)
+			if (xPosInLine >= PIXEL_PER_LINE)
 				return backgroundLine;
 			// check if window should be enabled,
 			// if the condition is met restart draw at that pos
@@ -109,10 +109,10 @@ std::array<int, NB_LINES> Ppu::getBackgroundLine()
 	return backgroundLine;
 }
 
-std::array<SpriteData, NB_LINES> Ppu::getOamLine()
+std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
 	std::vector<struct OAM_entry> spritesFound, spritesFound2;
-	std::array<SpriteData, NB_LINES> spriteLine;
+	std::array<SpriteData, PIXEL_PER_LINE> spriteLine;
 	spriteLine.fill({0, false}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
@@ -169,7 +169,7 @@ std::array<SpriteData, NB_LINES> Ppu::getOamLine()
 			spritePixels.flipX();
 
 		// copy the sprite on the line
-		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < 160); x++, i++)
+		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 			if (x > 0)
 				spriteLine[x] = {spritePixels[yOffset][i], bIsAboveBG}; // might need to check color 0 
 														   // which is not winning over BG

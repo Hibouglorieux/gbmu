@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/09 02:44:07 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/17 15:45:49 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 bool Loop::loop()
 {
-	std::array<int, NB_LINES> finalLine;
+	std::array<int, PIXEL_PER_LINE> finalLine;
 	int clockDiff = 0;
 
 	while (true)
@@ -42,7 +42,7 @@ bool Loop::loop()
 			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
 			Cpu::updateLY(1);
 			/* Drawing time */
-			for (int j = 0 ; j < 160 ; j++) {
+			for (int j = 0 ; j < PIXEL_PER_LINE ; j++) {
 				Screen::drawPoint(j, i, finalLine[j]);
 			}
 		}

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 03:05:53 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/17 15:45:32 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@
 #define LCD_Y (0xFB00) //Top edge when == 10
 #define VBK (0xFF4F) // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
 
-#define NB_LINES 160
+#define PIXEL_PER_LINE 160
 
 struct OAM_entry {
 	unsigned char posY;
@@ -101,9 +101,9 @@ class Ppu {
 public:
 	static void setMem(Mem& cpuMem);
 
-	static std::array<int, NB_LINES> doOneLine();
-	static std::array<SpriteData, NB_LINES> getOamLine();
-	static std::array<int, NB_LINES> getBackgroundLine(); // TODO add virtual clocks
+	static std::array<int, PIXEL_PER_LINE> doOneLine();
+	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
+	static std::array<int, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
