@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/17 15:46:38 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 16:26:01 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,8 +188,8 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
 	if (BIT(M_LCDC, 4) == 0)
 		std::cout << "BGDataAddress : " << (int)BIT(M_LCDC, 4) << "\n";
 
-	// yOffsetInMap %= 32;
-	// xOffsetInMap %= 32;
+	yOffsetInMap %= 32;
+	xOffsetInMap %= 32;
 
     unsigned int addrInMap = BGMap + xOffsetInMap + (yOffsetInMap * 32);
     int tileNumber = mem[addrInMap];
