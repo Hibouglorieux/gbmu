@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/17 15:45:32 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 19:56:02 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # define PPU_CLASS_H
 
 #include "TilePixels.hpp"
+#include "Sprite.hpp"
 
 //VRAM:
 //starts at 8000 to 97FF
@@ -64,8 +65,6 @@
 #define LYC (0xFF45) //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
 #define DMA (0xFF46) // DMA transfer and start
 #define BGP (0xFF47) // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
-#define OBP0 (0xFF48) // Object/Sprite palette 0
-#define OBP1 (0xFF49) // Object/Sprite palette 1
 #define WY (0xFF4A) // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
 #define WX (0xFF4B) // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
 #define WX_OFFSET (7)
@@ -73,24 +72,6 @@
 #define VBK (0xFF4F) // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
 
 #define PIXEL_PER_LINE 160
-
-struct OAM_entry {
-	unsigned char posY;
-	unsigned char posX;
-	unsigned char tileIndex;
-	unsigned char attributes;
-
-	unsigned char getBGWOverWindow() {return BIT(attributes, 7);}
-	unsigned char getFlipY() {return BIT(attributes, 6);}
-	unsigned char getFlipX() {return BIT(attributes, 5);}
-	unsigned char getPaletteNumber() {return BIT(attributes, 4);}
-	unsigned char getTileVramBank() {return BIT(attributes, 3);}
-	unsigned char getPaletteNumberCGB() {return (attributes & 0b111);}
-
-	friend bool operator==(const OAM_entry &a, const OAM_entry &b) {
-		return ((a.posX == b.posX) && (a.posY == b.posY) && (a.tileIndex == b.tileIndex) && (a.attributes == b.attributes));
-	}
-};
 
 struct SpriteData {
 	int color;

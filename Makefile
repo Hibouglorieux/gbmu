@@ -20,7 +20,8 @@ FILES = main.cpp \
 		Ppu.cpp \
 		Joypad.cpp \
 		Gameboy.cpp \
-		TilePixels.cpp
+		TilePixels.cpp \
+		Sprite.cpp
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))

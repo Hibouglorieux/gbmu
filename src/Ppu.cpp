@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/17 16:26:01 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 19:56:47 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
 int	Ppu::getPaletteFromOAMEntry(struct OAM_entry entry)
 {
 	//this is for DMG only !!
-	return (entry.getPaletteNumber() ? OBP1 : OBP0);
+	return (entry.getDMGPalette() ? OBP1 : OBP0);
 	// TODO add gameboy flags (bit 	0-2 OPB0 to OBP7)
 }
 
@@ -155,27 +155,28 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 	// 3 - copy sprite color into the whole line
 	for (struct OAM_entry spriteEntry : spritesFound)
 	{
-		int paletteAddress = getPaletteFromOAMEntry(spriteEntry);
 		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
-		int tileAddress = getSpriteAddressInVRam(spriteEntry, spriteHeight);
-		struct TilePixels spritePixels = getTile(tileAddress, 0, paletteAddress);
+		Sprite sprite = Sprite(spriteEntry, spriteHeight);
 
 		// TODO : le 16 doit etre remplace par spriteHeight * 2 ???
 		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
 		if (spriteEntry.getFlipY()) // reverse offset if flipped
-			spritePixels.flipY();
+			sprite.flipY();
 		// fetch the 8 pixel of the sprite in a tmp buffer
 		if (spriteEntry.getFlipX())
-			spritePixels.flipX();
+			sprite.flipX();
 
 		// copy the sprite on the line
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
+		{
+			std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
 			if (x > 0)
-				spriteLine[x] = {spritePixels[yOffset][i], bIsAboveBG}; // might need to check color 0 
+				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG}; // might need to check color 0 
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about 
 														   // CGB)
+		}
 	}
 	return spriteLine;
 }
