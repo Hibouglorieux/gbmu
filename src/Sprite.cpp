@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/17 23:01:01 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 23:29:27 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 		{
 			bool bit1 = byte1 & (1 << x);
 			bool bit2 = byte2 & (1 << x);
-			unsigned char byteColorCode = (bit1 << 1) | (bit2);
+			unsigned char byteColorCode = (bit2 << 1) | (bit1);
 			data[y][7 - x] = byteColorCode;
 			// THIS RETURNS ONLY THE COLOR CODE
 		}

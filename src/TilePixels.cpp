@@ -48,7 +48,7 @@ TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data
 			// 0b10001001 0b00010011 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x11
 			bool bit1 = byte1 & (1 << x);
 			bool bit2 = byte2 & (1 << x);
-			unsigned char byteColorCode = (bit1 << 1) | (bit2);
+			unsigned char byteColorCode = (bit2 << 1) | (bit1);
 			pixels[y][7 - x] = byteColorCode;
 		}
 	}
