@@ -76,7 +76,7 @@ void	Screen::drawBG()
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile[y][x], backgroundRenderer, scaleBG);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], backgroundRenderer, scaleBG);
 			}
 		}
 		
@@ -93,7 +93,7 @@ void	Screen::drawVRam(void)
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile[y][x], vRamRenderer);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], vRamRenderer);
 			}
 		}
 		

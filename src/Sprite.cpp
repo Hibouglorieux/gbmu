@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/17 19:48:12 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 23:01:01 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,11 +63,6 @@ void Sprite::flipX()
 		std::reverse(data[i].begin(), data[i].end());
 }
 
-std::array<int, 8> Sprite::operator[](int y)
-{
-	return getLineCode(y);
-}
-
 int	Sprite::getColor(unsigned char byteColorCode) const
 {
 	//TODO, especially for CGB and to convert with SDL color !
@@ -84,7 +79,7 @@ int	Sprite::getColor(unsigned char byteColorCode) const
 
 std::array<int, 8> Sprite::getColoredLine(int y) const
 {
-	std::array<int, 8> retLine = getLineCode(y);
+	std::array<int, 8> retLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
 		retLine[x] = getColor(retLine[x]);

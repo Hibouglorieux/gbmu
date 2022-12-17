@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/17 19:56:02 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/17 23:07:31 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,13 @@
 
 struct SpriteData {
 	int color;
-	bool bShouldBeDisplayed;
+	bool bIsAboveBackground;
+	int colorCode;
+};
+
+struct BackgroundData {
+	int color;
+	int colorCode;
 };
 
 class Ppu {
@@ -84,12 +90,12 @@ public:
 
 	static std::array<int, PIXEL_PER_LINE> doOneLine();
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
-	static std::array<int, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
+	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
 	static struct TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
-	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
+	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
 	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 

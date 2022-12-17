@@ -3,7 +3,7 @@
 TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
 {}
 
-int TilePixels::getColor(unsigned char byteColorCode, int paletteAddress)
+int TilePixels::getColor(unsigned char byteColorCode, unsigned short paletteAddress)
 {
 	//TODO, especially for CGB and to convert with SDL color !
 	//
@@ -17,7 +17,23 @@ int TilePixels::getColor(unsigned char byteColorCode, int paletteAddress)
 	return color;
 }
 
-TilePixels::TilePixels(int tileAddress, int paletteAddress) : data() {
+std::array<int, 8> TilePixels::getColorLine(int y)
+{
+	std::array<int, 8> retLine = getLineColorCode(y);
+
+	for (int x = 0; x < 8; x++)
+		retLine[x] = getColor(retLine[x], paletteAddress);
+	return retLine;
+}
+
+std::array<int, 8> TilePixels::getLineColorCode(int y)
+{
+	return data[y];
+}
+
+
+TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data() {
+	paletteAddress = newPaletteAddress;
     std::array<std::array<int, 8>, 8> pixels;
 	for (int y = 0; y < 8; y++) {
 
@@ -28,12 +44,12 @@ TilePixels::TilePixels(int tileAddress, int paletteAddress) : data() {
 
 		for (int x = 0; x < 8; x++)
 		{
-			// get color based on the merge of the two bytes with the same bit
-			// 0b10001000 0b00010010 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x00
+			// color code is based on the merge of the two bytes with the same bit
+			// 0b10001001 0b00010011 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x11
 			bool bit1 = byte1 & (1 << x);
 			bool bit2 = byte2 & (1 << x);
 			unsigned char byteColorCode = (bit1 << 1) | (bit2);
-			pixels[y][7 - x] = getColor(byteColorCode, paletteAddress);
+			pixels[y][7 - x] = byteColorCode;
 		}
 	}
     data = pixels;

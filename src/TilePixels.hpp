@@ -8,7 +8,6 @@
 struct TilePixels {
     std::array<std::array<int, 8>, 8> data;
 
-    std::array<int, 8> getLine(int y) { return data[y]; }
     void flipX() {
         for (int i = 0; i < 8; i++)
             std::reverse(data[i].begin(), data[i].end());
@@ -17,11 +16,14 @@ struct TilePixels {
         std::reverse(data.begin(), data.end());
     }
 
-    std::array<int, 8> operator[](int y) { return getLine(y); }
-    int getColor(unsigned char byteColorCode, int paletteAddress);
+    static int getColor(unsigned char byteColorCode, unsigned short paletteAddress);
+	std::array<int, 8> getColorLine(int y);
+	std::array<int, 8> getLineColorCode(int y);
 
+	TilePixels(){}
     TilePixels(std::array<std::array<int, 8>, 8> val);
-    TilePixels(int tileAddress, int paletteAddress);
+    TilePixels(int tileAddress, unsigned short newPaletteAddress);
+	unsigned short paletteAddress;
 };
 
 #endif
