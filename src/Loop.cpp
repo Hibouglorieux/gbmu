@@ -30,12 +30,13 @@ bool Loop::loop()
 		/* Render clear */
 		Screen::clear();
 		Gameboy::setState(GBSTATE_V_BLANK);
+		Cpu::request_interrupt(IT_VBLANK);
 		Cpu::updateLY(10);
 		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
 		for (int i = 0 ; i < 144 ; i++) {
-			finalLine = Ppu::doOneLine();
 			Gameboy::setState(GBSTATE_OAM_SEARCH);
 			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
+			finalLine = Ppu::doOneLine();
 			Gameboy::setState(GBSTATE_PX_TRANSFERT);
 			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
 			Gameboy::setState(GBSTATE_H_BLANK);
@@ -51,7 +52,6 @@ bool Loop::loop()
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */
-		std::cout << "render\n";
 		Screen::update();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));

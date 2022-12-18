@@ -102,7 +102,7 @@ void Cpu::printFIFO(std::deque<int> fifo)
 {
 	for (int i : fifo)
 	{
-		std::cout << "OPCODE :" << i << std::endl;
+		// std::cout << "OPCODE :" << i << std::endl;
 	}
 }
 
@@ -121,10 +121,12 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
    	fifo = FIFO_stack(opcode);
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
+		std::cout << "Halted\n";
 	    clock = 1;
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }
+	debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
@@ -450,14 +452,36 @@ int	Cpu::executeClock(int clockStop)
 	return (countClock);
 }
 
+void Cpu::debug(int opcode) {
+	static int count = 1;
+
+	std::cout << std::dec << count++ << "\n";
+	std::cout << std::hex << std::setw(2) << std::setfill('0') << opcode << ": ";
+	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
+	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
+	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
+}
+
 void	Cpu::updateLY(int iter)
 {
 	M_LY += iter;
-	if (M_LY > 153) {
-		// 144 line + V-BLANK (10 lines)
-		M_LY = 0;
-        //TODO TEST shall i raise INT_IF bit 2 for INT ?
-	}
+	M_LY %= 154;
+	// if (M_LY > 153) {
+	// 	// 144 line + V-BLANK (10 lines)
+	// 	M_LY = 0;
+    //     //TODO TEST shall i raise INT_IF bit 2 for INT ?
+	// }
+
+	if (M_LY == M_LYC) {
+		SET(M_LCDC_STATUS, 2);
+		if (BIT(M_LCDC_STATUS, 6)) {
+			// do_interrupts(IT_LCD_STAT, 1);
+			request_interrupt(IT_LCD_STAT);
+		}
+	} else
+		RES(M_LCDC_STATUS, 2);
+
+	std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)

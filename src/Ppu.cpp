@@ -193,9 +193,6 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
     unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
-	if (BIT(M_LCDC, 4) == 0)
-		std::cout << "BGDataAddress : " << (int)BIT(M_LCDC, 4) << "\n";
-
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
 

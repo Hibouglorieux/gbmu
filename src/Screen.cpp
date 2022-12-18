@@ -177,7 +177,7 @@ bool	Screen::create(void)
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			(32) * 8 * scaleBG + 32 * scaleBG,
-			(32) * 8 * 2 * scaleBG + 32 * 2 * scaleBG,
+			(32) * 8 * scaleBG + 32 * 2 * scaleBG,
 			0);
 
 	if (!backgroundWindow) {

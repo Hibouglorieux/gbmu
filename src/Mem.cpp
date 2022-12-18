@@ -137,6 +137,19 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 
 	if (addr == 0xFFFF)
 		Cpu::interrupts_master_enable = value;
+
+	if (addr == M_LYC) {
+		if (value == M_LY)
+			SET(M_LCDC_STATUS, 2)
+		else
+			RES(M_LCDC_STATUS, 2);
+	}
+	if (addr == M_LY) {
+		if (value == M_LYC)
+			SET(M_LCDC_STATUS, 2)
+		else
+			RES(M_LCDC_STATUS, 2);
+	}
 	
 	if (addr == LYC)
 		std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";

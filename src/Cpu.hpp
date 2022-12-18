@@ -45,8 +45,8 @@ public:
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
 
-	static unsigned char readByte();
-	static unsigned short readShort();
+	static unsigned char readByte(int incrementPc = true);
+	static unsigned short readShort(int incrementPc = true);
 
 	static void setZeroFlag(bool value);
 	static void setSubtractFlag(bool value);
@@ -88,6 +88,8 @@ public:
 	static unsigned short& HL;
 	static void printRegisters();
 	static Clock cpuClock;
+
+	static void debug(int opcode);
 private:
 
 
@@ -183,5 +185,7 @@ private:
 	static void internalPush(unsigned short valueToPush);
 	static unsigned short internalPop();
 };
+
+void do_interrupts(unsigned int addr, unsigned char bit);
 
 #endif
