@@ -47,7 +47,44 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	mem[0xFF44] = 0x90;
+	M_LY = 0x90;
+	// M_LCDC = 0x91;
+	M_LCDC_STATUS = 0x81;
+}
+
+void	Cpu::request_interrupt(int i)
+{
+	unsigned char bit;
+	switch (i)
+	{
+	case IT_VBLANK:
+		bit = 0;
+		break;
+	case IT_LCD_STAT:
+		bit = 1;
+		break;
+	case IT_SERIAL:
+		bit = 3;
+		break;
+	case IT_TIMER:
+		bit = 2;
+		break;
+	case IT_JOYPAD:
+		bit = 4;
+		break;
+	
+	default:
+		std::cerr << "Incorrect request ask\n";
+		exit(2);
+		break;
+	}
+
+	SET(M_IF, bit);
+
+	if (interrupts_master_enable) {
+		if (M_EI & bit)
+			halted = false;
+	}
 }
 
 bool  interrupt_halt(void) {
@@ -415,44 +452,43 @@ int	Cpu::executeClock(int clockStop)
 
 void	Cpu::updateLY(int iter)
 {
-	mem[0xFF44] += iter;
-	if (mem[0xFF44] > 153) {
+	M_LY += iter;
+	if (M_LY > 153) {
 		// 144 line + V-BLANK (10 lines)
-		mem[0xFF44] = 0;
+		M_LY = 0;
         //TODO TEST shall i raise INT_IF bit 2 for INT ?
 	}
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
+	std::cout << "Doing interrupt\n";
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
-    mem[0xFF0F] &= ~bit;
+    RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
 }
-
-#define IT_VBLANK 0x40
-#define IT_LCD_STAT 0x48
-#define IT_TIMER 0x50
-#define IT_SERIAL 0x58
-#define IT_JOYPAD 0x60
 
 void Cpu::handle_interrupts() {
 
     if (Cpu::interrupts_master_enable) {
         if (M_EI && M_IF) {
-                if ((M_EI & (1)) && (M_IF & (1))) {
+                if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
                         do_interrupts(IT_VBLANK,  1);
-                } else if ((M_EI & (1 << 1)) && (M_IF & (1<<1))) {
-                        do_interrupts(IT_LCD_STAT, (1 << 1));
-                } else if ((M_EI & (1 << 2)) && (M_IF & (1 << 2))) {
-                        do_interrupts(IT_TIMER, (1 << 2));
-                } else if ((M_EI & (1 << 3)) && (M_IF & (1 << 3))) {
-                        do_interrupts(IT_SERIAL, (1 << 3));
-                } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
-                        do_interrupts(IT_JOYPAD, (1 << 4));
+
+                } else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
+                        do_interrupts(IT_LCD_STAT, 1);
+
+                } else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
+                        do_interrupts(IT_TIMER, 2);
+
+                } else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
+                        do_interrupts(IT_SERIAL, 3);
+
+                } else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
+                        do_interrupts(IT_JOYPAD, 4);
                 } else {
                     std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
 	                Cpu::interrupts_master_enable = false;

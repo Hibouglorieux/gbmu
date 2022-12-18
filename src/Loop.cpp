@@ -51,6 +51,7 @@ bool Loop::loop()
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */
+		std::cout << "render\n";
 		Screen::update();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));

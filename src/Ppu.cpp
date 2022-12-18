@@ -208,7 +208,7 @@ std::array<int, 8> Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yO
   // div by 8 because each tile is 8 * 8 byte
   yOffsetInMap = 32 * (yOffsetInMap / 8);
 
-  unsigned int addressInMap = windowMap + xOffsetInMap + yOffsetInMap;
+  unsigned int addressInMap = windowMap + xOffsetInMap + (yOffsetInMap * 32);
   // condition is there to see if we need to loop over 1024 it should never happen if i understood correctly
   if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff)
 	  std::cerr << "offset in window tile is superior to 1024 to fetch the tile data and is: " <<  xOffsetInMap + yOffsetInMap << std::endl;
