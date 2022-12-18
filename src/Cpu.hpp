@@ -26,6 +26,12 @@
 #define M_EI (mem[0xFFFF])
 #define M_IF (mem[0xFF0F])
 
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
+
 class Cpu {
 public:
 
@@ -51,6 +57,8 @@ public:
 	static bool getSubtractFlag();
 	static bool getHalfCarryFlag();
 	static bool getCarryFlag();
+
+	static void	request_interrupt(int i);
 
 
 	static const unsigned char& getData(int i);

@@ -16,6 +16,8 @@
 #include <string>
 
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
+# define SET(val, bit) {val |= (1 << bit);}
+# define RES(val, bit) {val &= ~(1 << bit);}
 
 class Mem;
 
