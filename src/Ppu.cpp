@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/17 23:08:45 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/19 19:25:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "Gameboy.hpp"
 #include <algorithm>
 #include <iostream>
+
+unsigned char Ppu::windowCounter = 0;
 
 std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
 {
@@ -58,6 +60,12 @@ int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeig
 
 struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddress)
 {
+	if (tileAddress == 0x8800)
+	{
+		tileAddress = 0x9000; // this is because we dont actually start at 0x8000
+							  // but add a signed offset to 0x9000 instead
+		tileIndex = (char)tileIndex;// make sure it is signed
+	}
 	// fetch the 64 pixels of a tile 
 	return TilePixels(tileAddress + (tileIndex * 2 * 8), paletteAddress);
 }
@@ -81,36 +89,35 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 	{
 		TilePixels tilePixels;
 		if (bDrawWindow)
-		{
-			//TODO this has been broken, need to be fixed when lcd_c interrupts will work
-			//tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8, M_LY - M_WY);// should not underflow/panic because of windowDraw bool
-		}
+			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
 		else if (bBackgroundEnabled)
-		{
 			tilePixels = getBackgroundTile((xPosInLine / 8) + M_SCX / 8, (M_LY + M_SCY) / 8);//[(M_LY + M_SCY) % 8];
-		}
 		for (int i = 0; i < 8; i++)
 		{
 			if (!bDrawWindow && i + xPosInLine < (M_SCX % 8))// skip pixel if SCX % 8 != 0
 				continue;				 // if scx == 3 then skip the
 									 // first 3 pixels
-			backgroundLine[xPosInLine].color = tilePixels.getColorLine((M_LY + M_SCY) % 8)[i];
-			backgroundLine[xPosInLine].colorCode = tilePixels.getLineColorCode((M_LY + M_SCY) % 8)[i];
+			unsigned char yLine = (bDrawWindow ? (windowCounter % 8) : ((M_LY + M_SCY) % 8));
+			backgroundLine[xPosInLine].color = tilePixels.getColorLine(yLine)[i];
+			backgroundLine[xPosInLine].colorCode = tilePixels.getLineColorCode(yLine)[i];
 			xPosInLine++;
 			if (xPosInLine >= PIXEL_PER_LINE)
-				return backgroundLine;
+				break;
+
 			// check if window should be enabled,
 			// if the condition is met restart draw at that pos
 			// make sure the window has to be rendered with its WX/WY
 			// make sure window is in on x axis,
 			// WX == 0x07 and WY == 0x00 means the window will be at the top left of the screen
-			if (bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET))
+			if (!bDrawWindow && bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET))
 			{
 				bDrawWindow = true;
 				break;
 			}
 		}
 	}
+	if (bDrawWindow)// increment internal window counter if window was drawn
+		windowCounter++;
 	return backgroundLine;
 }
 
@@ -132,7 +139,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		// verify if the sprite should be rendered on this line
 		// if posX == 0 then sprite is totally off the screen.
 		// same goes for posY that starts at 0x10 (as it can be 16 height)
-		if ((M_LY + 16 >= entry->posY && (M_LY + 16 < entry->posY + 8)) // TODO : change 8 to height ?
+		if ((M_LY + 16 >= entry->posY && (M_LY + 16 < entry->posY + spriteHeight))
 				&& entry->posX > 0)
 		{
 			spritesFound.push_back(*entry);
@@ -163,8 +170,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
 		Sprite sprite = Sprite(spriteEntry, spriteHeight);
 
-		// TODO : le 16 doit etre remplace par spriteHeight * 2 ???
-		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn
+		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn, this is the current offset inside the sprite, can be higher than 8 if spriteHeight == 16
 		if (spriteEntry.getFlipY()) // reverse offset if flipped
 			sprite.flipY();
 		// fetch the 8 pixel of the sprite in a tmp buffer
@@ -193,13 +199,12 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
     unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
+	// this is to loop back to 0 when we overflow the background map with the viewport
 	yOffsetInMap %= 32;
 	xOffsetInMap %= 32;
 
     unsigned int addrInMap = BGMap + xOffsetInMap + (yOffsetInMap * 32);
     int tileNumber = mem[addrInMap];
-	// 2 * 8 because each tile is 2 * 8 and we need to skip the X previous tiles
-	// (which have this size)
     return getTile(BGDataAddress, tileNumber, BGP);
 }
 
@@ -207,18 +212,18 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
 TilePixels Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)
 {
   unsigned int windowMap = BIT(M_LCDC, 6) ? 0x9C00 : 0x9800;
-  unsigned int windowDataAddress = BIT(M_LCDC, 4) ? 0x8800 : 0x8000;
-
-  // 32 is because each line is 32 byte, windowCurrentLine because it may or may not be updated
-  // if it was rendered on previous lines NOTE unsure about this, need to be tested
-  // div by 8 because each tile is 8 * 8 byte
-  yOffsetInMap = 32 * (yOffsetInMap / 8);
+  unsigned int windowDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
   unsigned int addressInMap = windowMap + xOffsetInMap + (yOffsetInMap * 32);
+
   // condition is there to see if we need to loop over 1024 it should never happen if i understood correctly
   if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff)
 	  std::cerr << "offset in window tile is superior to 1024 to fetch the tile data and is: " <<  xOffsetInMap + yOffsetInMap << std::endl;
   int tileNumber = mem[addressInMap];
-  //unsigned int yOffset = 2 * (yOffsetInMap % 8);
   return getTile(windowDataAddress, tileNumber, BGP);
+}
+
+void	Ppu::resetWindowCounter()
+{
+	windowCounter = 0;
 }

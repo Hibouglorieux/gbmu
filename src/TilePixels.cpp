@@ -21,14 +21,21 @@ std::array<int, 8> TilePixels::getColorLine(int y)
 {
 	std::array<int, 8> retLine = getLineColorCode(y);
 
-	for (int x = 0; x < 8; x++)
-		retLine[x] = getColor(retLine[x], paletteAddress);
+	// means the tile is valid, else return 0
+	if (paletteAddress != 0x0)
+		for (int x = 0; x < 8; x++)
+			retLine[x] = getColor(retLine[x], paletteAddress);
 	return retLine;
 }
 
 std::array<int, 8> TilePixels::getLineColorCode(int y)
 {
 	return data[y];
+}
+
+TilePixels::TilePixels()
+{
+	paletteAddress = 0;
 }
 
 

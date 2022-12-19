@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/17 15:45:49 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/19 17:37:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ bool Loop::loop()
 				Screen::drawPoint(j, i, finalLine[j]);
 			}
 		}
+		Ppu::resetWindowCounter();
 		Screen::drawVRam();
 		Screen::drawBG();
 		/* Manage events */
