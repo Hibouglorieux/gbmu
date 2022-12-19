@@ -12,7 +12,6 @@
 
 #include "../includes/Clock.hpp"
 #include "../includes/Gameboy.hpp"
-//#include "../includes/define.hpp"
 
 bool Clock::cgbMode = false;
 int Clock::timaClock = 0;

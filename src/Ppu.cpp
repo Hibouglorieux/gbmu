@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/Ppu.hpp"
-#include "../includes/Gameboy.hpp"
 #include <algorithm>
 #include <iostream>
 

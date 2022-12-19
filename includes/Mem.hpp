@@ -14,7 +14,6 @@
 #ifndef MEM_CLASS_H
 # define MEM_CLASS_H
 #include <string>
-#include "define.hpp"
 
 
 class Mem;

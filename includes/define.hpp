@@ -38,12 +38,19 @@
 #define GBSTATE_PX_TRANSFERT 3
 
 
+/* SPRITES */
+
+#define OBP0 (0xFF48) // Object/Sprite palette 0
+#define OBP1 (0xFF49) // Object/Sprite palette 1
+
  /*Main */
 
 #define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/11-op a,(hl).gb"
 // #define DEFAULT_PATH_TO_FILE "./tetris.gb"
 
 /* PPU */
+#define PIXEL_PER_LINE 160
+
 //VRAM:
 //starts at 8000 to 97FF
 //0x8000 is always sprites, background can be either at 0x8000 or 0x8800
@@ -90,8 +97,8 @@
 #define LYC 0xFF45 //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
 #define DMA 0xFF46 // DMA transfer and start
 #define BGP 0xFF47 // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
-#define OBP0 0xFF48 // Object/Sprite palette 0
-#define OBP1 0xFF49 // Object/Sprite palette 1
+//#define OBP0 0xFF48 // Object/Sprite palette 0
+//#define OBP1 0xFF49 // Object/Sprite palette 1
 #define WY 0xFF4 // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
 #define WX 0xFF4 // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
 #define WX_OFFSET (7)
@@ -100,6 +107,7 @@
 
 #define NB_LINES 160
 #define NB_COLUMN 144
+
 
 #define M_LCDC (mem[LCDC])
 #define M_LCDC_STATUS (mem[LCDC_STATUS])
@@ -115,7 +123,19 @@
 #define M_LCD_Y (mem[LCD_Y])
 #define M_VBK (mem[VBK])
 
+#define MAX_SPRITES 40
+
 /* CPU */
 #define PHL (mem[HL])//Mem::read_u8(Cpu::HL)
 #define EI 0xFFFF
 #define IF 0xFF0F
+
+/* JOYPAD */
+# define JOYPAD_MSK_START	0x80
+# define JOYPAD_MSK_SELECT 	0x40
+# define JOYPAD_MSK_B 		0x20
+# define JOYPAD_MSK_A 		0x10
+# define JOYPAD_MSK_DOWN	0x08
+# define JOYPAD_MSK_UP 		0x04
+# define JOYPAD_MSK_LEFT 	0x02
+# define JOYPAD_MSK_RIGHT 	0x01

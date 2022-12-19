@@ -8,7 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
-#include <stdio.h>
+#include <cstdio>
 #include <SDL2/SDL.h>
 #include "imconfig.h"
 #include "Cpu.hpp"

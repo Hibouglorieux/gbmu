@@ -18,14 +18,14 @@
 #include "Utility.hpp"
 #include <string>
 #include <deque>
-#include "define.hpp"
+//#include "define.hpp"
 #include <iostream>
 #include <iomanip> // setw
 #include <utility>
 
 class Cpu {
 public:
-    static void run();
+//    static void run();
 
 	static std::deque<int> FIFO_stack(int opcode);
 	static void printFIFO(std::deque<int> fifo);
@@ -51,7 +51,7 @@ public:
 	static bool getCarryFlag();
 
 	static const unsigned char& getData(int i);
-	static void setData(int i);
+//	static void setData(int i);
 
     static void handle_timer();
     static uint32_t divReg;

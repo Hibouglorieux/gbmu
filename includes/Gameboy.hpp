@@ -30,13 +30,13 @@ public:
 	static Clock gbClock;
 	static void init();
 	static bool loadRom(std::string pathToFile);
-	static bool run();
+//	static bool run();
 	static Mem& getMem();
 	static Clock& getClock();
 	static void setState(int newState);
 	static int getState();
 	static void pollEvent();
-	static void LYCallback();
+//	static void LYCallback();
 private:
 	static int currentState;
 };

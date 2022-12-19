@@ -42,9 +42,9 @@
 class Clock {
 public:
 	Clock();
-	virtual ~Clock(void);
+	virtual ~Clock();
 	int& operator+=(int addValue);
-	operator int();
+	explicit operator int();
 private:
 	int 			clock;
 	static bool		cgbMode;
