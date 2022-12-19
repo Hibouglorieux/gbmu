@@ -1,13 +1,3 @@
-
-# Progress bar with on line output printing. This script get the maximum
-# lines , then expr a compilation percentage.
-ifneq ($(words $(MAKECMDGOALS)),1)
-.DEFAULT_GOAL		=	make
-%:
-	  @$(MAKE) $@ --no-print-directory -rRf $(firstword $(MAKEFILE_LIST))
-else
-
-
 ifndef ECHO
 T					:=	$(shell $(MAKE) $(MAKECMDGOALS) --no-print-directory \
 	  -nrRf $(firstword $(MAKEFILE_LIST)) \
@@ -63,10 +53,15 @@ PATHS				+=	$(O_PATH)$(IMGUI)
 SRC					+= $(S_PATH)Clock.cpp
 SRC					+= $(S_PATH)Gameboy.cpp
 SRC					+= $(S_PATH)Joypad.cpp
+SRC					+= $(S_PATH)Loop.cpp
 SRC					+= $(S_PATH)main.cpp
 SRC					+= $(S_PATH)Mem.cpp
 SRC					+= $(S_PATH)Ppu.cpp
 SRC					+= $(S_PATH)Screen.cpp
+SRC					+= $(S_PATH)Sprite.cpp
+SRC					+= $(S_PATH)TilePixels.cpp
+
+
 
 SRC					+= $(S_PATH)$(CPU)Cpu.cpp
 SRC					+= $(S_PATH)$(CPU)CpuUtility.cpp
@@ -97,7 +92,7 @@ SRC					+= $(S_PATH)$(IMGUI)imgui_widgets.cpp
 HDR					+=	Clock.hpp
 HDR					+=	Cpu.hpp
 HDR					+=	Debugger.hpp
-HDR					+=	define.hpp
+#HDR					+=	define.hpp
 HDR					+=	Gameboy.hpp
 HDR					+=	imconfig.h
 HDR					+=	imgui.h
@@ -114,6 +109,8 @@ HDR					+=	Loop.hpp
 HDR					+=	Mem.hpp
 HDR					+=	Ppu.hpp
 HDR					+=	Screen.hpp
+HDR					+=	Sprite.hpp
+HDR					+=	TilePixels.hpp
 HDR					+=	Utility.hpp
 HDR					+=	Utility.tpp
 
@@ -132,7 +129,7 @@ vpath %.tpp $(H_PATH)
 # Variables
 
 DEBUG				=
-CFLAGS				=	-Wall -Wextra -Werror -std=gnu++14
+CFLAGS				=	-Wall -Wextra -std=gnu++14  #-Werror
 ifeq ($(DEBUG), g)
 	CFLAGS			=	-g
 else ifeq ($(DEBUG), fsanitize)
@@ -212,6 +209,4 @@ re:
 
 ifndef VERBOSE
 .SILENT:
-endif
-
 endif

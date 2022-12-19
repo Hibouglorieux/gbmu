@@ -125,6 +125,28 @@ int Debugger::start() {
     hexdump_debugger();
     register_debugger();
 
+    {
+        ImGui::Begin("VRAM");
+        Screen::drawVRam();
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("BG");
+        Screen::drawBG();
+        ImGui::End();
+    }
+
+   	int clockDiff = 0;
+
+	clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
+
+    {
+        ImGui::Begin("PPU");
+        Screen::drawPpu(clockDiff);
+        ImGui::End();
+    }
+
     ImGui::Render();
     SDL_SetRenderDrawColor(Screen::DBG_rend, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
     SDL_RenderClear(Screen::DBG_rend);

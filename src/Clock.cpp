@@ -12,7 +12,7 @@
 
 #include "../includes/Clock.hpp"
 #include "../includes/Gameboy.hpp"
-#include "../includes/define.hpp"
+//#include "../includes/define.hpp"
 
 bool Clock::cgbMode = false;
 int Clock::timaClock = 0;
@@ -36,11 +36,13 @@ Clock::~Clock()
 
 
 
+// NOTE : addValue is in cycle in this context
 int&	Clock::operator+=(int addValue)
 {
-	int timaFreqDivider = 1024;
+	static int clocks_array[4] = {1024, 16, 64, 256};
+	int timaFreqDivider = 0;
 
-	clock += addValue;
+	clock += addValue * 4;
 
 	/* Handle DIV */
 	divClock += addValue;
@@ -50,23 +52,17 @@ int&	Clock::operator+=(int addValue)
 	/* Handle TIMA */
 	if ((mem[TAC] & (1 << 2)) != 0) {
 		/* Calculate TIMA frequency divider TODO CGB Mode is not handled */
-		if ((mem[TAC] & 0x3) == 1) {
-			timaFreqDivider = 16;
-		} else if ((mem[TAC] & 0x3) == 2) {
-			timaFreqDivider = 64;
-		} else if ((mem[TAC] & 0x3) == 3) {
-			timaFreqDivider = 256;
-		}
-		timaClock += addValue;
-		if (mem[TIMA] + timaClock / timaFreqDivider > 0xFF) {
+		timaFreqDivider = clocks_array[mem[TAC] & 3];
+		timaClock += addValue * 4;
+		if ((int)mem[TIMA] + timaClock / timaFreqDivider > 0xFF) {
 			/* Request Interrupt */
 			Cpu:: request_interrupts(TIMER_INT_BIT); // mem[0xFF0F] |= (1 << 2); // TODO request interrupts fct
 			/* Reset TIMA to TMA and add the rest */
-            mem[TIMA] = mem[TMA] + 256 -  mem[TIMA] + timaClock / timaFreqDivider; //			M_TIMA = (int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider));
+			mem[TIMA] = (uint8_t)((int)mem[TMA] + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider)));
 			timaClock %= timaFreqDivider;
 		}
 		else {
-            mem[TIMA] += timaClock / timaFreqDivider; //			M_TIMA += timaClock / timaFreqDivider;
+            mem[TIMA] += timaClock / timaFreqDivider; //			mem[TIMA += timaClock / timaFreqDivider;
 			timaClock %= timaFreqDivider;
 		}
 	}

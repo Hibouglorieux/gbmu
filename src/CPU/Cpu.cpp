@@ -12,7 +12,7 @@
 
 #include "../../includes/Cpu.hpp"
 #include <functional>
-#include "../../includes/define.hpp"
+//#include "../../includes/define.hpp"
 
 std::deque<int> Cpu::fifo;
 
@@ -55,7 +55,16 @@ void Cpu::loadBootRom()
     mem[LY] = 0x90; //mem[0xFF44] = 0x90;
 }
 
-
+bool  interrupt_halt(void) {
+    if (Cpu::halted) {
+        if (Cpu::interrupts_master_enable || (mem[EI] & mem[IF])) {
+            Cpu::halted = false;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
 
 void Cpu::printFIFO(std::deque<int> fifo)
 {
@@ -104,29 +113,21 @@ void Cpu::handle_timer() {
     }
 }
 
-
-auto  interrupt_halt(unsigned char opcode) -> bool {
-    if (!Cpu::halted && Cpu::interrupts_flag && opcode != 0xf3) {
-        Cpu::interrupts_master_enable = true;
-    }
-    if (Cpu::halted) {
-        if (Cpu::interrupts_master_enable || (mem[EI] & (mem[IF]))) {
-            Cpu::halted = false;
-        } else {
-            return false;
-        }
-    }
-    return true;
-}
-
 auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 {
-	unsigned char opcode = readByte();
+	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
    	fifo = FIFO_stack(opcode);
-    if (!interrupt_halt(opcode)) {
+    if (!interrupt_halt()) {
+	    /* Increment one cycle */
+	    clock = 1;
+	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
+    }
+    opcode = readByte();
+    if (Cpu::interrupts_flag && opcode != 0xf3) {
+        Cpu::interrupts_master_enable = true;
     }
     switch (opcode)
 	{
@@ -435,15 +436,18 @@ auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 	return {(int)opcode, clock};
 }
 
-void Cpu::run() {
-	std::pair<unsigned char, unsigned int>r;
+int	Cpu::executeClock(int clockStop)
+{
+	int countClock = 0;
+	std::pair<unsigned char, int>r;
 
-//	while (cpu_cycle < MAX_CPU_CYCLE)
-//    	{
-     r = executeInstruction();
-//		cpu_cycle += r.second;
-//    	}
-    Gameboy::gbClock += r.second;
+	while (countClock < clockStop)
+    	{
+        	Cpu::handle_interrupts();
+        	r = executeInstruction();
+		countClock += r.second;
+    	}
+	return (countClock);
 }
 
 void	Cpu::updateLY(int iter)

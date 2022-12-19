@@ -11,7 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/Gameboy.hpp"
-#include "../includes/define.hpp"
+//#include "../includes/define.hpp"
+#include "../includes/Loop.hpp"
 #include <iostream>
 
 int main(int argc, char** argv)
@@ -40,6 +41,7 @@ int main(int argc, char** argv)
 
 
 	Gameboy::init();
-	Gameboy::run();
+//	Gameboy::run();
+    Loop::loop();
 	return (0);
 }

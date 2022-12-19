@@ -36,32 +36,32 @@ bool Gameboy::loadRom(std::string pathToFile)
 	return gbMem.isValid;
 }
 
-bool Gameboy::run()
-{
-
-    Gameboy::quit = false;
-    while (!Gameboy::quit) {
-	/* Render clear */
-		Screen::clear();
-		Gameboy::setState(GBSTATE_V_BLANK);
-//		Cpu::request_interrupts(VBLANK_INT_BIT);
-		Cpu::updateLY(10);
-        Cpu::run();
-        // Cpu::handle_timer();
-	    Ppu::run();
-        Cpu::handle_interrupts();
-		Screen::drawVRam();
-		Screen::drawBG();
-        Debugger::start();
-		/* Manage events */
-		Gameboy::pollEvent();
-		/* Render present */
-		Screen::update();
-		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-//		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    return true ; //no need to return ??
-}
+//bool Gameboy::run()
+//{
+//
+//    Gameboy::quit = false;
+//    while (!Gameboy::quit) {
+//	/* Render clear */
+//		Screen::clear();
+//		Gameboy::setState(GBSTATE_V_BLANK);
+////		Cpu::request_interrupts(VBLANK_INT_BIT);
+//		Cpu::updateLY(10);
+//        Cpu::run();
+//        // Cpu::handle_timer();
+////	    Ppu::run();
+//        Cpu::handle_interrupts();
+//		Screen::drawVRam();
+//		Screen::drawBG();
+//        Debugger::start();
+//		/* Manage events */
+//		Gameboy::pollEvent();
+//		/* Render present */
+//		Screen::update();
+//		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
+////		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//    }
+//    return true ; //no need to return ??
+//}
 
 void Gameboy::setState(int newState)
 {

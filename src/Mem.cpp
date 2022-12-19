@@ -13,7 +13,7 @@
 #include "../includes/Mem.hpp"
 #include "../includes/Cpu.hpp"
 
-#include "../includes/define.hpp"
+//#include "../includes/define.hpp"
 #include <fstream>
 #include <iostream>
 
