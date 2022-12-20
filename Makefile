@@ -21,6 +21,7 @@ FILES = main.cpp \
 		Joypad.cpp \
 		Gameboy.cpp \
 		TilePixels.cpp \
+		CpuStackTrace.cpp \
 		Sprite.cpp
 
 

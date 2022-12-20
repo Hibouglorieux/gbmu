@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 02:19:03 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/20 21:05:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 
 #include "Gameboy.hpp"
 #include "Utility.hpp"
+#include "CpuStackTrace.hpp"
 #include <string>
-#include <deque>
 #include <iostream>
 #include <iomanip> // setw
 #include <utility>
@@ -35,9 +35,8 @@
 class Cpu {
 public:
 
-	static std::deque<int> FIFO_stack(int opcode);
-	static void printFIFO(std::deque<int> fifo);
-	static std::deque<int> fifo;
+	static CpuStackTrace stackTrace;
+	static StackData captureCurrentState();
 
 
 	static int executeClock(int clockStop);

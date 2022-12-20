@@ -6,15 +6,14 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 02:21:32 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/20 21:05:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include <functional>
 
-std::deque<int> Cpu::fifo;
-
+CpuStackTrace Cpu::stackTrace;
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
@@ -50,6 +49,9 @@ void Cpu::loadBootRom()
 	M_LY = 0x90;
 	// M_LCDC = 0x91;
 	M_LCDC_STATUS = 0x81;
+	stackTrace.PCBreak = 0x021D;
+	stackTrace.breakActive = false;
+	//stackTrace.opcodeBreak = 0xCB27;
 }
 
 void	Cpu::request_interrupt(int i)
@@ -98,24 +100,11 @@ bool  interrupt_halt(void) {
     return true;
 }
 
-void Cpu::printFIFO(std::deque<int> fifo)
-{
-	for (int i : fifo)
-	{
-		std::cout << "OPCODE :" << Cpu::fifo[i] << std::endl;
-	}
-}
-
-std::deque<int> Cpu::FIFO_stack(int opcode){
-	fifo.push_front(opcode);
-	return fifo;
-}
-
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
 	unsigned char opcode = 0;
 	int clock = 0;
-	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
+	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
 	    clock = 1;
@@ -124,7 +113,6 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
     }
 	// debug(readByte(false));
     opcode = readByte();
-   	fifo = FIFO_stack(opcode);
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
     }
@@ -420,6 +408,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 						instruction = [&](){ return set_n_r8(targetBit, targetRegister);};
 						break;
 					default:
+						stackTrace.print();
 						logErr("exec: Error unknown prefix instruction opcode");
 				}
 			}
@@ -427,12 +416,32 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 		default:
 			{
 				std::cerr << "previuous opcode: 0x" << std::hex << ((int)mem[PC - 2]) << std::endl;
+				stackTrace.print();
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
 	clock = instruction();
 	g_clock += clock;
 	return std::pair<unsigned char, int>((int)opcode, clock);
+}
+
+StackData	Cpu::captureCurrentState()
+{
+	StackData stackData;
+
+	stackData.PC = PC;
+	stackData.SP = SP;
+	stackData.AF = AF;
+	stackData.BC = BC;
+	stackData.DE = DE;
+	stackData.opcode = mem[PC];
+	if (mem[PC] == 0xCB)
+	{
+		stackData.opcode <<= 8;
+		stackData.opcode|= mem[PC + 1];
+	}
+	stackData.customData = "";
+	return stackData;
 }
 
 int	Cpu::executeClock(int clockStop)
@@ -442,6 +451,7 @@ int	Cpu::executeClock(int clockStop)
 
 	while (countClock < clockStop)
     	{
+			stackTrace.add(captureCurrentState());
         	Cpu::handle_interrupts();
         	r = executeInstruction();
 		countClock += r.second;
