@@ -20,7 +20,7 @@ struct TilePixels {
 	std::array<int, 8> getColorLine(int y);
 	std::array<int, 8> getLineColorCode(int y);
 
-	TilePixels(){}
+	TilePixels();
     TilePixels(std::array<std::array<int, 8>, 8> val);
     TilePixels(int tileAddress, unsigned short newPaletteAddress);
 	unsigned short paletteAddress;

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/17 15:45:49 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/19 17:37:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,15 +25,14 @@
 
 bool Loop::loop()
 {
-
 	while (!Gameboy::quit)
 	{
 		/* Render clear */
 		Screen::clear();
 		Gameboy::setState(GBSTATE_V_BLANK);
+		Cpu::request_interrupt(IT_VBLANK);
 		Cpu::updateLY(10);
-        Debugger::start();
-//		Screen::drawBG();
+	        Debugger::start();
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */

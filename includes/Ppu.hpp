@@ -45,8 +45,10 @@ public:
 	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
 	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
+	static void resetWindowCounter();
 
 private:
+	static unsigned char windowCounter;
 };
 
 #endif

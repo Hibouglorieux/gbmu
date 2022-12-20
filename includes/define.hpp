@@ -25,7 +25,8 @@
 
 #define MEM_SIZE (0xFFFF+ 1)
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
-
+# define SET(val, bit) {val |= (1 << bit);}
+# define RES(val, bit) {val &= ~(1 << bit);}
 /*Screen */
 #define QUAD_COLOR 0b11
 
@@ -129,6 +130,14 @@
 #define PHL (mem[HL])//Mem::read_u8(Cpu::HL)
 #define EI 0xFFFF
 #define IF 0xFF0F
+#define M_EI (mem[0xFFFF])
+#define M_IF (mem[0xFF0F])
+
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
 
 /* JOYPAD */
 # define JOYPAD_MSK_START	0x80

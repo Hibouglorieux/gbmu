@@ -125,17 +125,17 @@ int Debugger::start() {
     hexdump_debugger();
     register_debugger();
 
-    {
-        ImGui::Begin("VRAM");
-        Screen::drawVRam();
-        ImGui::End();
-    }
-
-    {
-        ImGui::Begin("BG");
-        Screen::drawBG();
-        ImGui::End();
-    }
+//    {
+//        ImGui::Begin("VRAM");
+//        Screen::drawVRam();
+//        ImGui::End();
+//    }
+//
+//    {
+//        ImGui::Begin("BG");
+//        Screen::drawBG();
+//        ImGui::End();
+//    }
 
    	int clockDiff = 0;
 

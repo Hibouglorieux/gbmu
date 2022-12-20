@@ -193,15 +193,18 @@ bool	Cpu::getCarryFlag()
 	return (F >> 4) & 1;
 }
 
-unsigned char Cpu::readByte()
+unsigned char Cpu::readByte(int incrementPc)
 {
-	return mem[PC++];
+	unsigned char val = mem[PC];
+	if (incrementPc)
+		PC++;
+	return val;
 }
 
-unsigned short Cpu::readShort()
+unsigned short Cpu::readShort(int incrementPc)
 {
-	unsigned short shortVal = readByte();
-	shortVal += ((unsigned short)readByte() << 8);
+	unsigned short shortVal = readByte(incrementPc);
+	shortVal += ((unsigned short)readByte(incrementPc) << 8);
 	return shortVal;
 }
 

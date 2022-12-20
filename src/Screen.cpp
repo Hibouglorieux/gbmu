@@ -141,6 +141,7 @@ void	Screen::drawPpu(int clockDiff) {
             Screen::drawPoint(j, i, finalLine[j], Screen::DBG_rend, 2);
         }
     }
+	Ppu::resetWindowCounter(); 
     ImGui::Image((void*)(intptr_t)Screen::Ppu_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
 }
@@ -237,68 +238,6 @@ bool	Screen::create(void)
 	// Setup Platform/Renderer backends
 	ImGui_ImplSDL2_InitForSDLRenderer(DBG_win, DBG_rend);
 	ImGui_ImplSDLRenderer_Init(DBG_rend);
-
-//	window = SDL_CreateWindow("GBMU",
-//			SDL_WINDOWPOS_UNDEFINED,
-//			SDL_WINDOWPOS_UNDEFINED,
-//			160 * 4,
-//			144 * 4,
-//			0);
-//
-//	if (!window) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-//
-//
-//	renderer = SDL_CreateRenderer(window, -1, 0);
-//	if (!renderer) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-
-//	vRamWindow = SDL_CreateWindow("VRAM",
-//			SDL_WINDOWPOS_UNDEFINED,
-//			SDL_WINDOWPOS_UNDEFINED,
-//			16 * 8 * scale + 16 * scale,
-//			16 * 8 * scale + 16 * scale,
-//			0);
-//
-//	if (!vRamWindow) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-//	vRamRenderer = SDL_CreateRenderer(vRamWindow, -1, 0);
-//	if (!vRamRenderer) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-
-//	backgroundWindow = SDL_CreateWindow("BGMap",
-//			SDL_WINDOWPOS_UNDEFINED,
-//			SDL_WINDOWPOS_UNDEFINED,
-//			(32) * 8 * scaleBG + 32 * scaleBG,
-//			(32) * 8 * scaleBG + 32 * scaleBG,
-//			0);
-//
-//	if (!backgroundWindow) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-//	backgroundRenderer = SDL_CreateRenderer(backgroundWindow, -1, 0);
-//	if (!backgroundRenderer) {
-//		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-//		return (false);
-//	}
-//	SDL_RenderClear(renderer);
-	// if (SDL_SetRenderDrawColor(renderer, 33,  200 , 33 , 255) != 0) {
-	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
-	// 	return (false);
-	// }
-	// if (SDL_RenderClear(renderer) != 0) {
-	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
-	// 	return (false);
-	// }
 	return (true);
 }
 

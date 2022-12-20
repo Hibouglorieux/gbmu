@@ -55,7 +55,7 @@ int&	Clock::operator+=(int addValue)
 		timaClock += addValue * 4;
 		if ((int)mem[TIMA] + timaClock / timaFreqDivider > 0xFF) {
 			/* Request Interrupt */
-			Cpu:: request_interrupts(TIMER_INT_BIT); // mem[0xFF0F] |= (1 << 2); // TODO request interrupts fct
+			Cpu:: request_interrupt(TIMER_INT_BIT); // mem[0xFF0F] |= (1 << 2); // TODO request interrupts fct
 			/* Reset TIMA to TMA and add the rest */
 			mem[TIMA] = (uint8_t)((int)mem[TMA] + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider)));
 			timaClock %= timaFreqDivider;
