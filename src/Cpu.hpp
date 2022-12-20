@@ -120,7 +120,7 @@ private:
 	static unsigned char ra(unsigned short opcode);
 	static unsigned char jr_s8();
 	static unsigned char jr_s8_flag(unsigned short opcode);
-	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char loadSource);
+	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char& loadSource);
 	static unsigned char add_a_r8(unsigned char& reg);
 	static unsigned char adc_a_r8(unsigned char& reg);
 	static unsigned char sub_r8(unsigned char& reg);
