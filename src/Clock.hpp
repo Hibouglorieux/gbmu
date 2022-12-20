@@ -48,6 +48,7 @@ public:
 private:
 	int 			clock;
 	static bool		cgbMode;
+	static bool		reloadTMA;
 	static int		timaClock;
 	static int		divClock;
 };
