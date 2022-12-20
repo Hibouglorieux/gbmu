@@ -42,6 +42,7 @@ void	Screen::destroy(void)
 	SDL_DestroyRenderer(backgroundRenderer);
 	SDL_DestroyWindow(backgroundWindow);
 	SDL_Quit();
+	// Cpu::printFIFO(Cpu::fifo);
 	std::exit(0); // TODO clean properly
 }
 

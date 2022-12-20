@@ -102,13 +102,11 @@ void Cpu::printFIFO(std::deque<int> fifo)
 {
 	for (int i : fifo)
 	{
-		// std::cout << "OPCODE :" << i << std::endl;
+		std::cout << "OPCODE :" << Cpu::fifo[i] << std::endl;
 	}
 }
 
 std::deque<int> Cpu::FIFO_stack(int opcode){
-	std::deque<int> fifo;
-
 	fifo.push_front(opcode);
 	return fifo;
 }
@@ -118,7 +116,6 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
-   	fifo = FIFO_stack(opcode);
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
 		std::cout << "Halted\n";
@@ -126,8 +123,9 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }
-	debug(readByte(false));
+	// debug(readByte(false));
     opcode = readByte();
+   	fifo = FIFO_stack(opcode);
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
     }
@@ -481,7 +479,7 @@ void	Cpu::updateLY(int iter)
 	} else
 		RES(M_LCDC_STATUS, 2);
 
-	std::cout << "LY = " << std::dec << (int)M_LY << "\n";
+	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
