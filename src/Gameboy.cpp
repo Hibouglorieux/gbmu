@@ -34,8 +34,16 @@ bool Gameboy::run()
 void Gameboy::setState(int newState)
 {
 	currentState = newState;
-	mem[0xFF41] &= ~GBSTATE_MSK;
-	mem[0xFF41] |= newState;
+
+	if (newState == GBSTATE_V_BLANK && BIT(M_LCDC_STATUS, 4))
+		Cpu::request_interrupt(IT_LCD_STAT);
+	if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3))
+		Cpu::request_interrupt(IT_LCD_STAT);
+	if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5))
+		Cpu::request_interrupt(IT_LCD_STAT);
+
+	M_LCDC_STATUS &= ~GBSTATE_MSK;
+	M_LCDC_STATUS |= newState;
 }
 
 int Gameboy::getState()

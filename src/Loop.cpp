@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/17 15:45:49 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/19 17:37:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,13 @@ bool Loop::loop()
 		/* Render clear */
 		Screen::clear();
 		Gameboy::setState(GBSTATE_V_BLANK);
+		Cpu::request_interrupt(IT_VBLANK);
 		Cpu::updateLY(10);
 		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
 		for (int i = 0 ; i < 144 ; i++) {
-			finalLine = Ppu::doOneLine();
 			Gameboy::setState(GBSTATE_OAM_SEARCH);
 			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
+			finalLine = Ppu::doOneLine();
 			Gameboy::setState(GBSTATE_PX_TRANSFERT);
 			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
 			Gameboy::setState(GBSTATE_H_BLANK);
@@ -46,6 +47,7 @@ bool Loop::loop()
 				Screen::drawPoint(j, i, finalLine[j]);
 			}
 		}
+		Ppu::resetWindowCounter();
 		Screen::drawVRam();
 		Screen::drawBG();
 		/* Manage events */

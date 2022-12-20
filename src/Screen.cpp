@@ -42,6 +42,7 @@ void	Screen::destroy(void)
 	SDL_DestroyRenderer(backgroundRenderer);
 	SDL_DestroyWindow(backgroundWindow);
 	SDL_Quit();
+	// Cpu::printFIFO(Cpu::fifo);
 	std::exit(0); // TODO clean properly
 }
 
@@ -177,7 +178,7 @@ bool	Screen::create(void)
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			(32) * 8 * scaleBG + 32 * scaleBG,
-			(32) * 8 * scaleBG + 32 * scaleBG,
+			(32) * 8 * scaleBG + 32 * 2 * scaleBG,
 			0);
 
 	if (!backgroundWindow) {

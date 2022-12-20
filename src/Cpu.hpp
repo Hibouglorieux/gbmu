@@ -26,6 +26,12 @@
 #define M_EI (mem[0xFFFF])
 #define M_IF (mem[0xFF0F])
 
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
+
 class Cpu {
 public:
 
@@ -39,8 +45,8 @@ public:
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
 
-	static unsigned char readByte();
-	static unsigned short readShort();
+	static unsigned char readByte(int incrementPc = true);
+	static unsigned short readShort(int incrementPc = true);
 
 	static void setZeroFlag(bool value);
 	static void setSubtractFlag(bool value);
@@ -51,6 +57,8 @@ public:
 	static bool getSubtractFlag();
 	static bool getHalfCarryFlag();
 	static bool getCarryFlag();
+
+	static void	request_interrupt(int i);
 
 
 	static const unsigned char& getData(int i);
@@ -80,6 +88,8 @@ public:
 	static unsigned short& HL;
 	static void printRegisters();
 	static Clock cpuClock;
+
+	static void debug(int opcode);
 private:
 
 
@@ -175,5 +185,7 @@ private:
 	static void internalPush(unsigned short valueToPush);
 	static unsigned short internalPop();
 };
+
+void do_interrupts(unsigned int addr, unsigned char bit);
 
 #endif

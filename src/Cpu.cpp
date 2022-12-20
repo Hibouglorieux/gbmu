@@ -47,7 +47,44 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	mem[0xFF44] = 0x90;
+	M_LY = 0x90;
+	// M_LCDC = 0x91;
+	M_LCDC_STATUS = 0x81;
+}
+
+void	Cpu::request_interrupt(int i)
+{
+	unsigned char bit;
+	switch (i)
+	{
+	case IT_VBLANK:
+		bit = 0;
+		break;
+	case IT_LCD_STAT:
+		bit = 1;
+		break;
+	case IT_SERIAL:
+		bit = 3;
+		break;
+	case IT_TIMER:
+		bit = 2;
+		break;
+	case IT_JOYPAD:
+		bit = 4;
+		break;
+	
+	default:
+		std::cerr << "Incorrect request ask\n";
+		exit(2);
+		break;
+	}
+
+	SET(M_IF, bit);
+
+	if (interrupts_master_enable) {
+		if (M_EI & bit)
+			halted = false;
+	}
 }
 
 bool  interrupt_halt(void) {
@@ -65,13 +102,11 @@ void Cpu::printFIFO(std::deque<int> fifo)
 {
 	for (int i : fifo)
 	{
-		std::cout << "OPCODE :" << i << std::endl;
+		std::cout << "OPCODE :" << Cpu::fifo[i] << std::endl;
 	}
 }
 
 std::deque<int> Cpu::FIFO_stack(int opcode){
-	std::deque<int> fifo;
-
 	fifo.push_front(opcode);
 	return fifo;
 }
@@ -81,14 +116,16 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
-   	fifo = FIFO_stack(opcode);
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
+		std::cout << "Halted\n";
 	    clock = 1;
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }
+	// debug(readByte(false));
     opcode = readByte();
+   	fifo = FIFO_stack(opcode);
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
     }
@@ -413,46 +450,67 @@ int	Cpu::executeClock(int clockStop)
 	return (countClock);
 }
 
+void Cpu::debug(int opcode) {
+	static int count = 1;
+
+	std::cout << std::dec << count++ << "\n";
+	std::cout << std::hex << std::setw(2) << std::setfill('0') << opcode << ": ";
+	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
+	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
+	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
+}
+
 void	Cpu::updateLY(int iter)
 {
-	mem[0xFF44] += iter;
-	if (mem[0xFF44] > 153) {
-		// 144 line + V-BLANK (10 lines)
-		mem[0xFF44] = 0;
-        //TODO TEST shall i raise INT_IF bit 2 for INT ?
-	}
+	M_LY += iter;
+	M_LY %= 154;
+	// if (M_LY > 153) {
+	// 	// 144 line + V-BLANK (10 lines)
+	// 	M_LY = 0;
+    //     //TODO TEST shall i raise INT_IF bit 2 for INT ?
+	// }
+
+	if (M_LY == M_LYC) {
+		SET(M_LCDC_STATUS, 2);
+		if (BIT(M_LCDC_STATUS, 6)) {
+			// do_interrupts(IT_LCD_STAT, 1);
+			request_interrupt(IT_LCD_STAT);
+		}
+	} else
+		RES(M_LCDC_STATUS, 2);
+
+	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
+	std::cout << "Doing interrupt\n";
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
-    mem[0xFF0F] &= ~bit;
+    RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
 }
-
-#define IT_VBLANK 0x40
-#define IT_LCD_STAT 0x48
-#define IT_TIMER 0x50
-#define IT_SERIAL 0x58
-#define IT_JOYPAD 0x60
 
 void Cpu::handle_interrupts() {
 
     if (Cpu::interrupts_master_enable) {
         if (M_EI && M_IF) {
-                if ((M_EI & (1)) && (M_IF & (1))) {
+                if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
                         do_interrupts(IT_VBLANK,  1);
-                } else if ((M_EI & (1 << 1)) && (M_IF & (1<<1))) {
-                        do_interrupts(IT_LCD_STAT, (1 << 1));
-                } else if ((M_EI & (1 << 2)) && (M_IF & (1 << 2))) {
-                        do_interrupts(IT_TIMER, (1 << 2));
-                } else if ((M_EI & (1 << 3)) && (M_IF & (1 << 3))) {
-                        do_interrupts(IT_SERIAL, (1 << 3));
-                } else if ((M_EI & (1 << 4)) && (M_IF & (1 << 4))) {
-                        do_interrupts(IT_JOYPAD, (1 << 4));
+
+                } else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
+                        do_interrupts(IT_LCD_STAT, 1);
+
+                } else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
+                        do_interrupts(IT_TIMER, 2);
+
+                } else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
+                        do_interrupts(IT_SERIAL, 3);
+
+                } else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
+                        do_interrupts(IT_JOYPAD, 4);
                 } else {
                     std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
 	                Cpu::interrupts_master_enable = false;
