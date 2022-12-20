@@ -25,6 +25,7 @@
 
 bool Loop::loop()
 {
+    int clockdiff = 0;
 	while (!Gameboy::quit)
 	{
 		/* Render clear */
@@ -32,11 +33,11 @@ bool Loop::loop()
 		Gameboy::setState(GBSTATE_V_BLANK);
 		Cpu::request_interrupt(IT_VBLANK);
 		Cpu::updateLY(10);
-	        Debugger::start();
+        Debugger::start(clockdiff);
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */
-		Screen::update();
+//		Screen::update();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 		//Cpu::printFIFO(Cpu::fifo);	

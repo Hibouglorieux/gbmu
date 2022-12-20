@@ -10,7 +10,7 @@
 /* ************************************************************************** */
 
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include "../includes/Screen.hpp"
 #include "../includes/Ppu.hpp"
 #include "../includes/imgui.h"
@@ -20,11 +20,11 @@
 #include "../includes/imgui_impl_sdl.h"
 
 
-SDL_Texture * Screen::VRam_texture = NULL;
-SDL_Texture * Screen::BG_texture = NULL;
-SDL_Texture * Screen::Ppu_texture = NULL;
-SDL_Window* Screen::DBG_win = NULL;
-SDL_Renderer* Screen::DBG_rend = NULL;
+SDL_Texture * Screen::VRam_texture = nullptr;
+SDL_Texture * Screen::BG_texture = nullptr;
+SDL_Texture * Screen::Ppu_texture = nullptr;
+SDL_Window* Screen::DBG_win = nullptr;
+SDL_Renderer* Screen::DBG_rend = nullptr;
 //
 //SDL_Window* Screen::window = NULL;
 //SDL_Renderer* Screen::renderer = NULL;
@@ -49,6 +49,9 @@ void	Screen::destroy(void)
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
+    SDL_DestroyTexture(VRam_texture);
+//    SDL_DestroyTexture(Ppu_texture);
+//    SDL_DestroyTexture(BG_texture);
 	SDL_DestroyRenderer(DBG_rend);
 	SDL_DestroyWindow(DBG_win);
 
@@ -88,7 +91,7 @@ void Draw(struct TilePixels color, int y_max, int x_max, SDL_Renderer *renderer,
 		int y_offset = (index / y_max) * 9;
 		for (int y = 0; y < x_max; y++) {
 			for (int x = 0; x < x_max; x++) {
-				Screen::drawPoint(x + x_offset, y + y_offset, color.getColorLine(y)[x], renderer);
+				Screen::drawPoint(x + x_offset, y + y_offset, color.getColorLine(y)[x], renderer, scale);
 			}
 		}
 
@@ -99,14 +102,7 @@ void	Screen::drawBG()
 	int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
     int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
-    Screen::BG_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024 * 2, 1024 * 2);
-    if (!Screen::BG_texture) {
-        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
-        return;
-    }
     SDL_SetRenderTarget(DBG_rend, Screen::BG_texture);
-
-
 	for (int i = 0; i < 32 * 32; i++) {
 		// in order to get the background map displayed we need to fetch the tile to display
 		// which is its number (fetched in BGMap which is 32 * 32), then we need
@@ -119,8 +115,9 @@ void	Screen::drawBG()
 }
 
 void	Screen::drawPpu(int clockDiff) {
-	std::array<int, PIXEL_PER_LINE> finalLine;
+	std::array<int, PIXEL_PER_LINE> finalLine{};
 
+    SDL_SetRenderTarget(DBG_rend, Screen::Ppu_texture);
     for (int i = 0; i < 144; i++) {
         finalLine = Ppu::doOneLine();
         Gameboy::setState(GBSTATE_OAM_SEARCH);
@@ -131,36 +128,29 @@ void	Screen::drawPpu(int clockDiff) {
         clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
         Cpu::updateLY(1);
         /* Drawing time */
-        Screen::Ppu_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
-        if (!Screen::Ppu_texture) {
-            fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
-            return;
-        }
-        SDL_SetRenderTarget(DBG_rend, Screen::Ppu_texture);
         for (int j = 0; j < PIXEL_PER_LINE; j++) {
             Screen::drawPoint(j, i, finalLine[j], Screen::DBG_rend, 2);
         }
     }
 	Ppu::resetWindowCounter(); 
-    ImGui::Image((void*)(intptr_t)Screen::Ppu_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
+    ImGui::Image(Screen::Ppu_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
 }
 
 void	Screen::drawVRam(void)
 {
     int vRamAddress = 0x8000;
-    Screen::VRam_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
-    if (!Screen::VRam_texture) {
-        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
-        return;
-    }
+  
     SDL_SetRenderTarget(DBG_rend, Screen::VRam_texture);
-
 	for (int i = 0; i < 256; i++) {
 		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), BGP);
         Draw(tile, 16, 8, Screen::DBG_rend, i);
 	}
-    ImGui::Image((void*)(intptr_t)Screen::VRam_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
+    // if (SDL_RenderCopy(DBG_rend, Screen::VRam_texture, nullptr, nullptr)) {
+    //     fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
+    //     return;
+    // }
+    ImGui::Image(Screen::VRam_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
 }
 
@@ -217,12 +207,27 @@ bool	Screen::create(void)
 	if (DBG_rend == NULL)
 	{
 		SDL_Log("Error creating SDL_Renderer!");
-		return 0;
+		return -1;
 	}
 
-    //SDL_RendererInfo info;
-	//SDL_GetRendererInfo(renderer, &info);
-	//SDL_Log("Current SDL_Renderer: %s", info.name);
+    Screen::Ppu_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
+  	if (!Screen::Ppu_texture) {
+        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
+        return -1;
+    }
+
+  	Screen::VRam_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
+    if (!Screen::VRam_texture) {
+        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
+        return -1;
+    }
+
+
+    Screen::BG_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024 * 2, 1024 * 2);
+    if (!Screen::BG_texture) {
+        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
+        return -1;
+    }
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();

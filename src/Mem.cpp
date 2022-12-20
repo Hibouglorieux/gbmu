@@ -129,7 +129,7 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
-	unsigned char old = value;
+	// unsigned char old = value;
 	value = newValue;
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
@@ -158,9 +158,8 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
-	
-	if (addr == LYC)
-		std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
+	// if (addr == LYC)
+	// 	std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
 		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {

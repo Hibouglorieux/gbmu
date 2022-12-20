@@ -158,12 +158,12 @@ auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
    	fifo = FIFO_stack(opcode);
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
-		std::cout << "Halted\n";
+		// std::cout << "Halted\n";
 	    clock = 1;
 	    g_clock += clock;
 	    return {(int)opcode, clock};
     }
-	debug(readByte(false));
+//	debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
@@ -501,12 +501,6 @@ void Cpu::debug(int opcode) {
 
 void	Cpu::updateLY(int iter)
 {
-    mem[LY] += + iter;
-	if (mem[LY] > 153) {
-		// 144 line + V-BLANK (10 lines)
-        mem[LY] = 0;
-    //TODO TEST shall i raise INT_IF bit 2 for INT ?
-	}
 	M_LY += iter;
 	M_LY %= 154;
 	// if (M_LY > 153) {
@@ -521,15 +515,15 @@ void	Cpu::updateLY(int iter)
 			// do_interrupts(IT_LCD_STAT, 1);
 			request_interrupt(IT_LCD_STAT);
 		}
-	} else
-		RES(M_LCDC_STATUS, 2);
-
-	std::cout << "LY = " << std::dec << (int)M_LY << "\n";
+	} else {
+        RES(M_LCDC_STATUS, 2);
+    }
+//	std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
-	std::cout << "Doing interrupt\n";
+//	std::cout << "Doing interrupt\n";
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
