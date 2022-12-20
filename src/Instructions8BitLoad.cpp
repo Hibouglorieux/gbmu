@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:57:15 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/20 15:41:34 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char loadSource)
     // Load the contents of register X into register Y.
     // TODO think about verifying if register is HL
     loadTarget = loadSource;
-    return (&loadTarget == &PHL) ? 2 : 1;
+    return (&loadTarget == &PHL || &loadSource == &PHL) ? 2 : 1;
 }
 
 unsigned char Cpu::load_r_d8(unsigned char& loadTarget)

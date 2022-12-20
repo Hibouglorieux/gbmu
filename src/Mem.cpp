@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 05:57:44 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/20 19:35:32 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,10 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
 		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
-		if (newValue <= 0xF1) {
+		if (newValue <= 0xDF) {
+			unsigned char* dest = &mem[0xFE00];
+			unsigned char* src = &mem[(newValue << 8)];
+			std::cout << "Dma transfert from: " << (src - &mem[0]) << " to: " << (dest - &mem[0]) << std::endl;
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
 			std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
