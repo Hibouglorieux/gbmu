@@ -118,7 +118,6 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
     if (!interrupt_halt()) {
 	    /* Increment one cycle */
-		std::cout << "Halted\n";
 	    clock = 1;
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
