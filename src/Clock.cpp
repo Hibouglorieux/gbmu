@@ -14,6 +14,7 @@
 #include "Gameboy.hpp"
 
 bool Clock::cgbMode = false;
+bool Clock::reloadTMA = false;
 int Clock::timaClock = 0;
 int Clock::divClock = 0;
 
@@ -56,11 +57,17 @@ int&	Clock::operator+=(int addValue)
 		/* Calculate TIMA frequency divider TODO CGB Mode is not handled */
 		timaFreqDivider = clocks_array[M_TAC & 3];
 		timaClock += addValue * 4;
-		if ((int)M_TIMA + timaClock / timaFreqDivider > 0xFF) {
-			/* Request Interrupt */
-			mem[0xFF0F] |= (1 << 2);
+		if (reloadTMA) {
 			/* Reset TIMA to TMA and add the rest */
 			M_TIMA = (uint8_t)((int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider)));
+			timaClock %= timaFreqDivider;
+			reloadTMA = false;
+		}
+		else if ((int)M_TIMA + timaClock / timaFreqDivider > 0xFF) {
+			/* Request Interrupt */
+			mem[0xFF0F] |= (1 << 2);
+			M_TIMA = 0;
+			reloadTMA = true;
 			timaClock %= timaFreqDivider;
 		}
 		else {
