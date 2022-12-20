@@ -65,6 +65,13 @@ int&	Clock::operator+=(int addValue)
 		}
 		else {
 			M_TIMA += timaClock / timaFreqDivider;
+			// TODO DEBUG mem_timing
+			//if ((Cpu::PC >= 0xC39E && Cpu::PC <= 0xC3C9)
+			//	|| (Cpu::PC >= 0xC3C5 && Cpu::PC <= 0xC3E6)
+			//	|| (Cpu::PC >= 0xC2AF && Cpu::PC <= 0xC2FF)
+			//	) {
+			//	printf("PC=%04x TIMA=%02x AF=%04x BC=%04x DE=%04x HL=%04x timaClock=%d timaFreqDivider=%d\n", Cpu::PC, (uint8_t)M_TIMA,Cpu::AF, Cpu::BC, Cpu::DE, Cpu::HL, timaClock, timaFreqDivider);
+			//}
 			timaClock %= timaFreqDivider;
 		}
 	}

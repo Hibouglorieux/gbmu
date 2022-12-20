@@ -20,25 +20,25 @@ unsigned char Cpu::nop()
 unsigned char Cpu::stop()
 {
 //	Cpu::interrupts_master_enable = false;
-	return 0;
+	return 2;
 }
 
 unsigned char Cpu::halt()
 {
 	Cpu::halted = true;
-	return 0;
+	return 1;
 }
 
 unsigned char Cpu::di()
 {
 	Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
-	return 0;
+	return 1;
 }
 
 // The effect of EI is delayed by one instruction. This means that EI followed immediately by DI does not allow interrupts between the EI and the DI.
 unsigned char Cpu::ei()
 {
     Cpu::interrupts_flag = true;
-	return 0;
+	return 1;
 }
