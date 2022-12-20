@@ -67,13 +67,16 @@ void	Screen::drawBG()
 	unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
-	for (int i = 0; i < 256; i++) {
-		struct TilePixels tile = TilePixels(BGDataAddress + (i * 8 * 2), BGP);
-		int x_offset = (i % 16) * 9;
-		int y_offset = (i / 16) * 9;
+	for (int i = 0; i < 32 * 32; i++) {
+		// in order to get the background map displayed we need to fetch the tile to display
+		// which is its number (fetched in BGMap which is 32 * 32), then we need
+		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
+		struct TilePixels tile = TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP);
+		int x_offset = (i % 32) * 9;
+		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile[y][x], backgroundRenderer);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], backgroundRenderer, scaleBG);
 			}
 		}
 		
@@ -90,7 +93,7 @@ void	Screen::drawVRam(void)
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile[y][x], vRamRenderer);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], vRamRenderer);
 			}
 		}
 		

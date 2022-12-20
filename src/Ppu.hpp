@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 03:05:53 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/17 23:07:31 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # define PPU_CLASS_H
 
 #include "TilePixels.hpp"
+#include "Sprite.hpp"
 
 //VRAM:
 //starts at 8000 to 97FF
@@ -64,51 +65,37 @@
 #define LYC (0xFF45) //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
 #define DMA (0xFF46) // DMA transfer and start
 #define BGP (0xFF47) // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
-#define OBP0 (0xFF48) // Object/Sprite palette 0
-#define OBP1 (0xFF49) // Object/Sprite palette 1
 #define WY (0xFF4A) // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
 #define WX (0xFF4B) // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
 #define WX_OFFSET (7)
 #define LCD_Y (0xFB00) //Top edge when == 10
 #define VBK (0xFF4F) // CGB only, VRAM bank specification, 0 means bank0, 1 bank1
 
-#define NB_LINES 160
-
-struct OAM_entry {
-	unsigned char posY;
-	unsigned char posX;
-	unsigned char tileIndex;
-	unsigned char attributes;
-
-	unsigned char getBGWOverWindow() {return BIT(attributes, 7);}
-	unsigned char getFlipY() {return BIT(attributes, 6);}
-	unsigned char getFlipX() {return BIT(attributes, 5);}
-	unsigned char getPaletteNumber() {return BIT(attributes, 4);}
-	unsigned char getTileVramBank() {return BIT(attributes, 3);}
-	unsigned char getPaletteNumberCGB() {return (attributes & 0b111);}
-
-	friend bool operator==(const OAM_entry &a, const OAM_entry &b) {
-		return ((a.posX == b.posX) && (a.posY == b.posY) && (a.tileIndex == b.tileIndex) && (a.attributes == b.attributes));
-	}
-};
+#define PIXEL_PER_LINE 160
 
 struct SpriteData {
 	int color;
-	bool bShouldBeDisplayed;
+	bool bIsAboveBackground;
+	int colorCode;
+};
+
+struct BackgroundData {
+	int color;
+	int colorCode;
 };
 
 class Ppu {
 public:
 	static void setMem(Mem& cpuMem);
 
-	static std::array<int, NB_LINES> doOneLine();
-	static std::array<SpriteData, NB_LINES> getOamLine();
-	static std::array<int, NB_LINES> getBackgroundLine(); // TODO add virtual clocks
+	static std::array<int, PIXEL_PER_LINE> doOneLine();
+	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
+	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
 	static struct TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
-	static std::array<int, 8> getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
+	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
 	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
     static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 
