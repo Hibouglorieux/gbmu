@@ -31,14 +31,6 @@ Mem::Mem(int size)
 	memSize = size;
 }
 
-//void Mem::write_u8(uint16_t addr, int value) {
-//    mem[addr] = value;
-//}
-//
-//int Mem::read_u8(int addr) {
-//    return mem[addr];
-//}
-
 Mem::Mem(std::string pathToRom)
 {
 	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
@@ -158,14 +150,12 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
-	// if (addr == LYC)
-	// 	std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
 		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
-		if (newValue <= 0xF1) {
-			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
-			std::cout << "DMA transfert done" << std::endl;
-		} //TODO CGB DMA FF51->FF55
+//		if (newValue <= 0xF1) {
+//			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
+//			std::cout << "DMA transfert done" << std::endl;
+//		} //TODO CGB DMA FF51->FF55
 	}
 	return value;
 }

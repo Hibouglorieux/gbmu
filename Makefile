@@ -61,9 +61,8 @@ SRC					+= $(S_PATH)Screen.cpp
 SRC					+= $(S_PATH)Sprite.cpp
 SRC					+= $(S_PATH)TilePixels.cpp
 
-
-
 SRC					+= $(S_PATH)$(CPU)Cpu.cpp
+SRC					+= $(S_PATH)$(CPU)CpuStackTrace.cpp
 SRC					+= $(S_PATH)$(CPU)CpuUtility.cpp
 SRC					+= $(S_PATH)$(CPU)FlagOp.cpp
 SRC					+= $(S_PATH)$(CPU)Instructions8BitArithmetic.cpp
@@ -91,8 +90,9 @@ SRC					+= $(S_PATH)$(IMGUI)imgui_widgets.cpp
 
 HDR					+=	Clock.hpp
 HDR					+=	Cpu.hpp
+HDR					+=	CpuStackTrace.hpp
 HDR					+=	Debugger.hpp
-#HDR					+=	define.hpp
+HDR					+=	define.hpp
 HDR					+=	Gameboy.hpp
 HDR					+=	imconfig.h
 HDR					+=	imgui.h

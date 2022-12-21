@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 02:21:32 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/20 21:05:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include <functional>
 //#include "../../includes/define.hpp"
 
-std::deque<int> Cpu::fifo;
-
+CpuStackTrace Cpu::stackTrace;
 
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
@@ -55,6 +54,9 @@ void Cpu::loadBootRom()
 	M_LY = 0x90;
 	// M_LCDC = 0x91;
 	M_LCDC_STATUS = 0x81;
+	stackTrace.PCBreak = 0x021D;
+	stackTrace.breakActive = false;
+	//stackTrace.opcodeBreak = 0xCB27;
 }
 
 void	Cpu::request_interrupt(int i)
@@ -103,67 +105,48 @@ bool  interrupt_halt(void) {
     return true;
 }
 
-void Cpu::printFIFO(std::deque<int> fifo)
-{
-//	for (int i : fifo)
-//	{
-		// std::cout << "OPCODE :" << i << std::endl;
-//	}
-}
-
-std::deque<int> Cpu::FIFO_stack(int opcode){
-	std::deque<int> fifo;
-
-	fifo.push_front(opcode);
-	return fifo;
-}
-
-void Cpu::handle_timer() {
-    uint32_t const prev_div = divReg;
-
-    divReg++;
-
-    bool timer_update = false;
-
-    switch(mem[TAC] & (0b11)) {
-        case 0b00:
-            timer_update = (prev_div & (1 << 9)) && (!(divReg & (1 << 9)));
-            break;
-        case 0b01:
-            timer_update = (prev_div & (1 << 3)) && (!(divReg & (1 << 3)));
-            break;
-        case 0b10:
-            timer_update = (prev_div & (1 << 5)) && (!(divReg & (1 << 5)));
-            break;
-        case 0b11:
-            timer_update = (prev_div & (1 << 7)) && (!(divReg & (1 << 7)));
-            break;
-    }
-
-    if (timer_update && mem[TAC] & (1 << 2)) {
-        TimaCounter++;
-
-        if (TimaCounter == 0xFF) {
-            TimaCounter = mem[TMA];
-            Cpu::request_interrupt(TIMER_INT_BIT);
-        }
-    }
-}
+//void Cpu::handle_timer() {
+//    uint32_t const prev_div = divReg;
+//
+//    divReg++;
+//
+//    bool timer_update = false;
+//
+//    switch(mem[TAC] & (0b11)) {
+//        case 0b00:
+//            timer_update = (prev_div & (1 << 9)) && (!(divReg & (1 << 9)));
+//            break;
+//        case 0b01:
+//            timer_update = (prev_div & (1 << 3)) && (!(divReg & (1 << 3)));
+//            break;
+//        case 0b10:
+//            timer_update = (prev_div & (1 << 5)) && (!(divReg & (1 << 5)));
+//            break;
+//        case 0b11:
+//            timer_update = (prev_div & (1 << 7)) && (!(divReg & (1 << 7)));
+//            break;
+//    }
+//
+//    if (timer_update && mem[TAC] & (1 << 2)) {
+//        TimaCounter++;
+//
+//        if (TimaCounter == 0xFF) {
+//            TimaCounter = mem[TMA];
+//            Cpu::request_interrupt(TIMER_INT_BIT);
+//        }
+//    }
+//}
 
 auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 {
 	unsigned char opcode = 0;
 	int clock = 0;
-	std::function<unsigned char()> instruction = [](){std::cerr << "wololo" << std::endl; return 2;};
-   	fifo = FIFO_stack(opcode);
+	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
     if (!interrupt_halt()) {
-	    /* Increment one cycle */
-		// std::cout << "Halted\n";
 	    clock = 1;
 	    g_clock += clock;
 	    return {(int)opcode, clock};
     }
-//	debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
@@ -460,6 +443,7 @@ auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 						instruction = [&](){ return set_n_r8(targetBit, targetRegister);};
 						break;
 					default:
+						stackTrace.print();
 						logErr("exec: Error unknown prefix instruction opcode");
 				}
 			}
@@ -467,12 +451,32 @@ auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 		default:
 			{
 				std::cerr << "previuous opcode: 0x" << std::hex << ((int)mem[PC - 2]) << std::endl;
+				stackTrace.print();
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
 	clock = instruction();
 	g_clock += clock;
 	return {(int)opcode, clock};
+}
+
+StackData	Cpu::captureCurrentState()
+{
+	StackData stackData;
+
+	stackData.PC = PC;
+	stackData.SP = SP;
+	stackData.AF = AF;
+	stackData.BC = BC;
+	stackData.DE = DE;
+	stackData.opcode = mem[PC];
+	if (mem[PC] == 0xCB)
+	{
+		stackData.opcode <<= 8;
+		stackData.opcode|= mem[PC + 1];
+	}
+	stackData.customData = "";
+	return stackData;
 }
 
 int	Cpu::executeClock(int clockStop)
@@ -482,6 +486,7 @@ int	Cpu::executeClock(int clockStop)
 
 	while (countClock < clockStop)
     	{
+			stackTrace.add(captureCurrentState());
         	Cpu::handle_interrupts();
         	r = executeInstruction();
 		countClock += r.second;
@@ -518,7 +523,9 @@ void	Cpu::updateLY(int iter)
 	} else {
         RES(M_LCDC_STATUS, 2);
     }
-//	std::cout << "LY = " << std::dec << (int)M_LY << "\n";
+
+
+	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
