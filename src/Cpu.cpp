@@ -493,9 +493,8 @@ void	Cpu::updateLY(int iter)
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
-	std::cout << "Doing interrupt\n";
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
-	mem[--Cpu::SP] = Cpu::PC & 0xFF;
+    mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
     RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
@@ -507,7 +506,7 @@ void Cpu::handle_interrupts() {
     if (Cpu::interrupts_master_enable) {
         if (M_EI && M_IF) {
                 if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
-                        do_interrupts(IT_VBLANK,  1);
+                        do_interrupts(IT_VBLANK,  0);
 
                 } else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
                         do_interrupts(IT_LCD_STAT, 1);

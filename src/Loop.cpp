@@ -31,8 +31,10 @@ bool Loop::loop()
 		Screen::clear();
 		Gameboy::setState(GBSTATE_V_BLANK);
 		Cpu::request_interrupt(IT_VBLANK);
-		Cpu::updateLY(10);
-		clockDiff = (Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff)); // V-BLANK first as LY=0x90 at start
+		for (int i = 0 ; i < 10 ; i++) {
+			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
+			Cpu::updateLY(1);
+		}
 		for (int i = 0 ; i < 144 ; i++) {
 			Gameboy::setState(GBSTATE_OAM_SEARCH);
 			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
