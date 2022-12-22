@@ -421,7 +421,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
-	Cpu::debug(opcode);
+	//Cpu::debug(opcode);
 	clock = instruction();
 	g_clock += clock;
 	return std::pair<unsigned char, int>((int)opcode, clock);
