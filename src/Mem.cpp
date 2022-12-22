@@ -121,7 +121,6 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
-	unsigned char old = value;
 	value = newValue;
 	if (addr == 0xFF02 && newValue == 0x81)
 	{

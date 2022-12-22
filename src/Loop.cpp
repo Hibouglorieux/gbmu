@@ -30,7 +30,6 @@ bool Loop::loop()
 		/* Render clear */
 		Screen::clear();
 		Gameboy::setState(GBSTATE_V_BLANK);
-		Cpu::request_interrupt(IT_VBLANK);
 		for (int i = 0 ; i < 10 ; i++) {
 			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
 			Cpu::updateLY(1);

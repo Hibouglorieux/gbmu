@@ -46,9 +46,10 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	M_LY = 0x90;
-	// M_LCDC = 0x91;
-	M_LCDC_STATUS = 0x81;
+	M_LY = 0x00;
+	M_LCDC = 0x91;
+	//M_LCDC = 0x80;
+	M_LCDC_STATUS = 0x85;
 	stackTrace.PCBreak = 0x021D;
 	stackTrace.breakActive = false;
 	//stackTrace.opcodeBreak = 0xCB27;
@@ -420,6 +421,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
+	Cpu::debug(opcode);
 	clock = instruction();
 	g_clock += clock;
 	return std::pair<unsigned char, int>((int)opcode, clock);
@@ -493,9 +495,11 @@ void	Cpu::updateLY(int iter)
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
+    printf("Interrupt!! bit=%d\n", bit);
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
     mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
+    g_clock += 5;
     RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
