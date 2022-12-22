@@ -134,9 +134,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		}
 	}
 
-	if (addr == 0xFFFF)
-		Cpu::interrupts_master_enable = value;
-
 	if (addr == M_LYC) {
 		if (value == M_LY)
 			SET(M_LCDC_STATUS, 2)
