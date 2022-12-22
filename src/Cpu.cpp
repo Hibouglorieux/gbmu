@@ -421,7 +421,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 				logErr(string_format("exec: Error unknown instruction opcode: 0x%X", opcode));
 			}
 	}
-	//Cpu::debug(opcode);
+	// Cpu::debug(opcode);
 	clock = instruction();
 	g_clock += clock;
 	return std::pair<unsigned char, int>((int)opcode, clock);
@@ -496,7 +496,6 @@ void	Cpu::updateLY(int iter)
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
-    printf("Interrupt!! bit=%d\n", bit);
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
     mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;

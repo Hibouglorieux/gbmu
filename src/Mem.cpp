@@ -128,9 +128,9 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 {
 	if (addr == LCDC_STATUS) {
 		// Ignore bit 7, 1, 2 and 3
-		M_LCDC_STATUS &= 0x87;
-		M_LCDC_STATUS |= (newValue & (~0x87));
-		return (M_LCDC_STATUS);
+		value &= 0x87;
+		value |= (newValue & (~0x87));
+		return (value);
 	}
 	value = newValue;
 	if (addr == 0xFF02 && newValue == 0x81)
