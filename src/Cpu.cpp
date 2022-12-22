@@ -49,7 +49,7 @@ void Cpu::loadBootRom()
 	M_LY = 0x00;
 	M_LCDC = 0x91;
 	//M_LCDC = 0x80;
-	M_LCDC_STATUS = 0x85;
+	mem.supervisorWrite(LCDC_STATUS, 0x85);
 	stackTrace.PCBreak = 0x021D;
 	stackTrace.breakActive = false;
 	//stackTrace.opcodeBreak = 0xCB27;
@@ -469,6 +469,7 @@ void Cpu::debug(int opcode) {
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
 	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
+//	printf("IF=%02x EI=%02x\n", (uint8_t)M_IF, (uint8_t)M_EI);
 }
 
 void	Cpu::updateLY(int iter)

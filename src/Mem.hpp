@@ -48,6 +48,7 @@ public:
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
+	void supervisorWrite(unsigned int addr, unsigned char value);
 private:
 	unsigned char* internalArray;
 	unsigned int	memSize;

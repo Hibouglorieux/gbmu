@@ -49,8 +49,9 @@ void Gameboy::setState(int newState)
 	if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5))
 		Cpu::request_interrupt(IT_LCD_STAT);
 
-	M_LCDC_STATUS &= ~GBSTATE_MSK;
-	M_LCDC_STATUS |= newState;
+	unsigned char lcdcs = M_LCDC_STATUS & ~0x07;
+	lcdcs |= newState;
+	mem.supervisorWrite(LCDC_STATUS, lcdcs);
 }
 
 int Gameboy::getState()

@@ -24,6 +24,11 @@ Mem::Mem()
 	memSize = MEM_SIZE;
 }
 
+void Mem::supervisorWrite(unsigned int addr, unsigned char value)
+{
+	Mem::internalArray[addr] = value;
+}
+
 Mem::Mem(int size)
 {
 	isValid = true;
@@ -121,6 +126,12 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	if (addr == LCDC_STATUS) {
+		// Ignore bit 7, 1, 2 and 3
+		M_LCDC_STATUS &= 0x87;
+		M_LCDC_STATUS |= (newValue & (~0x87));
+		return (M_LCDC_STATUS);
+	}
 	value = newValue;
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
@@ -134,13 +145,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		}
 	}
 
-	if (addr == M_LYC) {
+	if (addr == LYC) {
 		if (value == M_LY)
 			SET(M_LCDC_STATUS, 2)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
-	if (addr == M_LY) {
+	if (addr == LY) {
 		if (value == M_LYC)
 			SET(M_LCDC_STATUS, 2)
 		else
