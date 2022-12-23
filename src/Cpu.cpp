@@ -46,7 +46,8 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	M_LY = 0x00;
+	// M_LY = 0x00;
+	M_LY = 0x90;
 	M_LCDC = 0x91;
 	//M_LCDC = 0x80;
 	mem.supervisorWrite(LCDC_STATUS, 0x85);

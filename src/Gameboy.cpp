@@ -40,9 +40,7 @@ void Gameboy::setState(int newState)
 		if (BIT(M_LCDC_STATUS, 4)) {
 			Cpu::request_interrupt(IT_LCD_STAT);
 		}
-		if (BIT(M_EI, 0)) {
-			Cpu::request_interrupt(IT_VBLANK);
-		}
+		Cpu::request_interrupt(IT_VBLANK);
 	}
 	if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3))
 		Cpu::request_interrupt(IT_LCD_STAT);
