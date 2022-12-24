@@ -46,8 +46,8 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	// M_LY = 0x00;
-	M_LY = 0x90;
+	mem.supervisorWrite(0xFF00, 0xCF);
+	//M_LY = 0x00;
 	M_LCDC = 0x91;
 	//M_LCDC = 0x80;
 	mem.supervisorWrite(LCDC_STATUS, 0x85);
@@ -113,7 +113,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }
-	// debug(readByte(false));
+    // debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
@@ -468,20 +468,21 @@ void Cpu::debug(int opcode) {
 	std::cout << std::dec << count++ << "\n";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << opcode << ": ";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
+	printf("IF=%02x EI=%02x JOY=%02x\n", (uint8_t)M_IF, (uint8_t)M_EI, (uint8_t)mem[0xFF00]);
 	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
-//	printf("IF=%02x EI=%02x\n", (uint8_t)M_IF, (uint8_t)M_EI);
 }
 
 void	Cpu::updateLY(int iter)
 {
-	M_LY += iter;
-	M_LY %= 154;
-	// if (M_LY > 153) {
-	// 	// 144 line + V-BLANK (10 lines)
-	// 	M_LY = 0;
+	if (BIT(M_LCDC, 7)) {
+		M_LY += iter;
+		M_LY %= 154;
+	}
+	else {
+		M_LY = 0;
+	}
     //     //TODO TEST shall i raise INT_IF bit 2 for INT ?
-	// }
 
 	if (M_LY == M_LYC) {
 		SET(M_LCDC_STATUS, 2);

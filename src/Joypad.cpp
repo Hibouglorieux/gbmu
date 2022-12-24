@@ -17,7 +17,7 @@ unsigned char Joypad::get()
 
 void Joypad::handleEvent(SDL_Event *ev)
 {
-	if (ev->type == SDL_KEYDOWN) {
+	if (ev->type == SDL_KEYUP) {
 		switch (ev->key.keysym.sym) {
 			case SDLK_DOWN:
 				input |= JOYPAD_MSK_DOWN;
@@ -47,7 +47,7 @@ void Joypad::handleEvent(SDL_Event *ev)
 				break;
 		}
 	}
-	if (ev->type == SDL_KEYUP) {
+	if (ev->type == SDL_KEYDOWN) {
 		switch (ev->key.keysym.sym) {
 			case SDLK_DOWN:
 				input &= ~JOYPAD_MSK_DOWN;
@@ -79,10 +79,10 @@ void Joypad::handleEvent(SDL_Event *ev)
 	}
 	if ((mem[0xFF00] & (1 << 5))) {
 		// Action button (priority TODO unsure)
-		mem[0xFF00] |= ((input >> 4) & 0x0F);
+		mem.supervisorWrite(0xFF00, mem[0xFF00] | ((input >> 4) & 0x0F));
 	}
 	else if ((mem[0xFF00] & (1 << 4))) {
 		// Direction buttons
-		mem[0xFF00] |= (input & 0x0F);
+		mem.supervisorWrite(0xFF00, mem[0xFF00] | ((input >> 4) & 0x0F));
 	}
 }

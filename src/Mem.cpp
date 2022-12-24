@@ -126,6 +126,10 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	if (addr == 0xFF00) {
+		value |= (newValue & 0xF0);
+		return (value);
+	}
 	if (addr == LCDC_STATUS) {
 		// Ignore bit 7, 1, 2 and 3
 		value &= 0x87;
@@ -133,6 +137,11 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		return (value);
 	}
 	value = newValue;
+	if (addr == LCDC) {
+		if ((value & 0x80) == 0) {
+			M_LY = 0;
+		}
+	}
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
 		if (memRef[0xFF01] == ' ')

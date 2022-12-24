@@ -22,39 +22,63 @@
 
 bool Loop::loop()
 {
+	// TODO unsure about updateScreen ? Do we update everytime ?
+	bool updateScreen = 1;
 	std::array<int, PIXEL_PER_LINE> finalLine;
 	int clockDiff = 0;
 
 	while (true)
 	{
 		/* Render clear */
-		Screen::clear();
+		if (updateScreen) {
+			Screen::clear();
+		}
 		Gameboy::setState(GBSTATE_V_BLANK);
 		for (int i = 0 ; i < 10 ; i++) {
 			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
 			Cpu::updateLY(1);
 		}
+		if (BIT(M_LCDC, 7)) {
+			M_LY = 0x00;
+		}
 		for (int i = 0 ; i < 144 ; i++) {
 			Gameboy::setState(GBSTATE_OAM_SEARCH);
 			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
-			finalLine = Ppu::doOneLine();
+			if (BIT(M_LCDC, 7)) {
+				finalLine = Ppu::doOneLine();
+				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
+					Screen::drawPoint(j, i, finalLine[j]);
+				}
+				updateScreen = 1;
+			}
+			else {
+				updateScreen = 0;
+			}
 			Gameboy::setState(GBSTATE_PX_TRANSFERT);
 			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
 			Gameboy::setState(GBSTATE_H_BLANK);
 			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
 			Cpu::updateLY(1);
 			/* Drawing time */
-			for (int j = 0 ; j < PIXEL_PER_LINE ; j++) {
-				Screen::drawPoint(j, i, finalLine[j]);
-			}
 		}
-		Ppu::resetWindowCounter();
-		Screen::drawVRam();
-		Screen::drawBG();
+		if (updateScreen) {
+			Ppu::resetWindowCounter();
+			printf("VRAM");
+			for (int i = 0 ; i < 0x200 ; i++) {
+				if (i % 32 == 0) {
+					printf("\n%04x: ", 0x8000 + i);
+				}
+				printf("%02x ", (uint8_t)mem[0x8000 + i]);
+			}
+			Screen::drawVRam();
+			Screen::drawBG();
+		}
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */
-		Screen::update();
+		if (updateScreen) {
+			Screen::update();
+		}
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 		//Cpu::printFIFO(Cpu::fifo);	
