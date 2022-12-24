@@ -50,6 +50,9 @@ public:
 	std::array<int, 8> getColoredLine(int y) const;
 	void flipY();
 	void flipX();
+    static std::array<int, 8> coloredSpriteLine;
+    static std::array<int, 8> colorCodeSpriteLine;
+
 private:
 	unsigned char	spriteHeight;
 	std::vector<std::array<int, 8>>	data;
@@ -59,7 +62,7 @@ private:
 
 	//static GamaeboyMode gbMode// need to know if CGB or DMG
 
-	OAM_entry OAM_Data;
+	OAM_entry OAM_Data{};
 };
 
 #endif

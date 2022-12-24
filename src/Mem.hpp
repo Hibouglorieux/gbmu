@@ -16,8 +16,8 @@
 #include <string>
 
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
-# define SET(val, bit) {val |= (1 << bit);}
-# define RES(val, bit) {val &= ~(1 << bit);}
+# define SET(val, bit) (val |= (1 << bit))
+# define RES(val, bit) (val &= ~(1 << bit))
 
 class Mem;
 
@@ -26,7 +26,7 @@ class MemWrap {
 		MemWrap(const Mem& parent, unsigned short offset, unsigned char& ref):
 			addr(offset), value(ref), memRef(parent) {}
 		unsigned char& operator=(unsigned char newValue);
-		unsigned char	operator+() {return value;}
+		unsigned char	operator+() const {return value;}
 		unsigned char* operator&() {return &value;}
 		operator unsigned char&() { return value; }
 		operator const unsigned char&() const { return value; }
@@ -41,7 +41,7 @@ class Mem {
 public:
 	Mem();
 	Mem(int size);
-	Mem(std::string pathToRom);
+	explicit Mem(const std::string& pathToRom);
 	Mem(const Mem& rhs);
 	const Mem& operator=(const Mem& rhs);
 	~Mem();

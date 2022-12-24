@@ -13,6 +13,7 @@
 # define SCREEN_CLASS_H
 
 #include <SDL2/SDL.h>
+#include <vector>
 
 class Screen {
 public:
@@ -29,6 +30,7 @@ public:
 
 	static SDL_Window* get();
 private:
+    static std::vector<SDL_Point> pt;
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
 	static SDL_Window*		vRamWindow;

@@ -31,8 +31,7 @@ Clock::Clock()
 }
 
 Clock::~Clock()
-{
-}
+= default;
 
 #define M_DIV	mem[0xFF04]
 #define M_TIMA	mem[0xFF05]
@@ -90,7 +89,7 @@ int&	Clock::operator+=(int addValue)
 	return clock;
 }
 
-Clock::operator int()
+Clock::operator int() const
 {
 	return clock;
 }

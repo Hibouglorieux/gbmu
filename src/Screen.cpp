@@ -15,6 +15,7 @@
 #include "Ppu.hpp"
 
 #define QUAD_COLOR 0b11
+std::vector<SDL_Point> Screen::pt(16);
 
 SDL_Window* Screen::window = NULL;
 SDL_Renderer* Screen::renderer = NULL;
@@ -42,7 +43,6 @@ void	Screen::destroy(void)
 	SDL_DestroyRenderer(backgroundRenderer);
 	SDL_DestroyWindow(backgroundWindow);
 	SDL_Quit();
-	// Cpu::printFIFO(Cpu::fifo);
 	std::exit(0); // TODO clean properly
 }
 
@@ -63,56 +63,51 @@ void	Screen::clear(void)
 	SDL_RenderClear(backgroundRenderer);
 }
 
+void Draw(struct TilePixels color, int y_max, int x_max, SDL_Renderer *renderer, int index ) {
+
+    int x_offset = (index % y_max) * 9; //WHY 9
+    int y_offset = (index / y_max) * 9;
+    for (int y = 0; y < x_max; y++) {
+        for (int x = 0; x < x_max; x++) {
+            Screen::drawPoint(x + x_offset, y + y_offset, color.getColorLine(y)[x], renderer, scale);
+        }
+    }
+}
+
 void	Screen::drawBG()
 {
 	unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
-    unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
+    int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	for (int i = 0; i < 32 * 32; i++) {
 		// in order to get the background map displayed we need to fetch the tile to display
 		// which is its number (fetched in BGMap which is 32 * 32), then we need
 		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
-		struct TilePixels tile = TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP);
-		int x_offset = (i % 32) * 9;
-		int y_offset = (i / 32) * 9;
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], backgroundRenderer, scaleBG);
-			}
-		}
-		
+        Draw(TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP)
+             , 32, 8, Screen::backgroundRenderer, i);
 	}
 }
 
 void	Screen::drawVRam(void)
 {
-    unsigned int vRamAddress = 0x8000;
+//    int vRamAddress = 0x8000;
 
-	for (int i = 0; i < 256; i++) {
-		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), BGP);
-		int x_offset = (i % 16) * 9;
-		int y_offset = (i / 16) * 9;
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], vRamRenderer);
-			}
-		}
-		
+	for (int i = 0; i < 16*16; i++) {
+        Draw(TilePixels(0x8000 + (i * 8 * 2), BGP), 16, 8, Screen::vRamRenderer, i);
 	}
 }
 
 bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, int pixelScale)
 {
-	std::vector<SDL_Point> pt(pixelScale * pixelScale);
 	int		index = 0;
 
-	SDL_RendererInfo rendererInfo;
-	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
-	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height
-			|| x < 0 || y < 0) {
-		std::cerr << __func__ << ":" << std::dec << __LINE__ << std::hex << std::endl;
-		return (false);
-	}
+//	SDL_RendererInfo rendererInfo;
+//	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
+//	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height
+//			|| x < 0 || y < 0) {
+//		std::cerr << __func__ << ":" << std::dec << __LINE__ << std::hex << std::endl;
+//		return (false);
+//	}
 	x *= pixelScale;
 	y *= pixelScale;
 	for (int i = 0 ; i < pixelScale ; i++) {
@@ -122,8 +117,8 @@ bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, in
 			index++;
 		}
 	}
-	if (SDL_SetRenderDrawColor(targetRenderer, 255 - color * (255 / 3), 
-						255 - color * (255 / 3), 
+	if (SDL_SetRenderDrawColor(targetRenderer, 255 - color * (255 / 3),
+						255 - color * (255 / 3),
 						255 - color * (255 / 3) , 255) != 0) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
@@ -177,8 +172,8 @@ bool	Screen::create(void)
 	backgroundWindow = SDL_CreateWindow("BGMap",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			(32) * 8 * scaleBG + 32 * scaleBG,
-			(32) * 8 * scaleBG + 32 * 2 * scaleBG,
+			(32) * 8 * 2 + 32 * 2,
+			(32) * 8 * 2 + 32 * 2 * 2,
 			0);
 
 	if (!backgroundWindow) {
@@ -190,7 +185,7 @@ bool	Screen::create(void)
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
-	SDL_RenderClear(renderer);
+//	SDL_RenderClear(renderer);
 	// if (SDL_SetRenderDrawColor(renderer, 33,  200 , 33 , 255) != 0) {
 	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
 	// 	return (false);

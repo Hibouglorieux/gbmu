@@ -13,6 +13,9 @@
 #include "Sprite.hpp"
 #include <algorithm>
 
+std::array<int, 8> Sprite::coloredSpriteLine {};
+std::array<int, 8> Sprite::colorCodeSpriteLine {};
+
 Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 {
 	this->OAM_Data = newOAM;
@@ -44,7 +47,7 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 }
 
 Sprite::~Sprite(void)
-{}
+= default;
 
 unsigned short Sprite::getPaletteAddr() const
 {
@@ -62,8 +65,8 @@ void Sprite::flipY()
 
 void Sprite::flipX()
 {
-	for (unsigned int i = 0; i < data.size(); i++)
-		std::reverse(data[i].begin(), data[i].end());
+	for (auto & i : data)
+		std::reverse(i.begin(), i.end());
 }
 
 int	Sprite::getColor(unsigned char byteColorCode) const
@@ -82,9 +85,9 @@ int	Sprite::getColor(unsigned char byteColorCode) const
 
 std::array<int, 8> Sprite::getColoredLine(int y) const
 {
-	std::array<int, 8> retLine = getLineColorCode(y);
+	coloredSpriteLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
-		retLine[x] = getColor(retLine[x]);
-	return retLine;
+		coloredSpriteLine[x] = getColor(coloredSpriteLine[x]);
+	return coloredSpriteLine;
 }

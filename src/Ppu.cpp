@@ -16,15 +16,22 @@
 #include <iostream>
 
 unsigned char Ppu::windowCounter = 0;
+std::array<int, PIXEL_PER_LINE> Ppu::finalLine{};
+std::array<SpriteData, PIXEL_PER_LINE> Ppu::pixelLine {};
+std::array<BackgroundData, PIXEL_PER_LINE> Ppu::backgroundLine {};
+std::array<SpriteData, PIXEL_PER_LINE> Ppu::spriteLine{};
+//std::array<int, 8> Ppu::coloredSpriteLine{};
+//std::array<int, 8> Ppu::colorCodeSpriteLine{};
+//std::vector<struct OAM_entry> Ppu::spritesFound;
+//std::vector<struct OAM_entry> Ppu::spritesFound2;
 
 std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
 {
-	auto pixelLine = getOamLine();
+	pixelLine = getOamLine();
 
-	auto backgroundLine = getBackgroundLine();
+	backgroundLine = getBackgroundLine();
 
 
-	std::array<int, PIXEL_PER_LINE> finalLine = {0};
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
 		// color code == 0 means sprite pixel is translucent
@@ -72,7 +79,6 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 
 std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 {
-	std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine;
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int xPosInLine = 0;
@@ -123,8 +129,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 
 std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
-	std::vector<struct OAM_entry> spritesFound, spritesFound2;
-	std::array<SpriteData, PIXEL_PER_LINE> spriteLine;
+	std::vector<struct OAM_entry> spritesFound, spritesFound2; //cant move in outside why ?
 	spriteLine.fill({0, false, 0}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
@@ -180,11 +185,11 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		// copy the sprite on the line
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 		{
-			std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
-			std::array<int, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
+            Sprite::coloredSpriteLine = sprite.getColoredLine(yOffset);
+            Sprite::colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 			if (x > 0)
-				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG,
-				colorCodeSpriteLine[i]}; // might need to check color 0 
+				spriteLine[x] = {Sprite::coloredSpriteLine[i], bIsAboveBG,
+				Sprite::colorCodeSpriteLine[i]}; // might need to check color 0
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about 
@@ -197,7 +202,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap)
 {
     unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
-    unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
+    int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	// this is to loop back to 0 when we overflow the background map with the viewport
 	yOffsetInMap %= 32;
@@ -212,7 +217,7 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
 TilePixels Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap)
 {
   unsigned int windowMap = BIT(M_LCDC, 6) ? 0x9C00 : 0x9800;
-  unsigned int windowDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
+  int windowDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
   unsigned int addressInMap = windowMap + xOffsetInMap + (yOffsetInMap * 32);
 

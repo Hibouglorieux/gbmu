@@ -44,7 +44,7 @@ public:
 	Clock();
 	virtual ~Clock(void);
 	int& operator+=(int addValue);
-	operator int();
+	operator int() const;
 private:
 	int 			clock;
 	static bool		cgbMode;

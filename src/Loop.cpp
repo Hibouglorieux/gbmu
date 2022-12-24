@@ -20,16 +20,28 @@
 #include <thread>
 #include <iostream>
 
+#define DELAY_TIME (1000.0f/60.0f)
 bool Loop::loop()
 {
-	// TODO unsure about updateScreen ? Do we update everytime ?
-	bool updateScreen = 1;
-	std::array<int, PIXEL_PER_LINE> finalLine;
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
+    // TODO unsure about updateScreen ? Do we update everytime ?
+	bool updateScreen = true;
 	int clockDiff = 0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> current, previous, t1,t2;
+	previous = std::chrono::high_resolution_clock::now();
+
 
 	while (true)
 	{
+        current = std::chrono::high_resolution_clock::now();
+		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (current - previous);
+		previous = current;
 		/* Render clear */
+        t1 = high_resolution_clock::now();
 		if (updateScreen) {
 			Screen::clear();
 		}
@@ -40,50 +52,43 @@ bool Loop::loop()
 		}
 		if (BIT(M_LCDC, 7)) {
 			M_LY = 0x00;
-		}
-		for (int i = 0 ; i < 144 ; i++) {
-			Gameboy::setState(GBSTATE_OAM_SEARCH);
-			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
-			if (BIT(M_LCDC, 7)) {
-				finalLine = Ppu::doOneLine();
-				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
-					Screen::drawPoint(j, i, finalLine[j]);
-				}
-				updateScreen = 1;
-			}
-			else {
-				updateScreen = 0;
-			}
-			Gameboy::setState(GBSTATE_PX_TRANSFERT);
-			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
-			Gameboy::setState(GBSTATE_H_BLANK);
-			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
-			Cpu::updateLY(1);
-			/* Drawing time */
-		}
+            for (int i = 0 ; i < 144 ; i++) {
+                Gameboy::setState(GBSTATE_OAM_SEARCH);
+                clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
+                Ppu::finalLine = Ppu::doOneLine();
+                for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
+                    Screen::drawPoint(j, i, Ppu::finalLine[j]);
+                }
+                updateScreen = true;
+                Gameboy::setState(GBSTATE_PX_TRANSFERT);
+                clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
+                Gameboy::setState(GBSTATE_H_BLANK);
+                clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
+                Cpu::updateLY(1);
+            }
+        } else {
+		    updateScreen = false;
+        }
 		if (updateScreen) {
 			Ppu::resetWindowCounter();
-			/*
-			printf("VRAM");
-			for (int i = 0 ; i < 0x200 ; i++) {
-				if (i % 32 == 0) {
-					printf("\n%04x: ", 0x8000 + i);
-				}
-				printf("%02x ", (uint8_t)mem[0x8000 + i]);
-			}
-			*/
 			Screen::drawVRam();
-			Screen::drawBG();
+//			Screen::drawBG();
+            Screen::update();
 		}
-		/* Manage events */
+        t2 = high_resolution_clock::now();
 		Gameboy::pollEvent();
-		/* Render present */
-		if (updateScreen) {
-			Screen::update();
-		}
+
+        /* Getting number of milliseconds as a double. */
+        duration<double, std::milli> ms_double = t2 - t1;
+        std::cout << ms_double.count() << "ms\n";
+
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
-		//Cpu::printFIFO(Cpu::fifo);	
+        if (elapsed.count() < DELAY_TIME) {
+            std::cout <<"sleep for "<< std::float_t() <<  DELAY_TIME - elapsed.count() << std::endl;
+			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
+		} else{
+			std::cout <<"overpassed by "<< std::float_t() <<  elapsed.count() - DELAY_TIME << std::endl;
+		}
 	}
 	return (true);
 }
