@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:40:21 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/24 04:30:16 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,10 @@ public:
 private:
 	unsigned char* internalArray;
 	unsigned int	memSize;
+	// TODO regroup all readonly/unused bytes
+	// in register in this map and use it
+	// inside memWrap
+	//std::map<short, unsigned char> readOnlyBytes;
 };
 
 #endif

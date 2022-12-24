@@ -66,8 +66,8 @@ void Gameboy::pollEvent()
 {
 	SDL_Event ev;
 
-	for (int i = 0 ; i < 8 ; i++) {
-		SDL_PollEvent(&ev);
+	while (SDL_PollEvent(&ev) != 0)
+	{
 		Screen::handleEvent(&ev);
 		Joypad::handleEvent(&ev);
 	}

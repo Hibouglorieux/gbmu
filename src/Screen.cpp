@@ -211,4 +211,9 @@ void	Screen::handleEvent(SDL_Event *ev)
 				break;
 		}
 	}
+	if (ev->type == SDL_KEYDOWN)
+	{
+		if (ev->key.keysym.sym == SDLK_ESCAPE)
+			Screen::destroy();
+	}
 }

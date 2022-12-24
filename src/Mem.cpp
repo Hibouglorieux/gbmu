@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 05:57:44 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/24 03:34:22 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Cpu.hpp"
 #include <fstream>
 #include <iostream>
+#include "Joypad.hpp"
 
 #define MEM_SIZE (0xFFFF + 1)
 
@@ -126,8 +127,10 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	//JOYPAD register is 0xFF00
 	if (addr == 0xFF00) {
-		value |= (newValue & 0xF0);
+		value = (newValue | 0xCF);
+		Joypad::refresh();
 		return (value);
 	}
 	if (addr == LCDC_STATUS) {
@@ -170,10 +173,10 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	// if (addr == LYC)
 		// std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
-		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
+		//std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
-			std::cout << "DMA transfert done" << std::endl;
+			//std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
 	}
 	return value;

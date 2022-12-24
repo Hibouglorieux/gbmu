@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/19 17:37:49 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/24 04:27:43 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ bool Loop::loop()
 		}
 		if (updateScreen) {
 			Ppu::resetWindowCounter();
+			/*
 			printf("VRAM");
 			for (int i = 0 ; i < 0x200 ; i++) {
 				if (i % 32 == 0) {
@@ -70,6 +71,7 @@ bool Loop::loop()
 				}
 				printf("%02x ", (uint8_t)mem[0x8000 + i]);
 			}
+			*/
 			Screen::drawVRam();
 			Screen::drawBG();
 		}

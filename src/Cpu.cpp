@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/20 21:05:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/24 04:13:11 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -526,7 +526,7 @@ void Cpu::handle_interrupts() {
                 } else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
                         do_interrupts(IT_JOYPAD, 4);
                 } else {
-                    std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
+                    //std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
 	                Cpu::interrupts_master_enable = false;
 //                        logErr("exec: Error unknown interrupt");
                 }
