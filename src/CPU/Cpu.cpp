@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/20 21:05:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/24 04:13:11 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,6 @@ unsigned short Cpu::registers[4] = {};
 bool Cpu::interrupts_master_enable = false;
 bool Cpu::interrupts_flag = false;
 bool Cpu::halted = false;
-
-uint32_t Cpu::divReg = 0;
-uint16_t Cpu::TimaCounter = 0;
-uint16_t Cpu::ClockSpeed = 0;
 
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
@@ -51,9 +47,11 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	M_LY = 0x90;
-	// M_LCDC = 0x91;
-	M_LCDC_STATUS = 0x81;
+	mem.supervisorWrite(0xFF00, 0xCF);
+	//M_LY = 0x00;
+	M_LCDC = 0x91;
+	//M_LCDC = 0x80;
+	mem.supervisorWrite(LCDC_STATUS, 0x85);
 	stackTrace.PCBreak = 0x021D;
 	stackTrace.breakActive = false;
 	//stackTrace.opcodeBreak = 0xCB27;
@@ -104,38 +102,6 @@ bool  interrupt_halt(void) {
     }
     return true;
 }
-
-//void Cpu::handle_timer() {
-//    uint32_t const prev_div = divReg;
-//
-//    divReg++;
-//
-//    bool timer_update = false;
-//
-//    switch(mem[TAC] & (0b11)) {
-//        case 0b00:
-//            timer_update = (prev_div & (1 << 9)) && (!(divReg & (1 << 9)));
-//            break;
-//        case 0b01:
-//            timer_update = (prev_div & (1 << 3)) && (!(divReg & (1 << 3)));
-//            break;
-//        case 0b10:
-//            timer_update = (prev_div & (1 << 5)) && (!(divReg & (1 << 5)));
-//            break;
-//        case 0b11:
-//            timer_update = (prev_div & (1 << 7)) && (!(divReg & (1 << 7)));
-//            break;
-//    }
-//
-//    if (timer_update && mem[TAC] & (1 << 2)) {
-//        TimaCounter++;
-//
-//        if (TimaCounter == 0xFF) {
-//            TimaCounter = mem[TMA];
-//            Cpu::request_interrupt(TIMER_INT_BIT);
-//        }
-//    }
-//}
 
 auto Cpu::executeInstruction() -> std::pair<unsigned char, int>
 {
@@ -500,20 +466,20 @@ void Cpu::debug(int opcode) {
 	std::cout << std::dec << count++ << "\n";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << opcode << ": ";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
+	printf("IF=%02x EI=%02x JOY=%02x\n", (uint8_t)M_IF, (uint8_t)M_EI, (uint8_t)mem[0xFF00]);
 	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
 }
 
 void	Cpu::updateLY(int iter)
 {
-	M_LY += iter;
-	M_LY %= 154;
-	// if (M_LY > 153) {
-	// 	// 144 line + V-BLANK (10 lines)
-	// 	M_LY = 0;
-    //     //TODO TEST shall i raise INT_IF bit 2 for INT ?
-	// }
-
+	if (BIT(M_LCDC, 7)) {
+		M_LY += iter;
+		M_LY %= 154;
+	}
+	else {
+		M_LY = 0;
+	}
 	if (M_LY == M_LYC) {
 		SET(M_LCDC_STATUS, 2);
 		if (BIT(M_LCDC_STATUS, 6)) {
@@ -523,17 +489,15 @@ void	Cpu::updateLY(int iter)
 	} else {
         RES(M_LCDC_STATUS, 2);
     }
-
-
 	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
 }
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
-//	std::cout << "Doing interrupt\n";
     mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
-	mem[--Cpu::SP] = Cpu::PC & 0xFF;
+    mem[--Cpu::SP] = Cpu::PC & 0xFF;
     Cpu::PC = addr;
+    g_clock += 5;
     RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
     Cpu::interrupts_flag = false;
@@ -544,21 +508,23 @@ void do_interrupts(unsigned int addr, unsigned char bit)
 void Cpu::handle_interrupts() {
 
     if (Cpu::interrupts_master_enable) {
-        int m_ei = mem[EI];
-        int m_if = mem[IF];
-        if (m_ei && m_if) {
-                if ((m_ei & (1)) && (m_if & (1))) {
-                        do_interrupts(IT_VBLANK,  VBLANK_INT_BIT);
-                } else if ((m_ei & STAT_INT_BIT) && (m_if & STAT_INT_BIT)) {
-                        do_interrupts(IT_LCD_STAT, STAT_INT_BIT);
-                } else if ((m_ei & TIMER_INT_BIT) && (m_if & TIMER_INT_BIT)) {
-                        do_interrupts(IT_TIMER, TIMER_INT_BIT);
-                } else if ((m_ei & SERIAL_INT_BIT) && (m_if & SERIAL_INT_BIT)) {
-                        do_interrupts(IT_SERIAL, SERIAL_INT_BIT);
-                } else if ((m_ei & JOYPAD_INT_BIT) && (m_if & JOYPAD_INT_BIT)) {
-                        do_interrupts(IT_JOYPAD, JOYPAD_INT_BIT);
+        if (M_EI && M_IF) {
+                if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
+                        do_interrupts(IT_VBLANK,  0);
+
+                } else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
+                        do_interrupts(IT_LCD_STAT, 1);
+
+                } else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
+                        do_interrupts(IT_TIMER, 2);
+
+                } else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
+                        do_interrupts(IT_SERIAL, 3);
+
+                } else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
+                        do_interrupts(IT_JOYPAD, 4);
                 } else {
-                    std::cout << "m_ei : " << std::hex << (short)m_ei << " M_IF " << std::hex << (short)m_if << std::endl;
+                    //std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
 	                Cpu::interrupts_master_enable = false;
                 }
         }

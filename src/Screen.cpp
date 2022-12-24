@@ -25,15 +25,6 @@ SDL_Texture * Screen::BG_texture = nullptr;
 SDL_Texture * Screen::Ppu_texture = nullptr;
 SDL_Window* Screen::DBG_win = nullptr;
 SDL_Renderer* Screen::DBG_rend = nullptr;
-//
-//SDL_Window* Screen::window = NULL;
-//SDL_Renderer* Screen::renderer = NULL;
-//
-//SDL_Window* Screen::vRamWindow = NULL;
-//SDL_Renderer* Screen::vRamRenderer = NULL;
-//
-//SDL_Window* Screen::backgroundWindow = NULL;
-//SDL_Renderer* Screen::backgroundRenderer = NULL;
 
 int scale = 4;
 int scaleBG = 2;
@@ -50,19 +41,12 @@ void	Screen::destroy(void)
 	ImGui::DestroyContext();
 
     SDL_DestroyTexture(VRam_texture);
-//    SDL_DestroyTexture(Ppu_texture);
-//    SDL_DestroyTexture(BG_texture);
+    SDL_DestroyTexture(Ppu_texture);
+    SDL_DestroyTexture(BG_texture);
 	SDL_DestroyRenderer(DBG_rend);
 	SDL_DestroyWindow(DBG_win);
 
-//	SDL_DestroyRenderer(vRamRenderer);
-//	SDL_DestroyWindow(vRamWindow);
-//	SDL_DestroyRenderer(renderer);
-//	SDL_DestroyWindow(window);
-//	SDL_DestroyRenderer(backgroundRenderer);
-//	SDL_DestroyWindow(backgroundWindow);
 	SDL_Quit();
-	// Cpu::printFIFO(Cpu::fifo);
 	std::exit(0); // TODO clean properly
 }
 
@@ -115,27 +99,34 @@ void	Screen::drawBG()
     SDL_SetRenderTarget(DBG_rend, NULL);
 }
 
-void	Screen::drawPpu(int clockDiff) {
-	std::array<int, PIXEL_PER_LINE> finalLine{};
+bool	Screen::drawPpu(int clockDiff, bool updateScreen) {
+	std::array<int, PIXEL_PER_LINE> finalLine{0};
 
     SDL_SetRenderTarget(DBG_rend, Screen::Ppu_texture);
     for (int i = 0; i < 144; i++) {
-        finalLine = Ppu::doOneLine();
         Gameboy::setState(GBSTATE_OAM_SEARCH);
         clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
+        if (BIT(M_LCDC, 7)) {
+				finalLine = Ppu::doOneLine(finalLine);
+				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
+					Screen::drawPoint(j, i, finalLine[j], Screen::DBG_rend, 4);
+				}
+				updateScreen = true;
+        }
+        else {
+            updateScreen = false;
+        }
         Gameboy::setState(GBSTATE_PX_TRANSFERT);
         clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
         Gameboy::setState(GBSTATE_H_BLANK);
         clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
         Cpu::updateLY(1);
         /* Drawing time */
-        for (int j = 0; j < PIXEL_PER_LINE; j++) {
-            Screen::drawPoint(j, i, finalLine[j], Screen::DBG_rend, 2);
-        }
     }
 	Ppu::resetWindowCounter(); 
     ImGui::Image(Screen::Ppu_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
+    return updateScreen;
 }
 
 void	Screen::drawVRam(void)
@@ -255,5 +246,10 @@ void	Screen::handleEvent(SDL_Event *ev)
 				Screen::destroy();
 				break;
 		}
+	}
+	if (ev->type == SDL_KEYDOWN)
+	{
+		if (ev->key.keysym.sym == SDLK_ESCAPE)
+			Screen::destroy();
 	}
 }

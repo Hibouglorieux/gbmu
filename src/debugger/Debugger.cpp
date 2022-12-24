@@ -116,33 +116,31 @@ void register_debugger() {
     }
 }
 
-int Debugger::start(int clockDiff) {
+int Debugger::start(int clockDiff, bool updateScreen) {
 
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
     SDL_RenderClear(Screen::DBG_rend);
 
-//    hexdump_debugger();
-//    register_debugger();
+    hexdump_debugger();
+    register_debugger();
 
-//    {
-//        ImGui::Begin("VRAM");
-//        Screen::drawVRam();
-//        ImGui::End();
-//    }
+    {
+        ImGui::Begin("VRAM");
+        Screen::drawVRam();
+        ImGui::End();
+    }
 
-//    {
-//        ImGui::Begin("BG");
-//        Screen::drawBG();
-//        ImGui::End();
-//    }
-
-    clockDiff = Cpu::executeClock(1140 - clockDiff) - (1140 - clockDiff); // V-BLANK first as LY=0x90 at start
+    {
+        ImGui::Begin("BG");
+        Screen::drawBG();
+        ImGui::End();
+    }
 
     {
         ImGui::Begin("PPU");
-        Screen::drawPpu(clockDiff);
+        Screen::drawPpu(clockDiff, updateScreen);
         ImGui::End();
     }
     // SDL_Delay(3000);
@@ -150,5 +148,5 @@ int Debugger::start(int clockDiff) {
     SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 	SDL_RenderPresent(Screen::DBG_rend);
-	return 0;
+	return updateScreen;
 }

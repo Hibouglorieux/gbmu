@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 05:57:44 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/24 03:34:22 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,18 @@
 //#include "../includes/define.hpp"
 #include <fstream>
 #include <iostream>
+#include "../includes/Joypad.hpp"
 
 Mem::Mem()
 {
 	isValid = true;
 	internalArray = new unsigned char[MEM_SIZE];
 	memSize = MEM_SIZE;
+}
+
+void Mem::supervisorWrite(unsigned int addr, unsigned char value)
+{
+	Mem::internalArray[addr] = value;
 }
 
 Mem::Mem(int size)
@@ -121,8 +127,24 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
-	// unsigned char old = value;
+	//JOYPAD register is 0xFF00
+	if (addr == 0xFF00) {
+		value = (newValue | 0xCF);
+		Joypad::refresh();
+		return (value);
+	}
+	if (addr == LCDC_STATUS) {
+		// Ignore bit 7, 1, 2 and 3
+		value &= 0x87;
+		value |= (newValue & (~0x87));
+		return (value);
+	}
 	value = newValue;
+	if (addr == LCDC) {
+		if ((value & 0x80) == 0) {
+			M_LY = 0;
+		}
+	}
 	if (addr == 0xFF02 && newValue == 0x81)
 	{
 		if (memRef[0xFF01] == ' ')
@@ -134,28 +156,24 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			std::cout << (char)(memRef[0xFF01]);
 		}
 	}
-
-	if (addr == 0xFFFF)
-		Cpu::interrupts_master_enable = value;
-
-	if (addr == M_LYC) {
+	if (addr == LYC) {
 		if (value == M_LY)
 			SET(M_LCDC_STATUS, 2)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
-	if (addr == M_LY) {
+	if (addr == LY) {
 		if (value == M_LYC)
 			SET(M_LCDC_STATUS, 2)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
     if (addr == 0xFF46) {
-		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
-//		if (newValue <= 0xF1) {
-//			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
-//			std::cout << "DMA transfert done" << std::endl;
-//		} //TODO CGB DMA FF51->FF55
+		//std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
+		if (newValue <= 0xF1) {
+			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
+			//std::cout << "DMA transfert done" << std::endl;
+		} //TODO CGB DMA FF51->FF55
 	}
 	return value;
 }

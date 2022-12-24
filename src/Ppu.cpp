@@ -16,14 +16,13 @@
 
 unsigned char Ppu::windowCounter = 0;
 
-std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
+std::array<int, PIXEL_PER_LINE> Ppu::doOneLine(std::array<int, PIXEL_PER_LINE> finalLine)
 {
 	auto pixelLine = getOamLine();
 
 	auto backgroundLine = getBackgroundLine();
 
 
-	std::array<int, PIXEL_PER_LINE> finalLine = {0};
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
 		// color code == 0 means sprite pixel is translucent
@@ -71,7 +70,7 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 
 std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 {
-	std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine;
+	std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine{};
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int xPosInLine = 0;

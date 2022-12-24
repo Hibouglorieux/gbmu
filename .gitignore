@@ -36,3 +36,4 @@ gbmu
 *.o
 roms
 roms/*
+gmon.out

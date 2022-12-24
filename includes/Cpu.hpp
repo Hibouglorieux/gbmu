@@ -54,12 +54,6 @@ public:
 	static const unsigned char& getData(int i);
 //	static void setData(int i);
 
-    static void handle_timer();
-    static uint32_t divReg;
-    static uint16_t TimaCounter;
-    static uint16_t ClockSpeed;
-
-
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;

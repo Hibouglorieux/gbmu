@@ -35,7 +35,7 @@ class Ppu {
 public:
 	static void setMem(Mem& cpuMem);
 
-	static std::array<int, PIXEL_PER_LINE> doOneLine();
+	static std::array<int, PIXEL_PER_LINE> doOneLine(std::array<int, PIXEL_PER_LINE> finalLine);
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
 	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);

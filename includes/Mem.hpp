@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:40:21 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/24 04:30:16 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,14 @@ public:
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
-//    static void write_u8(uint16_t addr, int value);
-//    void write_u16(uint16_t addr, uint16_t value);
-//    static int read_u8(int addr);
-//    uint16_t read_u16(uint16_t addr);
+	void supervisorWrite(unsigned int addr, unsigned char value);
 private:
 	unsigned char* internalArray;
 	unsigned int	memSize;
+	// TODO regroup all readonly/unused bytes
+	// in register in this map and use it
+	// inside memWrap
+	//std::map<short, unsigned char> readOnlyBytes;
 };
 
 #endif

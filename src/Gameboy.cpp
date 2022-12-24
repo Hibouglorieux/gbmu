@@ -7,7 +7,6 @@
 #include <iostream>
 #include <utility>
 
-
 Mem Gameboy::gbMem = Mem();
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
@@ -36,46 +35,30 @@ bool Gameboy::loadRom(std::string pathToFile)
 	return gbMem.isValid;
 }
 
-//bool Gameboy::run()
-//{
-//
-//    Gameboy::quit = false;
-//    while (!Gameboy::quit) {
-//	/* Render clear */
-//		Screen::clear();
-//		Gameboy::setState(GBSTATE_V_BLANK);
-////		Cpu::request_interrupts(VBLANK_INT_BIT);
-//		Cpu::updateLY(10);
-//        Cpu::run();
-//        // Cpu::handle_timer();
-////	    Ppu::run();
-//        Cpu::handle_interrupts();
-//		Screen::drawVRam();
-//		Screen::drawBG();
-//        Debugger::start();
-//		/* Manage events */
-//		Gameboy::pollEvent();
-//		/* Render present */
-//		Screen::update();
-//		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-////		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-//    }
-//    return true ; //no need to return ??
-//}
-
 void Gameboy::setState(int newState)
 {
 	currentState = newState;
 
-	if (newState == GBSTATE_V_BLANK && BIT(M_LCDC_STATUS, 4))
-		Cpu::request_interrupt(IT_LCD_STAT);
-	if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3))
-		Cpu::request_interrupt(IT_LCD_STAT);
-	if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5))
-		Cpu::request_interrupt(IT_LCD_STAT);
-
-	M_LCDC_STATUS &= ~GBSTATE_MSK;
-	M_LCDC_STATUS |= newState;
+	if (BIT(M_LCDC, 7)) {
+		if (newState == GBSTATE_V_BLANK) {
+			if (BIT(M_LCDC_STATUS, 4)) {
+				Cpu::request_interrupt(IT_LCD_STAT);
+			}
+			Cpu::request_interrupt(IT_VBLANK);
+			if (BIT(M_LCDC, 7)) {
+				M_LY = 0x90;
+			}
+		}
+		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
+			Cpu::request_interrupt(IT_LCD_STAT);
+		}
+		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
+			Cpu::request_interrupt(IT_LCD_STAT);
+		}
+		unsigned char lcdcs = M_LCDC_STATUS & ~0x07;
+		lcdcs |= newState;
+		mem.supervisorWrite(LCDC_STATUS, lcdcs);
+	}
 }
 
 int Gameboy::getState()
@@ -85,21 +68,16 @@ int Gameboy::getState()
 
 void Gameboy::pollEvent()
 {
-	SDL_Event ev;
 
     SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
+        Screen::handleEvent(&event);
+		Joypad::handleEvent(&event);
 		if (event.type == SDL_QUIT)
 			Gameboy::quit = true;
 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
 				event.window.windowID == SDL_GetWindowID(Screen::DBG_win))
 			Gameboy::quit = true;
-	}
-
-	for (int i = 0 ; i < 8 ; i++) {
-		SDL_PollEvent(&ev);
-		Screen::handleEvent(&ev);
-		Joypad::handleEvent(&ev);
 	}
 }

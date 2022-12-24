@@ -24,7 +24,7 @@ public:
 	static void clear();
 
 	static void drawBG();
-	static void drawPpu(int);
+	static bool drawPpu(int, bool);
 	static void drawVRam();
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 

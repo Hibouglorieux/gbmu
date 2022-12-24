@@ -22,7 +22,7 @@ class Debugger {
 public:
 //    DebuggerState state;
 
-    static int start(int clockdiff);
+    static int start(int, bool);
 //    void stop();
 };
 
