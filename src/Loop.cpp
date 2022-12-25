@@ -26,10 +26,7 @@
 #define DELAY_TIME (1000.0f/60.0f)
 bool Loop::loop()
 {
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::duration;
-    using std::chrono::milliseconds;
+
 
 	// TODO unsure about updateScreen ? Do we update everytime ?
 	bool updateScreen = true;
@@ -42,18 +39,9 @@ bool Loop::loop()
         current = std::chrono::high_resolution_clock::now();
 		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (current - previous);
 		previous = current;
-		/* Render clear */
-        t1 = high_resolution_clock::now();
-        updateScreen = Debugger::start(clockDiff, updateScreen);
-		/* Manage events */
-		Gameboy::pollEvent();
-		/* Render present */
-        t2 = high_resolution_clock::now();
-		Gameboy::pollEvent();
 
-        /* Getting number of milliseconds as a double. */
-        duration<double, std::milli> ms_double = t2 - t1;
-        std::cout << ms_double.count() << "ms\n";
+        updateScreen = Debugger::start(clockDiff, updateScreen);
+		Gameboy::pollEvent();
 
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
         if (elapsed.count() < DELAY_TIME) {

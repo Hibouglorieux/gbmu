@@ -3,6 +3,9 @@
 #include <SDL2/SDL.h>
 
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+bool Debugger::show_BG = false;
+bool Debugger::show_Vram = false;
+bool Debugger::show_hexdump = false;
 
 void hexdump_debugger() {
 	{
@@ -56,6 +59,14 @@ void hexdump_debugger() {
 		ImGui::End();
 	}
 }
+
+#include <chrono>
+#include <iostream>
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+std::chrono::time_point<std::chrono::high_resolution_clock> t1,t2;
 
 void register_debugger() {
     {
@@ -112,12 +123,19 @@ void register_debugger() {
         ImGui::Text(Cpu::getCarryFlag() ? "1" : "0"); ImGui::NextColumn();
         ImGui::Columns(1);
         ImGui::Separator();
+        t2 = high_resolution_clock::now();
+        /* Getting number of milliseconds as a double. */
+        duration<double, std::milli> ms_double = t2 - t1;
+        ImGui::Text("%f ms\n", ms_double.count());
         ImGui::End();
     }
 }
 
+
+
 int Debugger::start(int clockDiff, bool updateScreen) {
 
+    t1 = high_resolution_clock::now();
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -125,25 +143,40 @@ int Debugger::start(int clockDiff, bool updateScreen) {
 
     {
         ImGui::Begin("PPU");
+        if (ImGui::Button(show_BG ? "Hide BG" : "Show BG")) {
+		    show_BG = !show_BG;
+	    }
+        if (ImGui::Button(show_Vram ? "show_Vram" : "show_Vram")) {
+		    show_Vram = !show_Vram;
+	    }
+        if (ImGui::Button(show_hexdump ? "show_hexdump" : "show_hexdump")) {
+		    show_hexdump = !show_hexdump;
+	    }
         Screen::drawPpu(clockDiff, updateScreen);
         ImGui::End();
     }
 
-    hexdump_debugger();
+    if (show_hexdump)
+        hexdump_debugger();
+
+    if (show_Vram) {
+        {
+            ImGui::Begin("VRAM");
+            Screen::drawVRam();
+            ImGui::End();
+        }
+    }
+
+    if (show_BG)
+    {
+        {
+            ImGui::Begin("BG");
+            Screen::drawBG();
+            ImGui::End();
+        }
+    }
+
     register_debugger();
-
-    {
-        ImGui::Begin("VRAM");
-        Screen::drawVRam();
-        ImGui::End();
-    }
-
-    {
-        ImGui::Begin("BG");
-        Screen::drawBG();
-        ImGui::End();
-    }
-
 
     // SDL_Delay(3000);
     ImGui::Render();

@@ -29,8 +29,8 @@ SDL_Texture * Screen::Ppu_texture = nullptr;
 SDL_Window* Screen::DBG_win = nullptr;
 SDL_Renderer* Screen::DBG_rend = nullptr;
 
-int scale = 4;
-int scaleBG = 2;
+//int scale = 4;
+//int scaleBG = 2;
 
 SDL_Window*	Screen::get(void)
 {
@@ -74,13 +74,13 @@ void	Screen::clear(void)
 //	SDL_RenderClear(backgroundRenderer);
 }
 
-void Draw(struct TilePixels color, int y_max, int x_max, SDL_Renderer *renderer, int index ) {
+void Draw(struct TilePixels color, int y_max, int x_max, SDL_Renderer *renderer, int index, int pxlscale ) {
 
-    int x_offset = (index % y_max) * 9; //WHY 9
+    int x_offset = (index % y_max) * 9;
     int y_offset = (index / y_max) * 9;
     for (int y = 0; y < x_max; y++) {
         for (int x = 0; x < x_max; x++) {
-            Screen::drawPoint(x + x_offset, y + y_offset, color.getColorLine(y)[x], renderer, scale);
+            Screen::drawPoint(x + x_offset, y + y_offset, color.getColorLine(y)[x], renderer, pxlscale);
         }
     }
 }
@@ -95,36 +95,16 @@ void	Screen::drawBG()
 		// in order to get the background map displayed we need to fetch the tile to display
 		// which is its number (fetched in BGMap which is 32 * 32), then we need
 		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
-		struct TilePixels tile = TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP);
-        Draw(tile, 32, 8, Screen::DBG_rend, i);
+        Draw(TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP)
+             , 32, 8, Screen::DBG_rend, i, 2);
 	}
-    ImGui::Image((void*)(intptr_t)Screen::BG_texture, ImVec2(1024.0f, 1024.0f));//, uv0, uv1);
+    ImGui::Image((void*)(intptr_t)Screen::BG_texture, ImVec2(32*32, 32*32));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
 }
 
 bool	Screen::drawPpu(int clockDiff, bool updateScreen) {
 
     SDL_SetRenderTarget(DBG_rend, Screen::Ppu_texture);
-//    for (int i = 0; i < 144; i++) {
-//        Gameboy::setState(GBSTATE_OAM_SEARCH);
-//        clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
-//        if (BIT(M_LCDC, 7)) {
-//				Ppu::finalLine = Ppu::doOneLine(Ppu::finalLine);
-//				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
-//					Screen::drawPoint(j, i, Ppu::finalLine[j], Screen::DBG_rend, 4);
-//				}
-//				updateScreen = true;
-//        }
-//        else {
-//            updateScreen = false;
-//        }
-//        Gameboy::setState(GBSTATE_PX_TRANSFERT);
-//        clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
-//        Gameboy::setState(GBSTATE_H_BLANK);
-//        clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
-//        Cpu::updateLY(1);
-//        /* Drawing time */
-//    }
     Gameboy::setState(GBSTATE_V_BLANK);
     for (int i = 0 ; i < 10 ; i++) {
         clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
@@ -148,25 +128,25 @@ bool	Screen::drawPpu(int clockDiff, bool updateScreen) {
        }
     } else { updateScreen = false; }
     Ppu::resetWindowCounter();
-    ImGui::Image(Screen::Ppu_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
+    ImGui::Image(Screen::Ppu_texture, ImVec2(160.0f *4, 144.0f*4));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
     return updateScreen;
 }
 
 void	Screen::drawVRam(void)
 {
-    int vRamAddress = 0x8000;
+//    int vRamAddress = 0x8000;
   
     SDL_SetRenderTarget(DBG_rend, Screen::VRam_texture);
 	for (int i = 0; i < 256; i++) {
-		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), BGP);
-        Draw(tile, 16, 8, Screen::DBG_rend, i);
+        Draw(TilePixels(0x8000 + (i * 8 * 2), BGP)
+             , 16, 8, Screen::DBG_rend, i, 4);
 	}
     // if (SDL_RenderCopy(DBG_rend, Screen::VRam_texture, nullptr, nullptr)) {
     //     fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
     //     return;
     // }
-    ImGui::Image(Screen::VRam_texture, ImVec2(512.0f, 512.0f));//, uv0, uv1);
+    ImGui::Image(Screen::VRam_texture, ImVec2(16*16*4.0f, 16*16*4.0f));//, uv0, uv1);
     SDL_SetRenderTarget(DBG_rend, nullptr);
 }
 
@@ -214,7 +194,7 @@ bool	Screen::create(void)
 
 	// Setup window
 	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	DBG_win = SDL_CreateWindow("Debugger", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+	DBG_win = SDL_CreateWindow("Debugger", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1960, 1080, window_flags);
 //    SDL_SetWindowFullscreen(DBG_win, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 	// Setup SDL_Renderer instance
@@ -225,26 +205,26 @@ bool	Screen::create(void)
 		return -1;
 	}
 
-    Screen::Ppu_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
+    Screen::Ppu_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 160*4, 144*4);
   	if (!Screen::Ppu_texture) {
         fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
         return -1;
     }
 
-  	Screen::VRam_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024, 1024);
+  	Screen::VRam_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 16*16*4, 16*16*4);
     if (!Screen::VRam_texture) {
         fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
         return -1;
     }
 
-    Screen::BG_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1024 * 2, 1024 * 2);
+    Screen::BG_texture = SDL_CreateTexture(DBG_rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 32*32, 32*32);
     if (!Screen::BG_texture) {
         fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
         return -1;
     }
 
 	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
+//	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

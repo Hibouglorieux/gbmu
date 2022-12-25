@@ -21,7 +21,9 @@
 class Debugger {
 public:
 //    DebuggerState state;
-
+    static bool show_Vram;
+    static bool show_BG;
+    static bool show_hexdump;
     static int start(int, bool);
 //    void stop();
 };
