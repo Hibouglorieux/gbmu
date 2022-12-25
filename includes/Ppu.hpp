@@ -33,7 +33,16 @@ struct BackgroundData {
 
 class Ppu {
 public:
-	static void setMem(Mem& cpuMem);
+    static std::array<int, PIXEL_PER_LINE> finalLine;
+    static std::array<SpriteData, PIXEL_PER_LINE> pixelLine;
+    static std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine;
+//    static std::vector<struct OAM_entry> spritesFound;
+//    static std::vector<struct OAM_entry> spritesFound2;
+    static std::array<SpriteData, PIXEL_PER_LINE> spriteLine;
+    static std::array<int, 8> coloredSpriteLine;
+    static std::array<int, 8> colorCodeSpriteLine;
+
+//	static void setMem(Mem& cpuMem);
 
 	static std::array<int, PIXEL_PER_LINE> doOneLine(std::array<int, PIXEL_PER_LINE> finalLine);
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
@@ -44,7 +53,7 @@ public:
 	static struct TilePixels getTile(int tileAddress, int tileIndex, int paletteAddress);
 	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);
 	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
-    static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
+//    static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 	static void resetWindowCounter();
 
 private:

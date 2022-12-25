@@ -18,22 +18,22 @@
 
 struct StackData {
 	StackData();
-	void print();
-	unsigned short PC;
-	unsigned short SP;
-	unsigned short AF;
-	unsigned short BC;
-	unsigned short DE;
-	unsigned short opcode;
+	void print() const;
+	unsigned short PC{};
+	unsigned short SP{};
+	unsigned short AF{};
+	unsigned short BC{};
+	unsigned short DE{};
+	unsigned short opcode{};
 	std::string		customData;
 };
 
 class CpuStackTrace {
 public:
-	CpuStackTrace(void);
-	void add(StackData stackData);
+	CpuStackTrace();
+	void add(const StackData& stackData);
 	void print();
-	virtual ~CpuStackTrace(void);
+	virtual ~CpuStackTrace();
 	unsigned int	maxSize;
 	unsigned int printSize;
 	unsigned short PCBreak;

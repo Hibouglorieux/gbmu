@@ -123,6 +123,12 @@ int Debugger::start(int clockDiff, bool updateScreen) {
     ImGui::NewFrame();
     SDL_RenderClear(Screen::DBG_rend);
 
+    {
+        ImGui::Begin("PPU");
+        Screen::drawPpu(clockDiff, updateScreen);
+        ImGui::End();
+    }
+
     hexdump_debugger();
     register_debugger();
 
@@ -138,11 +144,7 @@ int Debugger::start(int clockDiff, bool updateScreen) {
         ImGui::End();
     }
 
-    {
-        ImGui::Begin("PPU");
-        Screen::drawPpu(clockDiff, updateScreen);
-        ImGui::End();
-    }
+
     // SDL_Delay(3000);
     ImGui::Render();
     SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);

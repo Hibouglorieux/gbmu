@@ -29,7 +29,6 @@
 
 // FF06 : TMA
 // This data is loaded to TIMA when its overflow
-
 // FF07 : TAC (Timer Control)
 // Bit 2 : 1:Start 0:Stop
 // Bits 1-0 : 
@@ -44,7 +43,7 @@ public:
 	Clock();
 	virtual ~Clock();
 	int& operator+=(int addValue);
-	explicit operator int();
+	explicit operator int() const;
 private:
 	int 			clock;
 	static bool		cgbMode;

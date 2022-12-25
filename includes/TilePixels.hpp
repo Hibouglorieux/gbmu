@@ -6,8 +6,10 @@
 #include "Gameboy.hpp"
 
 struct TilePixels {
-    std::array<std::array<int, 8>, 8> data;
-
+public:
+    std::array<std::array<int, 8>, 8> data{};
+    static std::array<int, 8> retLine;
+    static std::array<std::array<int, 8>, 8> pixels;
     void flipX() {
         for (int i = 0; i < 8; i++)
             std::reverse(data[i].begin(), data[i].end());
@@ -21,9 +23,9 @@ struct TilePixels {
 	std::array<int, 8> getLineColorCode(int y);
 
 	TilePixels();
-    TilePixels(std::array<std::array<int, 8>, 8> val);
+    explicit TilePixels(std::array<std::array<int, 8>, 8> val);
     TilePixels(int tileAddress, unsigned short newPaletteAddress);
-	unsigned short paletteAddress;
+	unsigned short paletteAddress{};
 };
 
 #endif

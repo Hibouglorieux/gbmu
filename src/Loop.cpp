@@ -23,45 +23,45 @@
 #include <thread>
 #include <iostream>
 
+#define DELAY_TIME (1000.0f/60.0f)
 bool Loop::loop()
 {
-    int clockdiff = 0;
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
 	// TODO unsure about updateScreen ? Do we update everytime ?
 	bool updateScreen = true;
 	int clockDiff = 0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> current, previous, t1,t2;
+	previous = std::chrono::high_resolution_clock::now();
+
 	while (!Gameboy::quit)
 	{
+        current = std::chrono::high_resolution_clock::now();
+		auto elapsed = std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (current - previous);
+		previous = current;
 		/* Render clear */
-		if (updateScreen) {
-			Screen::clear();
-		}
-		Gameboy::setState(GBSTATE_V_BLANK);
-		Cpu::request_interrupt(IT_VBLANK);
-		Cpu::updateLY(10);
-        updateScreen = Debugger::start(clockdiff, updateScreen);
+        t1 = high_resolution_clock::now();
+        updateScreen = Debugger::start(clockDiff, updateScreen);
 		/* Manage events */
 		Gameboy::pollEvent();
 		/* Render present */
-//		Screen::update();
-		for (int i = 0 ; i < 10 ; i++) {
-			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
-			Cpu::updateLY(1);
-		}
-		if (BIT(M_LCDC, 7)) {
-			M_LY = 0x00;
-		}
-		if (updateScreen) {
-			Ppu::resetWindowCounter();
-		}
-		/* Manage events */
+        t2 = high_resolution_clock::now();
 		Gameboy::pollEvent();
-//		/* Render present */
-//		if (updateScreen) {
-//			Screen::update();
-//		}
+
+        /* Getting number of milliseconds as a double. */
+        duration<double, std::milli> ms_double = t2 - t1;
+        std::cout << ms_double.count() << "ms\n";
+
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
-		//Cpu::printFIFO(Cpu::fifo);	
+        if (elapsed.count() < DELAY_TIME) {
+            std::cout <<"sleep for "<< std::float_t() <<  DELAY_TIME - elapsed.count() << std::endl;
+			std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(DELAY_TIME - elapsed.count()));
+		} else{
+			std::cout <<"overpassed by "<< std::float_t() <<  elapsed.count() - DELAY_TIME << std::endl;
+		}
 	}
 	return (true);
 }

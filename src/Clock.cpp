@@ -31,8 +31,7 @@ Clock::Clock()
 }
 
 Clock::~Clock()
-{
-}
+= default;
 
 
 
@@ -88,7 +87,7 @@ int&	Clock::operator+=(int addValue)
 	return clock;
 }
 
-Clock::operator int()
+Clock::operator int() const
 {
 	return clock;
 }

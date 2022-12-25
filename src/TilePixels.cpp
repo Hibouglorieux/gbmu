@@ -1,5 +1,8 @@
 #include "../includes/TilePixels.hpp"
 
+std::array<int, 8> TilePixels::retLine = {};
+std::array<std::array<int, 8>, 8> TilePixels::pixels{};
+
 TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
 {}
 
@@ -19,7 +22,7 @@ int TilePixels::getColor(unsigned char byteColorCode, unsigned short paletteAddr
 
 std::array<int, 8> TilePixels::getColorLine(int y)
 {
-	std::array<int, 8> retLine = getLineColorCode(y);
+	retLine = getLineColorCode(y);
 
 	// means the tile is valid, else return 0
 	if (paletteAddress != 0x0)
@@ -40,14 +43,14 @@ TilePixels::TilePixels()
 
 
 TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data() {
-	paletteAddress = newPaletteAddress;
-    std::array<std::array<int, 8>, 8> pixels;
+    if (tileAddress >= 0x9800 || tileAddress < 0x8000)
+        std::cerr << "TilePixels access vram not at vram: "<< tileAddress << std::endl;
+    paletteAddress = newPaletteAddress;
 	for (int y = 0; y < 8; y++) {
 
 		unsigned char byte1 = mem[tileAddress + (y * 2)];
 		unsigned char byte2 = mem[tileAddress + (y * 2) + 1];
-		if (tileAddress >= 0x9800 || tileAddress < 0x8000)
-			std::cerr << "access vram not at vram: "<< tileAddress << std::endl;
+
 
 		for (int x = 0; x < 8; x++)
 		{

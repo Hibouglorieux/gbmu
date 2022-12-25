@@ -25,8 +25,8 @@
 
 #define MEM_SIZE (0xFFFF+ 1)
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
-# define SET(val, bit) {val |= (1 << bit);}
-# define RES(val, bit) {val &= ~(1 << bit);}
+# define SET(val, bit) (val |= (1 << bit))
+# define RES(val, bit) (val &= ~(1 << bit))
 /*Screen */
 #define QUAD_COLOR 0b11
 
