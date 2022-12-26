@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 16:33:18 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/20 20:12:18 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/26 16:51:26 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ struct StackData {
 	unsigned short AF;
 	unsigned short BC;
 	unsigned short DE;
+	unsigned short HL;
 	unsigned short opcode;
 	std::string		customData;
 };
@@ -39,6 +40,7 @@ public:
 	unsigned short PCBreak;
 	unsigned short opcodeBreak;
 	bool breakActive;
+	bool autoPrint;
 private:
 	std::vector<StackData> queue;
 };
