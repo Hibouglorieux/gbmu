@@ -137,10 +137,10 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		value &= 0x87;
 		value |= (newValue & (~0x87));
 		return (value);
-	} else if (addr == LCDC && (value & 0x80) == 0) {
-        M_LY = 0;
-	} else if (addr == 0xFF02 && newValue == 0x81) {
-		(memRef[0xFF01] == ' ') ? std::cout << std::endl : std::cout << (char)(memRef[0xFF01]);
+//	} else if (addr == LCDC && (value & 0x80) == 0) {
+//        M_LY = 0;
+//	} else if (addr == 0xFF02 && newValue == 0x81) {
+//		(memRef[0xFF01] == ' ') ? std::cout << std::endl : std::cout << (char)(memRef[0xFF01]);
 	} else if (addr == LYC || addr == LY) {
         (value == M_LY) ? SET(M_LCDC_STATUS, 2) : RES(M_LCDC_STATUS, 2);
         (value == M_LYC) ? SET(M_LCDC_STATUS, 2) : RES(M_LCDC_STATUS, 2);

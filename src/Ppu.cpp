@@ -15,10 +15,10 @@
 #include <iostream>
 
 unsigned char Ppu::windowCounter = 0;
-std::array<int, PIXEL_PER_LINE> Ppu::finalLine{};
-std::array<SpriteData, PIXEL_PER_LINE> Ppu::pixelLine {};
-std::array<BackgroundData, PIXEL_PER_LINE> Ppu::backgroundLine {};
-std::array<SpriteData, PIXEL_PER_LINE> Ppu::spriteLine{};
+//std::array<int, PIXEL_PER_LINE> Ppu::finalLine{};
+//std::array<SpriteData, PIXEL_PER_LINE> Ppu::pixelLine {};
+//std::array<BackgroundData, PIXEL_PER_LINE> Ppu::backgroundLine {};
+//std::array<SpriteData, PIXEL_PER_LINE> Ppu::spriteLine{};
 //std::array<int, 8> Ppu::coloredSpriteLine{};
 //std::array<int, 8> Ppu::colorCodeSpriteLine{};
 //std::vector<struct OAM_entry> Ppu::spritesFound;
@@ -26,9 +26,9 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::spriteLine{};
 
 std::array<int, PIXEL_PER_LINE> Ppu::doOneLine(std::array<int, PIXEL_PER_LINE> finalLine)
 {
-	pixelLine = getOamLine();
+	auto pixelLine = getOamLine();
 
-	backgroundLine = getBackgroundLine();
+	auto backgroundLine = getBackgroundLine();
 
 
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
@@ -78,6 +78,7 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 
 std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 {
+    std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine{};
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int xPosInLine = 0;
@@ -128,7 +129,8 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 
 std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
-	std::vector<struct OAM_entry> spritesFound, spritesFound2; //cant move in outside why ?
+	std::vector<struct OAM_entry> spritesFound{}, spritesFound2{};
+    std::array<SpriteData, PIXEL_PER_LINE> spriteLine{};
 	spriteLine.fill({0, false, 0}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
@@ -184,11 +186,10 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		// copy the sprite on the line
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 		{
-            Sprite::coloredSpriteLine = sprite.getColoredLine(yOffset);
-            Sprite::colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
-			if (x > 0)
-				spriteLine[x] = {Sprite::coloredSpriteLine[i], bIsAboveBG,
-				Sprite::colorCodeSpriteLine[i]}; // might need to check color 0
+            std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
+            std::array<int, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);			if (x > 0)
+				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG,
+				colorCodeSpriteLine[i]}; // might need to check color 0
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about

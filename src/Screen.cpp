@@ -21,7 +21,7 @@
 
 
 #define QUAD_COLOR 0b11
-std::vector<SDL_Point> Screen::pt(16);
+//std::vector<SDL_Point> Screen::pt(16);
 
 SDL_Texture * Screen::VRam_texture = nullptr;
 SDL_Texture * Screen::BG_texture = nullptr;
@@ -103,7 +103,7 @@ void	Screen::drawBG()
 }
 
 bool	Screen::drawPpu(int clockDiff, bool updateScreen) {
-
+    std::array<int, PIXEL_PER_LINE> finalLine{0};
     SDL_SetRenderTarget(DBG_rend, Screen::Ppu_texture);
     Gameboy::setState(GBSTATE_V_BLANK);
     for (int i = 0 ; i < 10 ; i++) {
@@ -115,9 +115,9 @@ bool	Screen::drawPpu(int clockDiff, bool updateScreen) {
        for (int i = 0 ; i < 144 ; i++) {
            Gameboy::setState(GBSTATE_OAM_SEARCH);
            clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
-           Ppu::finalLine = Ppu::doOneLine(Ppu::finalLine);
+           finalLine = Ppu::doOneLine(finalLine);
            for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
-               Screen::drawPoint(j, i, Ppu::finalLine[j], DBG_rend);
+               Screen::drawPoint(j, i, finalLine[j], DBG_rend);
            }
            updateScreen = true;
            Gameboy::setState(GBSTATE_PX_TRANSFERT);
@@ -153,7 +153,7 @@ void	Screen::drawVRam(void)
 bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, int pixelScale)
 {
 	int		index = 0;
-
+    std::vector<SDL_Point> pt(pixelScale * pixelScale);
 //	SDL_RendererInfo rendererInfo;
 //	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
 //	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height

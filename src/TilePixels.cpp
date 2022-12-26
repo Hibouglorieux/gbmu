@@ -1,7 +1,7 @@
 #include "../includes/TilePixels.hpp"
 
-std::array<int, 8> TilePixels::retLine = {};
-std::array<std::array<int, 8>, 8> TilePixels::pixels{};
+//std::array<int, 8> TilePixels::retLine = {};
+//std::array<std::array<int, 8>, 8> TilePixels::pixels{};
 
 TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
 {}
@@ -22,7 +22,7 @@ int TilePixels::getColor(unsigned char byteColorCode, unsigned short paletteAddr
 
 std::array<int, 8> TilePixels::getColorLine(int y)
 {
-	retLine = getLineColorCode(y);
+	auto retLine = getLineColorCode(y);
 
 	// means the tile is valid, else return 0
 	if (paletteAddress != 0x0)
@@ -51,17 +51,29 @@ TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data
 //		unsigned char byte1 = mem[tileAddress + (y * 2)];
 //		unsigned char byte2 = mem[tileAddress + (y * 2) + 1];
 
+        unsigned char byte1 = mem[tileAddress + (y * 2)];
+        unsigned char byte2 = mem[tileAddress + (y * 2) + 1];
 
-		for (int x = 7; x >= 0; x--)
-		{
-			// color code is based on the merge of the two bytes with the same bit
-			// 0b10001001 0b00010011 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x11
-//			bool bit1 = (byte1 >> x) & 1;
-//			bool bit2 = (byte2 >> x) & 1;
-//			unsigned char byteColorCode = (bit2 << 1) | (bit1);
-			pixels[y][std::abs(x - 7)] =  ((mem[tileAddress + (y * 2) + 1] >> x) & 1 ) << 1 | ((mem[tileAddress + (y * 2)] >> x) & 1);
-                    //(((byte2 >> x) & 1) << 1) | ((byte1 >> x) & 1);
+
+        for (int x = 0; x < 8; x++)
+        {
+            // color code is based on the merge of the two bytes with the same bit
+            // 0b10001001 0b00010011 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x11
+            bool bit1 = byte1 & (1 << x);
+            bool bit2 = byte2 & (1 << x);
+            unsigned char byteColorCode = (bit2 << 1) | (bit1);
+            data[y][7 - x] = byteColorCode;
         }
+//		for (int x = 7; x >= 0; x--)
+//		{
+//			// color code is based on the merge of the two bytes with the same bit
+//			// 0b10001001 0b00010011 will give 0x10, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01 and 0x11
+////			bool bit1 = (byte1 >> x) & 1;
+////			bool bit2 = (byte2 >> x) & 1;
+////			unsigned char byteColorCode = (bit2 << 1) | (bit1);
+//			pixels[y][std::abs(x - 7)] =  ((mem[tileAddress + (y * 2) + 1] >> x) & 1 ) << 1 | ((mem[tileAddress + (y * 2)] >> x) & 1);
+//                    //(((byte2 >> x) & 1) << 1) | ((byte1 >> x) & 1);
+//        }
 	}
-    data = pixels;
+//    data = pixels;
 }

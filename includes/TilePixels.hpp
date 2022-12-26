@@ -8,8 +8,8 @@
 struct TilePixels {
 public:
     std::array<std::array<int, 8>, 8> data{};
-    static std::array<int, 8> retLine;
-    static std::array<std::array<int, 8>, 8> pixels;
+//    static std::array<int, 8> retLine;
+//    static std::array<std::array<int, 8>, 8> pixels;
     void flipX() {
         for (int i = 0; i < 8; i++)
             std::reverse(data[i].begin(), data[i].end());

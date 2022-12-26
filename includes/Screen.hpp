@@ -42,7 +42,7 @@ public:
 //	static SDL_Renderer*	renderer;
 private:
 
-    static std::vector<SDL_Point> pt;
+//    static std::vector<SDL_Point> pt;
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
 	static SDL_Renderer*	vRamRenderer;

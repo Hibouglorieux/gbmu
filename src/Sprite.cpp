@@ -13,8 +13,8 @@
 #include "../includes/Sprite.hpp"
 #include <algorithm>
 
-std::array<int, 8> Sprite::coloredSpriteLine {};
-std::array<int, 8> Sprite::colorCodeSpriteLine {};
+//std::array<int, 8> Sprite::coloredSpriteLine {};
+//std::array<int, 8> Sprite::colorCodeSpriteLine {};
 
 Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 {
@@ -85,9 +85,9 @@ int	Sprite::getColor(unsigned char byteColorCode) const
 
 std::array<int, 8> Sprite::getColoredLine(int y) const
 {
-	coloredSpriteLine = getLineColorCode(y);
+	auto retLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
-		coloredSpriteLine[x] = getColor(coloredSpriteLine[x]);
-	return coloredSpriteLine;
+		retLine[x] = getColor(retLine[x]);
+	return retLine;
 }
