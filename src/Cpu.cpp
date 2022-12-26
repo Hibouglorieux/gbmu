@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/24 04:13:11 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/26 16:16:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ void Cpu::loadBootRom()
 	SP = 0xFFFE;
 	A = 0x11;
 	F = 0x80;
-	mem.supervisorWrite(0xFF00, 0xCF);
 	//M_LY = 0x00;
 	M_LCDC = 0x91;
 	//M_LCDC = 0x80;

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/24 04:30:16 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/26 16:13:48 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #ifndef MEM_CLASS_H
 # define MEM_CLASS_H
 #include <string>
+#include <map>
 
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
 # define SET(val, bit) {val |= (1 << bit);}
@@ -49,13 +50,14 @@ public:
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
+	static const std::map<unsigned short, unsigned char> readOnlyBits;
 private:
+	void init();
 	unsigned char* internalArray;
 	unsigned int	memSize;
-	// TODO regroup all readonly/unused bytes
+	// TODO regroup all readonly/unused bits
 	// in register in this map and use it
 	// inside memWrap
-	//std::map<short, unsigned char> readOnlyBytes;
 };
 
 #endif
