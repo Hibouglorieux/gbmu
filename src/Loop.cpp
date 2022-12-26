@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/24 04:27:43 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/26 15:22:37 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 
 bool Loop::loop()
 {
+	const std::chrono::microseconds frameTime(1'000'000 / 60);
 	// TODO unsure about updateScreen ? Do we update everytime ?
 	bool updateScreen = 1;
 	std::array<int, PIXEL_PER_LINE> finalLine;
@@ -29,6 +30,7 @@ bool Loop::loop()
 
 	while (true)
 	{
+		auto beginFrameTime = std::chrono::system_clock::now();
 		/* Render clear */
 		if (updateScreen) {
 			Screen::clear();
@@ -81,9 +83,18 @@ bool Loop::loop()
 		if (updateScreen) {
 			Screen::update();
 		}
+		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
+
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
-		//Cpu::printFIFO(Cpu::fifo);	
+		if (timeTakenForFrame.count() < frameTime.count())
+		{
+			//std::cout << "sleeping for: " << std::dec << (frameTime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+			std::this_thread::sleep_for(frameTime - timeTakenForFrame);
+		}
+		else
+		{
+			//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+		}
 	}
 	return (true);
 }
