@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 16:20:02 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/26 16:32:14 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
 						// set to 0 when pressed, last 2 are unused
+ {0xFF02, 0x7C},
+				
 };
 
 Mem::Mem()
@@ -148,11 +150,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
 		newValue = newValue | Mem::readOnlyBits.at(addr);
-	//JOYPAD register is 0xFF00
-	if (addr == 0xFF00) {
-		Joypad::refresh();
-		return (value);
-	}
 	if (addr == LCDC_STATUS) {
 		// Ignore bit 7, 1, 2 and 3
 		// XXX nallani: that has to be uncorrect, did you mean bit 0, 1, 2 ?
@@ -162,6 +159,11 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		return (value);
 	}
 	value = newValue;
+	//JOYPAD register is 0xFF00
+	if (addr == 0xFF00) {
+		Joypad::refresh();
+		return (value);
+	}
 	if (addr == LCDC) {
 		if ((value & 0x80) == 0) {
 			M_LY = 0;
