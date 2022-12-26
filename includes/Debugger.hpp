@@ -24,6 +24,7 @@ public:
     static bool show_Vram;
     static bool show_BG;
     static bool show_hexdump;
+    static bool show_registers;
     static int start(int, bool);
 //    void stop();
 };

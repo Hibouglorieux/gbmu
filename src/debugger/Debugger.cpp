@@ -6,6 +6,7 @@ static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 bool Debugger::show_BG = false;
 bool Debugger::show_Vram = false;
 bool Debugger::show_hexdump = false;
+bool Debugger::show_registers = false;
 
 void hexdump_debugger() {
 	{
@@ -146,12 +147,19 @@ int Debugger::start(int clockDiff, bool updateScreen) {
         if (ImGui::Button(show_BG ? "Hide BG" : "Show BG")) {
 		    show_BG = !show_BG;
 	    }
+        ImGui::SameLine();
         if (ImGui::Button(show_Vram ? "show_Vram" : "show_Vram")) {
 		    show_Vram = !show_Vram;
 	    }
+        ImGui::SameLine();
         if (ImGui::Button(show_hexdump ? "show_hexdump" : "show_hexdump")) {
 		    show_hexdump = !show_hexdump;
 	    }
+        ImGui::SameLine();
+        if (ImGui::Button(show_registers ? "show_registers" : "show_registers")) {
+		    show_registers = !show_registers;
+	    }
+        ImGui::NewLine();
         Screen::drawPpu(clockDiff, updateScreen);
         ImGui::End();
     }
@@ -176,8 +184,9 @@ int Debugger::start(int clockDiff, bool updateScreen) {
         }
     }
 
-    register_debugger();
-
+    if (show_registers) {
+        register_debugger();
+    }
     // SDL_Delay(3000);
     ImGui::Render();
     SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);
