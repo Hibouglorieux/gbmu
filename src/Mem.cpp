@@ -95,7 +95,7 @@ Mem::Mem(const std::string& pathToRom)
 
 	for (int i = 0; i < romBanksNb; i++)
 		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
-	std::cout << "created " << romBanksNb << " extra rom banks" << std::endl;
+	std::cout << "created " << romBanksNb << " rom banks" << std::endl;
 	for (int i = 0; i < extraRamBanksNb; i++)
 		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
 	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
@@ -108,6 +108,8 @@ Mem::Mem(const std::string& pathToRom)
 	isValid = true;
 	memSize = MEM_SIZE;
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
+	std::cout << "CartRidge type: " << (int)getCartridgeType() << std::endl;
+
 	init();
 }
 
@@ -210,48 +212,68 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
 	if (addr <= 0x3FFF)
 	{
+        unsigned char selectedRomBank = 0;
 		if (bIsAdvancedBankingMode && romBanks.size() >= 64)
-		{
-			unsigned char selectedRomBank = (ramBankNumber << 5);
-			return romBanks[selectedRomBank][addr];
-		}
-		return romBanks[0][addr];
+			selectedRomBank = (ramBankNumber << 5);
+		return romBanks[selectedRomBank][addr];
 	}
 	else if (addr >= 0x4000 && addr <= 0x7FFF)
 	{
 		unsigned char selectedRomBank = (ramBankNumber << 5) + romBankNumber;
-        if (romBankNumber == 0 )
+        if (!bIsAdvancedBankingMode) // ignore ramBankNumber << 5
+            selectedRomBank &= 0x1F;
+        if (romBankNumber == 0)
             selectedRomBank += 1;
+        selectedRomBank &= romBanks.size() - 1; // make sure it's in range
 		return romBanks[selectedRomBank][addr-0x4000];
 	}
-	else if (addr >= 0xA000 && addr <= 0xBFFF)
-	{
-		if (!bEnableRam || ramBankNumber == 0)
-			return internalArray[addr];
-//        std::cout << "access external ram !" << std::endl;
-		return extraRamBanks[ramBankNumber - 1][addr - 0xA000];
+	else if (addr >= 0xA000 && addr <= 0xBFFF) {
+        if (!bEnableRam)
+        {
+//            std::cout << "access Internal ram !" << std::endl;
+            return internalArray[addr];
+        }
+        std::cout << "access external ram with nbr: " << (int)ramBankNumber <<  std::endl;
+        int ramBankNb = bIsAdvancedBankingMode ? 0 : ramBankNumber;
+		return extraRamBanks[ramBankNb][addr - 0xA000];
 	}
 	else
 		return internalArray[addr];
 }
 
-unsigned char& MemWrap::operator=(unsigned char newValue)
-{
+unsigned char& MemWrap::operator=(unsigned char newValue) {
+
 	if (addr < 0x7FFF) {
+//        std::cout << "writting in rom at addr: " << (int) addr << std::endl;
         if (addr >= 0x6000 && addr <= 0x7FFF) {
-            memRef.bIsAdvancedBankingMode = newValue;
+//            std::cout << "bIsAdvancedBankingMode old Value: " << (int) memRef.bIsAdvancedBankingMode << std::endl;
+
+            if (newValue)
+                memRef.bIsAdvancedBankingMode = false;
+            else
+                memRef.bIsAdvancedBankingMode = true;
+//            std::cout << "bIsAdvancedBankingMode new Value: " << (int) memRef.bIsAdvancedBankingMode << std::endl;
         }
         if (addr >= 0x4000 && addr <= 0x5FFF) {
+//            std::cout << "ramBankNumber old Value: " << (int) memRef.ramBankNumber << std::endl;
             if (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size())
                 memRef.ramBankNumber = newValue & 0b11;
+//            std::cout << "ramBankNumber new Value: " << (int) memRef.ramBankNumber << std::endl;
         }
         if (addr >= 0x2000 && addr <= 0x3FFF)// TODO need to mask with the total nb of banks
         {
+//            std::cout << "romBankNumber old Value: " << (int) memRef.romBankNumber << " new value: " << (int)newValue<< std::endl;
             memRef.romBankNumber = newValue & 0x1F;// shouldnt be equal to 0
+//            std::cout << "romBankNumber new Value: " << (int) memRef.romBankNumber << std::endl;
         }
 		if (addr <= 0x1FFF) {
-            memRef.bEnableRam = (newValue == 0xA);
+//            Cpu::stackTrace.print();
+//            exit(1);
+//            std::cout << "enableRam old Value: " << (int) memRef.bEnableRam << std::endl;
+            memRef.bEnableRam = (newValue &= 0xA);
+//            std::cout << "enableRam new Value: " << (int) memRef.bEnableRam << std::endl;
         }
+//		std::cout << "writing in banks " << (int)newValue << std::endl;
 		return value;// XXX that might pose a problem
 	}
 	// make sure the new value doesnt override read only bits
@@ -302,10 +324,10 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	// if (addr == LYC)
 		// std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
-		//std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
+		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);// TODO change with banks
-			//std::cout << "DMA transfert done" << std::endl;
+			std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
 	}
 	return value;
@@ -363,7 +385,7 @@ int		Mem::getExtraRamBanksNb(char ramSizeCode)
 		case 5:
 			return 8;
 		default:
-			std::cerr << "wrong romSizeCode received" << std::endl;
+			std::cerr << "wrong ramSizeCode received" << std::endl;
 			throw("");
 	}
 }
@@ -388,5 +410,5 @@ bool	Mem::isCGB()
 int		Mem::getCartridgeType()
 {
 	// might be unused with getRamSize / getRomSize instead
-	return internalArray[0x147];
+	return romBanks[0][0x147];
 }

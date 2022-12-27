@@ -57,7 +57,7 @@ public:
 	int		getCartridgeType();
 
 	mutable bool bIsAdvancedBankingMode;
-	mutable bool bEnableRam;
+	mutable bool bEnableRam = false;
 	mutable unsigned char romBankNumber;
 	mutable unsigned char ramBankNumber;
 
