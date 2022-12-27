@@ -144,8 +144,6 @@ bool	Screen::createTexture() {
 
 bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
 {
-	std::vector<SDL_Point> pt(pixelScale * pixelScale);
-
 	x *= pixelScale;
 	y *= pixelScale;
 	int *p = (int*)pixels;
