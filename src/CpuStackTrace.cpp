@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 16:33:15 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/20 20:13:12 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/26 17:01:55 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,13 @@
 
 CpuStackTrace::CpuStackTrace()
 {
-	printSize = 30;
-	maxSize = 10;
+	printSize = 3000;
+	maxSize = 1;
 	PCBreak = 0;
 	opcodeBreak = 0xFD;
 	breakActive = false;
+	queue.resize(maxSize + 1);
+	autoPrint = false;
 }
 
 CpuStackTrace::~CpuStackTrace()
@@ -38,6 +40,11 @@ void CpuStackTrace::print()
 
 void CpuStackTrace::add(StackData stackData)
 {
+	if (autoPrint)
+	{
+		stackData.print();
+		std::cout << std::endl;
+	}
 	queue.insert(queue.begin(), stackData);
 	if (queue.size() > maxSize)
 		queue.pop_back();
@@ -58,6 +65,7 @@ void StackData::print()
 	std::cout << "PC: 0x" << std::setw(4) << PC << "\topcode: 0x" << std::setw(4) <<  opcode << std::endl;
 	std::cout << "SP: 0x" << std::setw(4) << SP << "\tAF: 0x" << std::setw(4) << AF << std::endl;
 	std::cout << "BC: 0x" << std::setw(4) << BC << "\tDE: 0x" << std::setw(4) << DE << std::endl;
+	std::cout << "HL: 0x" << std::setw(4) << HL << std::endl;
 	if (!customData.empty())
 		std::cout << customData << std::endl;
 }

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 05:35:22 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/26 18:09:23 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ int Clock::divClock = 0;
 Clock::Clock()
 {
 	/* Init DIV at 0 */
-	mem[0xFF04] = 0;
+	//mem[0xFF04] = 0;//XXX nallani: this is wrong because mem is not yet loaded
 	/* Init TIMA at 0 */
-	mem[0xFF05] = 0;
+	//mem[0xFF05] = 0;//XXX nallani: this is wrong because mem is not yet loaded
 	clock = 0;
 
 	// TODO LMA whats this ?

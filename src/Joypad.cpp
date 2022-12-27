@@ -2,6 +2,11 @@
 #include "Gameboy.hpp"
 #include <iostream>
 
+#define A_BUTTON SDLK_s
+#define B_BUTTON SDLK_a
+#define SELECT_BUTTON SDLK_LSHIFT
+#define START_BUTTON SDLK_RETURN
+
 // TODO We need to have 8 bit for each input
 // so we cannot write into memory directly, need a temp buffer,
 // we need to update everytime 0xFF00 bit 0-3 with respect to bit 4-5
@@ -57,19 +62,19 @@ void Joypad::handleEvent(SDL_Event *ev)
 				input |= JOYPAD_MSK_RIGHT;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_0: // A
+			case A_BUTTON: // A
 				input |= JOYPAD_MSK_A;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_3: // B
+			case B_BUTTON: // B
 				input |= JOYPAD_MSK_B;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_1: // Start
+			case START_BUTTON: // Start
 				input |= JOYPAD_MSK_START;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_7: // Select
+			case SELECT_BUTTON: // Select
 				input |= JOYPAD_MSK_SELECT;
 				bSomethingChanged = true;
 				break;
@@ -95,19 +100,19 @@ void Joypad::handleEvent(SDL_Event *ev)
 				input &= ~JOYPAD_MSK_RIGHT;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_0: // A
+			case A_BUTTON: // A
 				input &= ~JOYPAD_MSK_A;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_3: // B
+			case B_BUTTON: // B
 				input &= ~JOYPAD_MSK_B;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_1: // Start
+			case START_BUTTON: // Start
 				input &= ~JOYPAD_MSK_START;
 				bSomethingChanged = true;
 				break;
-			case SDLK_KP_7: // Select
+			case SELECT_BUTTON: // Select
 				input &= ~JOYPAD_MSK_SELECT;
 				bSomethingChanged = true;
 				break;

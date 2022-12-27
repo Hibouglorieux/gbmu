@@ -139,6 +139,7 @@ bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, in
 bool	Screen::create(void)
 {
 	SDL_Init(SDL_INIT_VIDEO);
+
 	window = SDL_CreateWindow("GBMU",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
@@ -157,6 +158,7 @@ bool	Screen::create(void)
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
+
 
 	vRamWindow = SDL_CreateWindow("VRAM",
 			SDL_WINDOWPOS_UNDEFINED,
@@ -191,6 +193,26 @@ bool	Screen::create(void)
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
 		return (false);
 	}
+
+	window = SDL_CreateWindow("GBMU",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			160 * 4,
+			144 * 4,
+			0);
+
+	if (!window) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+
+
+	renderer = SDL_CreateRenderer(window, -1, 0);
+	if (!renderer) {
+		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+		return (false);
+	}
+
 	SDL_RenderClear(renderer);
 	// if (SDL_SetRenderDrawColor(renderer, 33,  200 , 33 , 255) != 0) {
 	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
