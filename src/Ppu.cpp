@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/27 22:14:03 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/27 22:27:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,12 +185,16 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 		{
 			if (x > 0)
+			{
+				if (spriteLine[x].colorCode != 0 && colorCodeSpriteLine[i] == 0)
+					continue;
 				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG,
 				colorCodeSpriteLine[i]}; // might need to check color 0 
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about 
 														   // CGB)
+			}
 		}
 	}
 	return spriteLine;
