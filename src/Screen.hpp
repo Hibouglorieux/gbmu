@@ -18,7 +18,7 @@ class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create();
-	static bool drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer = renderer, int pixelScale = 4);
+	static bool drawPoint(int x, int y, int color, int pixelScale = 4);
 	static void destroy();
 	static void update();
 	static void clear();

@@ -40,6 +40,7 @@ SDL_Window*	Screen::get(void)
 
 void	Screen::destroy(void)
 {
+	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(vRamRenderer);
 	SDL_DestroyWindow(vRamWindow);
 	SDL_DestroyRenderer(renderer);
@@ -84,7 +85,7 @@ void	Screen::drawBG()
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], backgroundRenderer, scaleBG);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], scaleBG);
 			}
 		}
 		
@@ -101,7 +102,7 @@ void	Screen::drawVRam(void)
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], vRamRenderer);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x]);
 			}
 		}
 		
@@ -117,10 +118,9 @@ bool	Screen::createTexture() {
 	return true;
 }
 
-bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, int pixelScale)
+bool	Screen::drawPoint(int x, int y, int color, int pixelScale)
 {
 	std::vector<SDL_Point> pt(pixelScale * pixelScale);
-	int		index = 0;
 
 	x *= pixelScale;
 	y *= pixelScale;
