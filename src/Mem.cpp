@@ -60,7 +60,7 @@ Mem::Mem(int size)
 	init();
 }
 
-Mem::Mem(std::string pathToRom)
+Mem::Mem(const std::string& pathToRom)
 {
 	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
 	if (!file.is_open())
@@ -72,14 +72,14 @@ Mem::Mem(std::string pathToRom)
 	}
 
 	// read some values in the 
-	file.seekg(0, file.end);
+	file.seekg(0, std::ifstream::end);
 	int fileLen = file.tellg();
 	if (fileLen < 32'768)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
 			throw("");
 	}
-	file.seekg(0x148, file.beg);
+	file.seekg(0x148, std::ifstream::beg);
 	char romSizeCode;
    	file.read(&romSizeCode, 1);
 	int romBanksNb = getRomBanksNb(romSizeCode);
@@ -90,8 +90,8 @@ Mem::Mem(std::string pathToRom)
 	}
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
-	file.seekg(0, file.beg);
-	int extraRamBanksNb = getExtraRamBanksNb(romSizeCode);
+	file.seekg(0, std::ifstream::beg);
+	int extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
 
 	for (int i = 0; i < romBanksNb; i++)
 		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
@@ -101,10 +101,10 @@ Mem::Mem(std::string pathToRom)
 	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
-	file.read((char*)internalArray, MEM_SIZE);
-	memcpy(romBanks[0], &internalArray[0x150], ROM_BANK_SIZE);
-	memcpy(romBanks[1], &internalArray[0x150 + ROM_BANK_SIZE], ROM_BANK_SIZE);
-	file.close();
+    for (int i = 0; i < romBanksNb; i++) {
+        file.read((char *) romBanks[i], ROM_BANK_SIZE);
+    }
+    file.close();
 	isValid = true;
 	memSize = MEM_SIZE;
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
@@ -133,15 +133,15 @@ const Mem&	Mem::operator=(const Mem& rhs)
 	this->internalArray = new unsigned char[MEM_SIZE];
 	for (int i = 0; i < MEM_SIZE; i++)
 		this->internalArray[i] = rhs.internalArray[i];
-	for (size_t i = 0; i < rhs.extraRamBanks.size(); i++)
+	for (auto extraRamBank : rhs.extraRamBanks)
 	{
 		this->extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
-		memcpy(this->extraRamBanks.back(), rhs.extraRamBanks[i], RAM_BANK_SIZE);
+		memcpy(this->extraRamBanks.back(), extraRamBank, RAM_BANK_SIZE);
 	}
-	for (size_t i = 0; i < rhs.romBanks.size(); i++)
+	for (auto romBank : rhs.romBanks)
 	{
 		this->romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
-		memcpy(this->romBanks.back(), rhs.romBanks[i], ROM_BANK_SIZE);
+		memcpy(this->romBanks.back(), romBank, ROM_BANK_SIZE);
 	}
 	isValid = true;
 	memSize = MEM_SIZE;
@@ -187,9 +187,8 @@ MemWrap Mem::operator[](unsigned int i)
 		throw("");
 	}
 	return MemWrap(*this, i, getRefWithBanks(i));
-	//return MemWrap(*this, i, internalArray[i]);
+//	return MemWrap(*this, i, internalArray[i]);
 }
-
 const MemWrap Mem::operator[](unsigned int i) const
 {
 	if (i >= memSize)
@@ -216,18 +215,21 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 			unsigned char selectedRomBank = (ramBankNumber << 5);
 			return romBanks[selectedRomBank][addr];
 		}
-		return internalArray[addr];
+		return romBanks[0][addr];
 	}
 	else if (addr >= 0x4000 && addr <= 0x7FFF)
 	{
 		unsigned char selectedRomBank = (ramBankNumber << 5) + romBankNumber;
-		return romBanks[selectedRomBank][addr];
+        if (romBankNumber == 0 )
+            selectedRomBank += 1;
+		return romBanks[selectedRomBank][addr-0x4000];
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
 		if (!bEnableRam || ramBankNumber == 0)
 			return internalArray[addr];
-		return extraRamBanks[ramBankNumber - 1][addr];
+//        std::cout << "access external ram !" << std::endl;
+		return extraRamBanks[ramBankNumber - 1][addr - 0xA000];
 	}
 	else
 		return internalArray[addr];
@@ -235,17 +237,21 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
-	if (addr < 0x7FFF)
-	{
-		if (addr >= 0x6000 && addr <= 0x7FFF)
-			memRef.bIsAdvancedBankingMode = newValue;
-		if (addr >= 0x4000 && addr <= 0x5FFF)
-			memRef.ramBankNumber = newValue & 0b11;
-		if (addr >= 0x2000 && addr <= 0x3FFF)// TODO need to mask with the total nb of banks
-			memRef.romBankNumber = newValue & 0x1F;// shouldnt be equal to 0
-		if (addr <= 0x1FFF)
-			memRef.bEnableRam = ((newValue & 0xA) == 0xA);
-		std::cout << "writing in banks" << std::endl;
+	if (addr < 0x7FFF) {
+        if (addr >= 0x6000 && addr <= 0x7FFF) {
+            memRef.bIsAdvancedBankingMode = newValue;
+        }
+        if (addr >= 0x4000 && addr <= 0x5FFF) {
+            if (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size())
+                memRef.ramBankNumber = newValue & 0b11;
+        }
+        if (addr >= 0x2000 && addr <= 0x3FFF)// TODO need to mask with the total nb of banks
+        {
+            memRef.romBankNumber = newValue & 0x1F;// shouldnt be equal to 0
+        }
+		if (addr <= 0x1FFF) {
+            memRef.bEnableRam = (newValue == 0xA);
+        }
 		return value;// XXX that might pose a problem
 	}
 	// make sure the new value doesnt override read only bits
@@ -366,9 +372,9 @@ std::string Mem::getTitle()
 {
 	int i = 0x134;
 	std::string title;
-	while (internalArray[i] != '\0' && i < 0x143)
+	while (romBanks[0][i] != '\0' && i < 0x143)
 	{
-		title += internalArray[i];
+		title += (char)romBanks[0][i];
 		i++;
 	}
 	return title;
@@ -376,7 +382,7 @@ std::string Mem::getTitle()
 
 bool	Mem::isCGB()
 {
-	return internalArray[0x143] | 0xC0;
+	return romBanks[0][0x143] | 0xC0;
 }
 
 int		Mem::getCartridgeType()

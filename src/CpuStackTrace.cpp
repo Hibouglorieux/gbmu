@@ -17,7 +17,7 @@
 CpuStackTrace::CpuStackTrace()
 {
 	printSize = 3000;
-	maxSize = 1;
+	maxSize = 10;
 	PCBreak = 0;
 	opcodeBreak = 0xFD;
 	breakActive = false;

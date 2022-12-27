@@ -43,7 +43,7 @@ class Mem {
 public:
 	Mem();
 	Mem(int size);
-	Mem(std::string pathToRom);
+	Mem(const std::string& pathToRom);
 	const Mem& operator=(const Mem& rhs);
 	~Mem();
 	MemWrap operator[](unsigned int i);
@@ -62,11 +62,12 @@ public:
 	mutable unsigned char ramBankNumber;
 
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
+    std::vector<unsigned char*>	extraRamBanks;
+    std::vector<unsigned char*>	romBanks;
+
 private:
 	void init();
 	unsigned char*	internalArray;
-	std::vector<unsigned char*>	extraRamBanks;
-	std::vector<unsigned char*>	romBanks;
 
 	unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned int	memSize;
