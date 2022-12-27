@@ -18,7 +18,7 @@ class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create();
-	static bool drawPoint(int x, int y, int color, int pixelScale = 4);
+	static bool drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale = 4);
 	static void destroy();
 	static void update();
 	static void clear();
@@ -33,6 +33,14 @@ public:
 	static SDL_Texture*		texture;
 	static void*			pixels;
 	static int				pitch;
+
+	static SDL_Texture*		BGTexture;
+	static void*			BGPixels;
+	static int				BGPitch;
+
+	static SDL_Texture*		VRamTexture;
+	static void*			VramPixels;
+	static int				VramPitch;
 private:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;

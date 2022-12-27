@@ -26,9 +26,17 @@ SDL_Window* Screen::backgroundWindow = NULL;
 SDL_Renderer* Screen::backgroundRenderer = NULL;
 
 SDL_Texture *Screen::texture = NULL;
+SDL_Texture *Screen::BGTexture = NULL;
+SDL_Texture *Screen::VRamTexture = NULL;
 
 void *Screen::pixels = NULL;
 int Screen::pitch = 0;
+
+void *Screen::BGPixels = NULL;
+int Screen::BGPitch = 0;
+
+void *Screen::VramPixels = NULL;
+int Screen::VramPitch = 0;
 
 int scale = 4;
 int scaleBG = 2;
@@ -55,7 +63,13 @@ void	Screen::destroy(void)
 void	Screen::update(void)
 {
 	SDL_UnlockTexture(texture);
+	SDL_UnlockTexture(BGTexture);
+	SDL_UnlockTexture(VRamTexture);
+
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderCopy(vRamRenderer, VRamTexture, NULL, NULL);
+	SDL_RenderCopy(backgroundRenderer, BGTexture, NULL, NULL);
+
 	SDL_RenderPresent(renderer);
 	SDL_RenderPresent(vRamRenderer);
 	SDL_RenderPresent(backgroundRenderer);
@@ -85,7 +99,7 @@ void	Screen::drawBG()
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], scaleBG);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], BGPixels, BGPitch, scaleBG);
 			}
 		}
 		
@@ -102,7 +116,7 @@ void	Screen::drawVRam(void)
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x]);
+				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], VramPixels, VramPitch);
 			}
 		}
 		
@@ -115,16 +129,26 @@ bool	Screen::createTexture() {
 		SDL_TEXTUREACCESS_STREAMING, 
 		160 * 4,
 		144 * 4);
+	BGTexture = SDL_CreateTexture(backgroundRenderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING, 
+		160 * 4,
+		144 * 4);
+	VRamTexture = SDL_CreateTexture(vRamRenderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING, 
+		160 * 4,
+		144 * 4);
 	return true;
 }
 
-bool	Screen::drawPoint(int x, int y, int color, int pixelScale)
+bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
 {
 	std::vector<SDL_Point> pt(pixelScale * pixelScale);
 
 	x *= pixelScale;
 	y *= pixelScale;
-	int *p = (int*)Screen::pixels;
+	int *p = (int*)pixels;
 	for (int i = 0 ; i < pixelScale ; i++) {
 		for (int j = 0 ; j < pixelScale ; j++) {
 			p[(y + j) * (pitch / 4) + (i + x)] = ((255 - color * (255 / 3)) << 24) | ((255 - color * (255 / 3)) << 16) | ((255 - color * (255 / 3)) << 8) | 0xFF;
@@ -139,26 +163,6 @@ bool	Screen::drawPoint(int x, int y, int color, int pixelScale)
 bool	Screen::create(void)
 {
 	SDL_Init(SDL_INIT_VIDEO);
-
-	window = SDL_CreateWindow("GBMU",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		160 * 4,
-		144 * 4,
-		0);
-
-	if (!window) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-
-
-	renderer = SDL_CreateRenderer(window, -1, 0);
-	if (!renderer) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-
 
 	vRamWindow = SDL_CreateWindow("VRAM",
 			SDL_WINDOWPOS_UNDEFINED,

@@ -40,6 +40,12 @@ bool Loop::loop()
 		if (SDL_LockTexture(Screen::texture, NULL, &Screen::pixels, &Screen::pitch)) {
 			throw "Could not lock texture\n";
 		}
+		if (SDL_LockTexture(Screen::VRamTexture, NULL, &Screen::VramPixels, &Screen::VramPitch)) {
+			throw "Could not lock Vram texture\n";
+		}
+		if (SDL_LockTexture(Screen::BGTexture, NULL, &Screen::BGPixels, &Screen::BGPitch)) {
+			throw "Could not lock BG texture\n";
+		}
 
 
 		Gameboy::setState(GBSTATE_V_BLANK);
@@ -56,7 +62,7 @@ bool Loop::loop()
 			if (BIT(M_LCDC, 7)) {
 				finalLine = Ppu::doOneLine();
 				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
-					Screen::drawPoint(j, i, finalLine[j]);
+					Screen::drawPoint(j, i, finalLine[j], Screen::pixels, Screen::pitch);
 				}
 				updateScreen = 1;
 			}
@@ -81,8 +87,8 @@ bool Loop::loop()
 				printf("%02x ", (uint8_t)mem[0x8000 + i]);
 			}
 			*/
-			// Screen::drawVRam();
-			// Screen::drawBG();
+			Screen::drawVRam();
+			Screen::drawBG();
 		}
 		/* Manage events */
 		Gameboy::pollEvent();
