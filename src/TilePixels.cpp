@@ -25,12 +25,12 @@ int TilePixels::getColor(unsigned char byteColorCode, unsigned short paletteAddr
 
 std::array<int, 8> TilePixels::getColorLine(int y)
 {
-	std::array<int, 8> retLine = getLineColorCode(y);
+	std::array<int, 8> retLine;
 
 	// means the tile is valid, else return 0
 	if (paletteAddress != 0x0)
 		for (int x = 0; x < 8; x++)
-			retLine[x] = getColor(retLine[x], paletteAddress);
+			retLine[x] = getColor(data[y][x], paletteAddress);
 	return retLine;
 }
 

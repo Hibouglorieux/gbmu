@@ -98,8 +98,9 @@ void	Screen::drawBG()
 		int x_offset = (i % 32) * 9;
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
+			auto line = tile.getColorLine(y);
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], BGPixels, BGPitch, scaleBG);
+				drawPoint(x + x_offset, y + y_offset, line[x], BGPixels, BGPitch, scaleBG);
 			}
 		}
 		
@@ -115,8 +116,9 @@ void	Screen::drawVRam(void)
 		int x_offset = (i % 16) * 9;
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
+			auto line = tile.getColorLine(y);
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, tile.getColorLine(y)[x], VramPixels, VramPitch);
+				drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch);
 			}
 		}
 		
@@ -146,10 +148,11 @@ bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pix
 {
 	x *= pixelScale;
 	y *= pixelScale;
+	int colorForSDL = 255 - color * (255 / 3);
 	int *p = (int*)pixels;
 	for (int i = 0 ; i < pixelScale ; i++) {
 		for (int j = 0 ; j < pixelScale ; j++) {
-			p[(y + j) * (pitch / 4) + (i + x)] = ((255 - color * (255 / 3)) << 24) | ((255 - color * (255 / 3)) << 16) | ((255 - color * (255 / 3)) << 8) | 0xFF;
+			p[(y + j) * (pitch / 4) + (i + x)] = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8) | 0xFF;
 		}
 	}
 

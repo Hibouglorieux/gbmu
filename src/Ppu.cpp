@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/19 19:25:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/27 22:14:03 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,14 +92,16 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
 		else if (bBackgroundEnabled)
 			tilePixels = getBackgroundTile((xPosInLine / 8) + M_SCX / 8, (M_LY + M_SCY) / 8);//[(M_LY + M_SCY) % 8];
+		const unsigned char yLine = (bDrawWindow ? (windowCounter % 8) : ((M_LY + M_SCY) % 8));
+		auto tilePixelColorLine = tilePixels.getColorLine(yLine);
+		auto tilePixelColorCodeLine = tilePixels.getLineColorCode(yLine);
 		for (int i = 0; i < 8; i++)
 		{
 			if (!bDrawWindow && i + xPosInLine < (M_SCX % 8))// skip pixel if SCX % 8 != 0
 				continue;				 // if scx == 3 then skip the
 									 // first 3 pixels
-			unsigned char yLine = (bDrawWindow ? (windowCounter % 8) : ((M_LY + M_SCY) % 8));
-			backgroundLine[xPosInLine].color = tilePixels.getColorLine(yLine)[i];
-			backgroundLine[xPosInLine].colorCode = tilePixels.getLineColorCode(yLine)[i];
+			backgroundLine[xPosInLine].color = tilePixelColorLine[i];
+			backgroundLine[xPosInLine].colorCode = tilePixelColorCodeLine[i];
 			xPosInLine++;
 			if (xPosInLine >= PIXEL_PER_LINE)
 				break;
@@ -177,11 +179,11 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		if (spriteEntry.getFlipX())
 			sprite.flipX();
 
+		std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
+		std::array<int, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 		// copy the sprite on the line
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 		{
-			std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
-			std::array<int, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 			if (x > 0)
 				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG,
 				colorCodeSpriteLine[i]}; // might need to check color 0 
