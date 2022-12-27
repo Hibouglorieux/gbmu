@@ -28,13 +28,20 @@ bool Loop::loop()
 	std::array<int, PIXEL_PER_LINE> finalLine;
 	int clockDiff = 0;
 
+	Screen::createTexture();
 	while (true)
 	{
 		auto beginFrameTime = std::chrono::system_clock::now();
 		/* Render clear */
-		if (updateScreen) {
-			Screen::clear();
+		// if (updateScreen) {
+		// 	Screen::clear();
+		// }
+
+		if (SDL_LockTexture(Screen::texture, NULL, &Screen::pixels, &Screen::pitch)) {
+			throw "Could not lock texture\n";
 		}
+
+
 		Gameboy::setState(GBSTATE_V_BLANK);
 		for (int i = 0 ; i < 10 ; i++) {
 			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
@@ -74,8 +81,8 @@ bool Loop::loop()
 				printf("%02x ", (uint8_t)mem[0x8000 + i]);
 			}
 			*/
-			Screen::drawVRam();
-			Screen::drawBG();
+			// Screen::drawVRam();
+			// Screen::drawBG();
 		}
 		/* Manage events */
 		Gameboy::pollEvent();

@@ -27,7 +27,12 @@ public:
 	static void drawVRam();
 	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
+	static bool createTexture();
+
 	static SDL_Window* get();
+	static SDL_Texture*		texture;
+	static void*			pixels;
+	static int				pitch;
 private:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
