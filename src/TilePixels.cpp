@@ -1,7 +1,13 @@
 #include "TilePixels.hpp"
 
-TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val) : data(val)
-{}
+TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val)
+{
+	for (int y = 0; y < 8; y++) {
+		for (int x = 0; x < 8; x++) {
+			data[y][x] = val[y][x];
+		}
+	}
+}
 
 int TilePixels::getColor(unsigned char byteColorCode, unsigned short paletteAddress)
 {
@@ -30,7 +36,11 @@ std::array<int, 8> TilePixels::getColorLine(int y)
 
 std::array<int, 8> TilePixels::getLineColorCode(int y)
 {
-	return data[y];
+	std::array<int, 8> tmp;
+	for (int x = 0; x < 8; x++) {
+		tmp[x] = data[y][x];
+	}
+	return tmp;
 }
 
 TilePixels::TilePixels()
@@ -41,7 +51,6 @@ TilePixels::TilePixels()
 
 TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data() {
 	paletteAddress = newPaletteAddress;
-    std::array<std::array<int, 8>, 8> pixels;
 	for (int y = 0; y < 8; y++) {
 
 		unsigned char byte1 = mem[tileAddress + (y * 2)];
@@ -56,8 +65,7 @@ TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data
 			bool bit1 = byte1 & (1 << x);
 			bool bit2 = byte2 & (1 << x);
 			unsigned char byteColorCode = (bit2 << 1) | (bit1);
-			pixels[y][7 - x] = byteColorCode;
+			data[y][7 - x] = byteColorCode;
 		}
 	}
-    data = pixels;
 }

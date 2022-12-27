@@ -6,14 +6,26 @@
 #include "Gameboy.hpp"
 
 struct TilePixels {
-    std::array<std::array<int, 8>, 8> data;
+    int data[8][8];
 
     void flipX() {
-        for (int i = 0; i < 8; i++)
-            std::reverse(data[i].begin(), data[i].end());
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 4; x++) {
+                int tmp = data[y][x];
+                data[y][x] = data[y][7 - x];
+                data[y][7 - x] = tmp;
+            }
+        }
     }
     void flipY() {
-        std::reverse(data.begin(), data.end());
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 8; x++) {
+                int tmp = data[y][x];
+
+                data[y][x] = data[7 - y][x];
+                data[7 - y][x] = tmp;
+            }
+        }
     }
 
     static int getColor(unsigned char byteColorCode, unsigned short paletteAddress);

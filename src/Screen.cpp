@@ -25,6 +25,11 @@ SDL_Renderer* Screen::vRamRenderer = NULL;
 SDL_Window* Screen::backgroundWindow = NULL;
 SDL_Renderer* Screen::backgroundRenderer = NULL;
 
+SDL_Texture *Screen::texture = NULL;
+
+void *Screen::pixels = NULL;
+int Screen::pitch = 0;
+
 int scale = 4;
 int scaleBG = 2;
 
@@ -48,6 +53,8 @@ void	Screen::destroy(void)
 
 void	Screen::update(void)
 {
+	SDL_UnlockTexture(texture);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
 	SDL_RenderPresent(vRamRenderer);
 	SDL_RenderPresent(backgroundRenderer);
@@ -101,37 +108,31 @@ void	Screen::drawVRam(void)
 	}
 }
 
+bool	Screen::createTexture() {
+	texture = SDL_CreateTexture(renderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING, 
+		160 * 4,
+		144 * 4);
+	return true;
+}
+
 bool	Screen::drawPoint(int x, int y, int color, SDL_Renderer* targetRenderer, int pixelScale)
 {
 	std::vector<SDL_Point> pt(pixelScale * pixelScale);
 	int		index = 0;
 
-	SDL_RendererInfo rendererInfo;
-	SDL_GetRendererInfo(targetRenderer, &rendererInfo);
-	if (x >= rendererInfo.max_texture_width || y >= rendererInfo.max_texture_height
-			|| x < 0 || y < 0) {
-		std::cerr << __func__ << ":" << std::dec << __LINE__ << std::hex << std::endl;
-		return (false);
-	}
 	x *= pixelScale;
 	y *= pixelScale;
+	int *p = (int*)Screen::pixels;
 	for (int i = 0 ; i < pixelScale ; i++) {
 		for (int j = 0 ; j < pixelScale ; j++) {
-			pt[index].x = x + i;
-			pt[index].y = y + j;
-			index++;
+			p[(y + j) * (pitch / 4) + (i + x)] = ((255 - color * (255 / 3)) << 24) | ((255 - color * (255 / 3)) << 16) | ((255 - color * (255 / 3)) << 8) | 0xFF;
 		}
 	}
-	if (SDL_SetRenderDrawColor(targetRenderer, 255 - color * (255 / 3), 
-						255 - color * (255 / 3), 
-						255 - color * (255 / 3) , 255) != 0) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-	if (SDL_RenderDrawPoints(targetRenderer, pt.data(), pixelScale * pixelScale) != 0) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
+
+	
+
 	return (true);
 }
 
@@ -139,11 +140,11 @@ bool	Screen::create(void)
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow("GBMU",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			160 * 4,
-			144 * 4,
-			0);
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		160 * 4,
+		144 * 4,
+		0);
 
 	if (!window) {
 		std::cerr << __func__ << ":" << __LINE__ << std::endl;
