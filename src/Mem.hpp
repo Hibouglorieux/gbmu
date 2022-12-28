@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 16:13:48 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/26 21:41:40 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # define MEM_CLASS_H
 #include <string>
 #include <map>
+#include <vector>
 
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
 # define SET(val, bit) {val |= (1 << bit);}
@@ -42,22 +43,38 @@ class Mem {
 public:
 	Mem();
 	Mem(int size);
-	Mem(std::string pathToRom);
-	Mem(const Mem& rhs);
+	Mem(const std::string& pathToRom);
 	const Mem& operator=(const Mem& rhs);
 	~Mem();
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
+
+
+	std::string getTitle();
+	bool	isCGB();
+	int		getCartridgeType();
+
+	mutable bool bModeRamBank = false;
+	mutable bool bEnableRam = false;
+
+	mutable unsigned char LowerRomBankNumber = 0;
+	mutable unsigned char UpperRomBankNumber = 0;
+	mutable unsigned char ramBankNumber = 0;
+
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
+    std::vector<unsigned char*>	extraRamBanks;
+    std::vector<unsigned char*>	romBanks;
+
 private:
 	void init();
-	unsigned char* internalArray;
+	unsigned char*	internalArray;
+
+	unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned int	memSize;
-	// TODO regroup all readonly/unused bits
-	// in register in this map and use it
-	// inside memWrap
+	static int 			getRomBanksNb(char romSizeCode);
+	static int 			getExtraRamBanksNb(char ramSizeCode);
 };
 
 #endif

@@ -72,26 +72,19 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 
 std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 {
-	std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine;
+	std::array<BackgroundData, PIXEL_PER_LINE> backgroundLine{};
 	bool bWindowEnabled = BIT(M_LCDC, 5);
 	bool bBackgroundEnabled = BIT(M_LCDC, 0);
 	int xPosInLine = 0;
 	bool bDrawWindow = bWindowEnabled && M_LY >= M_WY && xPosInLine >= (M_WX - WX_OFFSET);
 
-	// unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
-	// for (int i = 0; i < 20 * 18; i++) {
-	// 	if (i && !(i%20))
-	// 		std::cout << "\n";
-	// 	std::cout << std::dec << (int)mem[BGMap + i] << "\t";
-	// }
-	// std::cout << "\n\n";
 	while (xPosInLine < PIXEL_PER_LINE)
 	{
 		TilePixels tilePixels;
 		if (bDrawWindow)
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
 		else if (bBackgroundEnabled)
-			tilePixels = getBackgroundTile((xPosInLine / 8) + M_SCX / 8, (M_LY + M_SCY) / 8);//[(M_LY + M_SCY) % 8];
+			tilePixels = getBackgroundTile((xPosInLine + M_SCX) / 8, (M_LY + M_SCY) / 8);//[(M_LY + M_SCY) % 8];
 		const unsigned char yLine = (bDrawWindow ? (windowCounter % 8) : ((M_LY + M_SCY) % 8));
 		auto tilePixelColorLine = tilePixels.getColorLine(yLine);
 		auto tilePixelColorCodeLine = tilePixels.getLineColorCode(yLine);
@@ -126,7 +119,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
 	std::vector<struct OAM_entry> spritesFound, spritesFound2;
-	std::array<SpriteData, PIXEL_PER_LINE> spriteLine;
+	std::array<SpriteData, PIXEL_PER_LINE> spriteLine{};
 	spriteLine.fill({0, false, 0}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;

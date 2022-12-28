@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 18:11:40 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/26 21:44:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include "Joypad.hpp"
 
 #define MEM_SIZE (0xFFFF + 1)
+#define RAM_BANK_SIZE (8 * 1024)
+#define ROM_BANK_SIZE (16 * 1024)
 
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
@@ -38,6 +40,9 @@ const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
 
 Mem::Mem()
 {
+	romBanks = {};
+	extraRamBanks = {};
+	internalArray = nullptr;
 	isValid = false;
 	memSize = 0;
 }
@@ -55,7 +60,7 @@ Mem::Mem(int size)
 	init();
 }
 
-Mem::Mem(std::string pathToRom)
+Mem::Mem(const std::string& pathToRom)
 {
 	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
 	if (!file.is_open())
@@ -65,33 +70,69 @@ Mem::Mem(std::string pathToRom)
 		memSize = 0;
 		return;
 	}
-	internalArray = new unsigned char[MEM_SIZE];
-	file.read((char*)internalArray, MEM_SIZE);
-	file.close();
-	isValid = true;
-	memSize = MEM_SIZE;
-	init();
-}
 
-Mem::Mem(const Mem& rhs)
-{
-	if (!rhs.isValid)
+	// read some values in the 
+	file.seekg(0, std::ifstream::end);
+	int fileLen = file.tellg();
+	if (fileLen < 32'768)
 	{
-		isValid = false;
-		memSize = 0;
-		return;
+			std::cerr << "Error with rom at wrong format" << std::endl;
+			throw("");
 	}
-	this->internalArray = new unsigned char[MEM_SIZE];
-	for (int i = 0; i < MEM_SIZE; i++)
-		this->internalArray[i] = rhs.internalArray[i];
+	file.seekg(0x148, std::ifstream::beg);
+	char romSizeCode;
+   	file.read(&romSizeCode, 1);
+	int romBanksNb = getRomBanksNb(romSizeCode);
+	if (fileLen != romBanksNb * 1024 * 16)
+	{
+		std::cerr << "Wrong size read in header: " << romBanksNb * 1024 * 16;
+		throw("");
+	}
+	char ramSizeCode;
+   	file.read(&ramSizeCode, 1);
+	file.seekg(0, std::ifstream::beg);
+	int extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
+
+	for (int i = 0; i < romBanksNb; i++)
+		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
+	std::cout << "created " << romBanksNb << " rom banks" << std::endl;
+
+	for (int i = 0; i < extraRamBanksNb; i++)
+		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
+	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
+
+	internalArray = new unsigned char[MEM_SIZE];
+//    bzero(internalArray, MEM_SIZE);
+
+    for (int i = 0; i < romBanksNb; i++) {
+        file.read((char *) romBanks[i], ROM_BANK_SIZE);
+    }
+
+//    for (int i = 0; i < extraRamBanksNb; i++) {
+//        file.read((char *) extraRamBanks[i], ROM_BANK_SIZE);
+//    }
+    file.close();
 	isValid = true;
 	memSize = MEM_SIZE;
+	std::cout << "loaded rom with title: " << getTitle() << std::endl;
+	std::cout << "CartRidge type: " << (int)getCartridgeType() << std::endl;
+
+	init();
 }
 
 const Mem&	Mem::operator=(const Mem& rhs)
 {
 	if (isValid)
+	{
 		delete[] internalArray;
+		for (unsigned char* ramBank : extraRamBanks)
+			delete[] ramBank;
+		extraRamBanks.clear();
+		for (unsigned char* romBank : romBanks)
+			delete[] romBank;
+		romBanks.clear();
+	}
+
 	if (!rhs.isValid)
 	{
 		isValid = false;
@@ -99,8 +140,22 @@ const Mem&	Mem::operator=(const Mem& rhs)
 		return *this;
 	}
 	this->internalArray = new unsigned char[MEM_SIZE];
-	for (int i = 0; i < MEM_SIZE; i++)
+    bzero(internalArray, MEM_SIZE);
+
+    for (int i = 0; i < MEM_SIZE; i++)
 		this->internalArray[i] = rhs.internalArray[i];
+
+	for (auto extraRamBank : rhs.extraRamBanks)
+	{
+		this->extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
+        //        bzero(ram, RAM_BANK_SIZE);
+		memcpy(this->extraRamBanks.back(), extraRamBank, RAM_BANK_SIZE);
+	}
+	for (auto romBank : rhs.romBanks)
+	{
+		this->romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
+		memcpy(this->romBanks.back(), romBank, ROM_BANK_SIZE);
+	}
 	isValid = true;
 	memSize = MEM_SIZE;
 	return *this;
@@ -118,24 +173,35 @@ void Mem::init()
 
 Mem::~Mem()
 {
-	if (isValid)
-		delete[] internalArray;
+	std::cout << "Mem destroyed !" << std::endl;
+	if (!isValid)
+		return;
+
+	delete[] internalArray;
+	for (unsigned char* ramBank : extraRamBanks)
+		delete[] ramBank;
+	extraRamBanks.clear();
+	for (unsigned char* romBank : romBanks)
+		delete[] romBank;
+	romBanks.clear();
 }
 
 MemWrap Mem::operator[](unsigned int i)
 {
 	if (i >= memSize)
 	{
-		throw("Error, trying to access mem at: " + std::to_string(i) +
-				" but mem size is: " + std::to_string(memSize));
+		std::cerr << "Error, trying to access mem at: " + std::to_string(i) +
+				" but mem size is: " + std::to_string(memSize) << std::endl;
+		throw("");
 	}
 	if (!isValid)
 	{
-		throw("Error, trying to access uninitialized mem");
+		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
+		throw("");
 	}
-	return MemWrap(*this, i, internalArray[i]);
+	return MemWrap(*this, i, getRefWithBanks(i));
+//	return MemWrap(*this, i, internalArray[i]);
 }
-
 const MemWrap Mem::operator[](unsigned int i) const
 {
 	if (i >= memSize)
@@ -149,11 +215,60 @@ const MemWrap Mem::operator[](unsigned int i) const
 		std::cerr << "trying to access bad memory" << std::endl;
 		exit(-1);
 	}
-	return MemWrap(*this, i, internalArray[i]);
+	return MemWrap(*this, i, getRefWithBanks(i));
+	//return MemWrap(*this, i, internalArray[i]);
 }
 
-unsigned char& MemWrap::operator=(unsigned char newValue)
+unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
+	if (addr <= 0x3FFF)
+    {
+    		return romBanks[0][addr];
+    }
+	else if (addr >= 0x4000 && addr <= 0x7FFF) {
+//        if (bModeRamBank && romBanks.size() >= 64)
+//			selectedRomBank = (ramBankNumber << 5);
+        unsigned char selectedRomBank = (UpperRomBankNumber << 5) + LowerRomBankNumber;
+        if (!bModeRamBank) // ignore ramBankNumber << 5
+            selectedRomBank &= 0x1F;
+        if (selectedRomBank == 0 || selectedRomBank == 0x20 || selectedRomBank == 0x40 || selectedRomBank == 0x60 )
+            selectedRomBank += 1;
+        selectedRomBank &= romBanks.size() - 1; // make sure it's in range
+		return romBanks[selectedRomBank][addr-0x4000];
+	}
+	else if (addr >= 0xA000 && addr <= 0xBFFF) {
+        if (!bEnableRam) { return internalArray[addr]; }
+        int ramBankNb = !bModeRamBank ? 0 : ramBankNumber;
+		return extraRamBanks[ramBankNb][addr - 0xA000];
+	}
+	else
+		return internalArray[addr];
+}
+
+unsigned char& MemWrap::operator=(unsigned char newValue) {
+
+	if (addr < 0x7FFF) {
+        if (addr >= 0x6000 && addr <= 0x7FFF) {
+            if (newValue)
+                memRef.bModeRamBank = true; // RAM BANK
+            else
+                memRef.bModeRamBank = false; // ROMBANK
+        }
+        if (addr >= 0x4000 && addr <= 0x5FFF) {
+            if (!memRef.bModeRamBank && (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size()))
+                memRef.UpperRomBankNumber = newValue & 0b11;
+            else if (memRef.bModeRamBank && (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size()))
+                memRef.ramBankNumber = newValue & 0b11;
+        }
+        if (addr >= 0x2000 && addr <= 0x3FFF)// LOWER ROMBANK
+        {
+            memRef.LowerRomBankNumber = newValue & 0x1F;// shouldnt be equal to 0
+        }
+		if (addr <= 0x1FFF) {
+            memRef.bEnableRam = (newValue &= 0xA);
+        }
+		return value;// TODO XXX that might pose a problem
+	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
 		newValue = newValue | Mem::readOnlyBits.at(addr);
@@ -169,24 +284,26 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	//JOYPAD register is 0xFF00
 	if (addr == 0xFF00)
 		Joypad::refresh();
-	if (addr == LCDC) {
-		if ((value & 0x80) == 0) {
-			M_LY = 0;
-		}
-	}
-	if (addr == 0xFF02 && newValue == 0x81)
-	{
-		if (memRef[0xFF01] == ' ')
-		{
-			std::cout << std::endl;
-		}
-		else
-		{
-			std::cout << (char)(memRef[0xFF01]);
-		}
-	}
-
-	if (addr == LYC) {
+    /* recursive call
+//	if (addr == LCDC) {
+//		if ((value & 0x80) == 0) {
+//			M_LY = 0;
+//		}
+//	}
+//	if (addr == 0xFF02 && newValue == 0x81)
+//	{
+//		if (memRef[0xFF01] == ' ')
+//		{
+//			std::cout << std::endl;
+//		}
+//		else
+//		{
+//			std::cout << (char)(memRef[0xFF01]);
+//		}
+//	}
+*/
+    // rework too
+	if (addr == LYC ) {
 		if (value == M_LY)
 			SET(M_LCDC_STATUS, 2)
 		else
@@ -199,14 +316,92 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			RES(M_LCDC_STATUS, 2);
 	}
 	
-	// if (addr == LYC)
-		// std::cout << "LYC: " << (int)old << " -> " << (int)value << "\n";
     if (addr == 0xFF46) {
-		//std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
+//		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
-			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0x9f);
-			//std::cout << "DMA transfert done" << std::endl;
+			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0xa0);// TODO change with banks
+//			std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
 	}
 	return value;
+}
+
+int		Mem::getRomBanksNb(char romSizeCode)
+{
+	int value = 2;
+	switch (romSizeCode)
+	{
+		case 8:
+			value *= 2;
+			[[fallthrough]];
+		case 7:
+			value *= 2;
+			[[fallthrough]];
+		case 6:
+			value *= 2;
+			[[fallthrough]];
+		case 5:
+			value *= 2;
+			[[fallthrough]];
+		case 4:
+			value *= 2;
+			[[fallthrough]];
+		case 3:
+			value *= 2;
+			[[fallthrough]];
+		case 2:
+			value *= 2;
+			[[fallthrough]];
+		case 1:
+			value *= 2;
+			[[fallthrough]];
+		case 0:
+			return value;
+		default:
+			std::cerr << "wrong romSizeCodeReceived" << std::endl;
+			throw("");
+	}
+}
+
+int		Mem::getExtraRamBanksNb(char ramSizeCode)
+{
+	switch (ramSizeCode)
+	{
+		case 0:
+			return 0;
+		case 2:
+			return 1;
+		case 3:
+			return 4;
+		case 4:
+			return 16;
+		case 5:
+			return 8;
+		default:
+			std::cerr << "wrong ramSizeCode received" << std::endl;
+			throw("");
+	}
+}
+
+std::string Mem::getTitle()
+{
+	int i = 0x134;
+	std::string title;
+	while (romBanks[0][i] != '\0' && i < 0x143)
+	{
+		title += (char)romBanks[0][i];
+		i++;
+	}
+	return title;
+}
+
+bool	Mem::isCGB()
+{
+	return romBanks[0][0x143] | 0xC0;
+}
+
+int		Mem::getCartridgeType()
+{
+	// might be unused with getRamSize / getRomSize instead
+	return romBanks[0][0x147];
 }

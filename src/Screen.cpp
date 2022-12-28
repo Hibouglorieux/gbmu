@@ -94,7 +94,14 @@ void	Screen::drawBG()
 		// in order to get the background map displayed we need to fetch the tile to display
 		// which is its number (fetched in BGMap which is 32 * 32), then we need
 		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
-		struct TilePixels tile = TilePixels(BGDataAddress + (mem[BGMap + i] * (8 * 2)), BGP);
+		int tileIndex = mem[BGMap + i];
+		int addr = BGDataAddress;
+		if (BGDataAddress == 0x8800)
+		{
+			tileIndex = char(tileIndex);
+			addr = 0x9000;
+		}
+		struct TilePixels tile = TilePixels(addr + (tileIndex * (8 * 2)), BGP);
 		int x_offset = (i % 32) * 9;
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {

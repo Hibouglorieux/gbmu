@@ -34,7 +34,7 @@ unsigned char Cpu::rca(unsigned short opcode)
     // The same operation is repeated in sequence for the rest of the register.
     // The contents of bit 0 are placed in both the CY flag and bit 7 of register A.
 
-    bool shiftedBitValue;
+    bool shiftedBitValue = false;
 	if (opcode == 0x07)
 	{
 		shiftedBitValue = A >> 7;
@@ -71,7 +71,7 @@ unsigned char Cpu::ra(unsigned short opcode)
 	// That is, the contents of bit 7 are copied to bit 6, and the previous contents of bit 6 (before the copy) are copied to bit 5.
 	// The same operation is repeated in sequence for the rest of the register. The previous contents of the carry flag are copied to bit 7.
 
-	bool shiftedBitValue;
+	bool shiftedBitValue = false;
 	if (opcode == 0x17)
 	{
 		shiftedBitValue = A >> 7;

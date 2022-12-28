@@ -28,11 +28,10 @@ Clock::Clock()
 
 	// TODO LMA whats this ?
 	// clock = 32916 / 2;
-}
+} 
 
 Clock::~Clock()
-{
-}
+{}
 
 #define M_DIV	mem[0xFF04]
 #define M_TIMA	mem[0xFF05]

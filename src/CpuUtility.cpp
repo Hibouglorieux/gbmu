@@ -196,7 +196,7 @@ bool	Cpu::getCarryFlag()
 unsigned char Cpu::readByte(int incrementPc)
 {
 	unsigned char val = mem[PC];
-	if (incrementPc)
+    if (incrementPc)
 		PC++;
 	return val;
 }
