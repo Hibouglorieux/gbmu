@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:42 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:01:16 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 23:25:40 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,21 @@ MBC* MBC::createMBC(unsigned char mbcCode)
 		return new RomOnly;
 	if (mbcCode >= 1 && mbcCode <= 3)
 		return new MBC1();
-	//if (mbcCode >= 5 && mbcCode <= 6)
+	if (mbcCode >= 5 && mbcCode <= 6)
+	{
+		std::cout << "MBC2 not yet coded !" << std::endl;	
+		throw("");
 		//return new MBC2();
-	//if (mbcCode >= 0x0F && mbcCode <= 0x13)
+	}
+	if (mbcCode >= 0x0F && mbcCode <= 0x13)
+	{
+		std::cout << "MBC3 not yet coded !" << std::endl;	
+		throw("");
 		//return new MBC3();
-	//if (mbcCode >= 0x19 && mbcCode <= 0x1E)
-		//return new MBC5();
-	std::cout << "Unsupported MBC received: " << mbcCode << std::endl;
+	}
+	if (mbcCode >= 0x19 && mbcCode <= 0x1E)
+		return new MBC5();
+	std::cout << "Unsupported MBC received: " << +mbcCode << std::endl;
 	throw("");
 }
 
@@ -36,7 +44,7 @@ unsigned char RomOnly::writeInRom(unsigned short addr, unsigned char value)
 	return value;
 }
 
-unsigned char RomOnly::getRomBank(unsigned short addr)
+unsigned short RomOnly::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
@@ -69,7 +77,7 @@ unsigned char MBC1::writeInRom(unsigned short addr, unsigned char value)
 	return value;
 }
 
-unsigned char MBC1::getRomBank(unsigned short addr)
+unsigned short MBC1::getRomBank(unsigned short addr)
 {
 	unsigned char selectedRomBank = 0;
 	if (addr <= 0x3FFF)
@@ -107,7 +115,7 @@ unsigned char MBC2::writeInRom(unsigned short addr, unsigned char value)
 	return value;
 }
 
-unsigned char MBC2::getRomBank(unsigned short addr)
+unsigned short MBC2::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
@@ -127,7 +135,7 @@ unsigned char MBC3::writeInRom(unsigned short addr, unsigned char value)
 	return value;
 }
 
-unsigned char MBC3::getRomBank(unsigned short addr)
+unsigned short MBC3::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
@@ -142,20 +150,35 @@ unsigned char MBC3::getRamBank()
 
 unsigned char MBC5::writeInRom(unsigned short addr, unsigned char value)
 {
-	(void) addr;
-	(void) value;
+	if (addr >= 0x4000 && addr <= 0x5FFF)
+	{
+		ramBankNb = value;
+	}
+	if (addr >= 0x3000 && addr <= 0x3FFF)
+	{
+		bit9 = value;
+	}
+	if (addr >= 0x2000 && addr <= 0x2FFF)
+	{
+		leastSignificantRomByte = value;
+	}
+	if (addr <= 0x1FFF)
+	{
+		bEnableRam = ((value & 0xF) == 0xA);
+	}
 	return value;
 }
 
-unsigned char MBC5::getRomBank(unsigned short addr)
+unsigned short MBC5::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
-	return 1;
+	return leastSignificantRomByte | (bit9 << 8);
 }
 
 unsigned char MBC5::getRamBank()
 {
-	return 0xFF;
+	if (!bEnableRam)
+		return 0xFF;
+	return ramBankNb;
 }
-
