@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 16:51:39 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 18:48:14 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,12 +188,14 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 		case 0x06:
 		case 0x16:
 		case 0x26:
-		case 0x36:
 		case 0x0E:
 		case 0x1E:
 		case 0x2E:
 		case 0x3E:
 			instruction = [&](){ return load_r_d8(getTargetRegister(opcode));};
+			break;
+		case 0x36:
+			instruction = [&](){ return load_hl_d8(); };
 			break;
 		case 0x07:
 		case 0x0F:
@@ -233,9 +235,13 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 		case 0x38:
 			instruction = [&](){ return jr_s8_flag(opcode);};
 			break;
-		case 0x40 ... 0x75:
-		case 0x77 ... 0x7F:
+		case 0x40 ... 0x6F:
+		case 0x78 ... 0x7F:
 			instruction = [&](){ return load_r_r(getTargetRegister(opcode), getSourceRegister(opcode));};
+			break;
+		case 0x70 ... 0x75:
+		case 0x77:
+			instruction = [&](){ return load_hl_r(getSourceRegister(opcode));};
 			break;
 		case 0x80 ... 0x87:
 			instruction = [&](){ return add_a_r8(getSourceRegister(opcode));};

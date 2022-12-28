@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/10 17:57:15 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 18:53:05 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,37 @@ unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char& loadSource
     // Load the contents of register X into register Y.
     // TODO think about verifying if register is HL
     loadTarget = loadSource;
-    return (&loadTarget == &PHL || &loadSource == &PHL) ? 2 : 1;
+    return (&loadSource == &PHL) ? 2 : 1;
+}
+
+unsigned char Cpu::load_hl_r(unsigned char& loadSource)
+{
+    // Opcode: [0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x77]
+    // Symbol: LD
+    // Operands: [((HL), B), ((HL), C), ((HL), D), ((HL), E), ((HL), H), ((HL), L), ((HL), A)]
+    // Number of Bytes: 1
+    // Number of Cycles: 1
+    // Flags: - - - -
+    // Description
+    // Load the contents of register X into register Y.
+    // TODO think about verifying if register is HL
+    PHL = loadSource;
+    return 2;
+}
+
+unsigned char Cpu::load_hl_d8()
+{
+    // Opcode: [0x36]
+    // Symbol: LD
+    // Operands: [(B, D8), (D, D8), (H, D8), (C, D8), (E, D8), (L, D8), (A, D8)]
+    // Number of Bytes: 2
+    // Number of Cycles: 2
+    // Flags: - - - -
+    // Description
+    // Load the 8-bit immediate operand d8 into register r.
+
+    PHL = readByte();
+	return 3;
 }
 
 unsigned char Cpu::load_r_d8(unsigned char& loadTarget)
@@ -128,7 +158,7 @@ unsigned char Cpu::load_r_d8(unsigned char& loadTarget)
     // Load the 8-bit immediate operand d8 into register r.
 
     loadTarget = readByte();
-    return (&loadTarget == &PHL) ? 3 : 2;
+	return 2;
 }
 
 unsigned char Cpu::load_a_r16(unsigned short opcode)

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/08 20:46:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/28 18:48:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,8 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 				return H;
 			case 0x05:
 				return L;
-			case 0x06:
-				return PHL;
+			//case 0x06:
+				//return PHL;  no more PHL in target !!
 			default:
 				logErr("Opcode is too big, shouldn't be more than 0x7F");
 		}
@@ -97,8 +97,8 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 				return D;
 			case 0x26:
 				return H;
-			case 0x36:
-				return PHL;
+			//case 0x36:
+				//return PHL; no more PHL in target !!
 			default:
 				logErr("unkown opcode sent to getTargetRegister");
 		}

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/20 21:05:20 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 18:45:18 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ private:
 	static unsigned char inc_r8(unsigned short opcode);
 	static unsigned char dec_r8(unsigned short opcode);
 	static unsigned char load_r_d8(unsigned char& loadTarget);
+	static unsigned char load_hl_d8();
 	static unsigned char rca(unsigned short opcode);
 	static unsigned char load_sp_to_a16();
 	static unsigned char add_hl_r16(unsigned short opcode);
@@ -130,6 +131,7 @@ private:
 	static unsigned char jr_s8();
 	static unsigned char jr_s8_flag(unsigned short opcode);
 	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char& loadSource);
+	static unsigned char load_hl_r(unsigned char& loadSource);
 	static unsigned char add_a_r8(unsigned char& reg);
 	static unsigned char adc_a_r8(unsigned char& reg);
 	static unsigned char sub_r8(unsigned char& reg);
