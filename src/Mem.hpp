@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 21:41:40 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 23:04:54 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "MBC.hpp"
 
 # define BIT(val, bit) ((val & (1 << bit)) >> bit)
 # define SET(val, bit) {val |= (1 << bit);}
@@ -56,16 +57,10 @@ public:
 	bool	isCGB();
 	int		getCartridgeType();
 
-	mutable bool bModeRamBank = false;
-	mutable bool bEnableRam = false;
-
-	mutable unsigned char LowerRomBankNumber = 0;
-	mutable unsigned char UpperRomBankNumber = 0;
-	mutable unsigned char ramBankNumber = 0;
-
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
     std::vector<unsigned char*>	extraRamBanks;
     std::vector<unsigned char*>	romBanks;
+	MBC* mbc;
 
 private:
 	void init();

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 21:44:08 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 23:04:39 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ Mem::Mem(const std::string& pathToRom)
 	isValid = true;
 	memSize = MEM_SIZE;
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
-	std::cout << "CartRidge type: " << (int)getCartridgeType() << std::endl;
+	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
+	mbc = MBC::createMBC(getCartridgeType());
 
 	init();
 }
@@ -131,6 +132,7 @@ const Mem&	Mem::operator=(const Mem& rhs)
 		for (unsigned char* romBank : romBanks)
 			delete[] romBank;
 		romBanks.clear();
+		delete mbc;
 	}
 
 	if (!rhs.isValid)
@@ -158,6 +160,7 @@ const Mem&	Mem::operator=(const Mem& rhs)
 	}
 	isValid = true;
 	memSize = MEM_SIZE;
+	mbc = MBC::createMBC(getCartridgeType());
 	return *this;
 }
 
@@ -173,7 +176,6 @@ void Mem::init()
 
 Mem::~Mem()
 {
-	std::cout << "Mem destroyed !" << std::endl;
 	if (!isValid)
 		return;
 
@@ -184,6 +186,7 @@ Mem::~Mem()
 	for (unsigned char* romBank : romBanks)
 		delete[] romBank;
 	romBanks.clear();
+	delete mbc;
 }
 
 MemWrap Mem::operator[](unsigned int i)
@@ -200,8 +203,8 @@ MemWrap Mem::operator[](unsigned int i)
 		throw("");
 	}
 	return MemWrap(*this, i, getRefWithBanks(i));
-//	return MemWrap(*this, i, internalArray[i]);
 }
+
 const MemWrap Mem::operator[](unsigned int i) const
 {
 	if (i >= memSize)
@@ -216,30 +219,30 @@ const MemWrap Mem::operator[](unsigned int i) const
 		exit(-1);
 	}
 	return MemWrap(*this, i, getRefWithBanks(i));
-	//return MemWrap(*this, i, internalArray[i]);
 }
 
 unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
-	if (addr <= 0x3FFF)
-    {
-    		return romBanks[0][addr];
-    }
-	else if (addr >= 0x4000 && addr <= 0x7FFF) {
-//        if (bModeRamBank && romBanks.size() >= 64)
-//			selectedRomBank = (ramBankNumber << 5);
-        unsigned char selectedRomBank = (UpperRomBankNumber << 5) + LowerRomBankNumber;
-        if (!bModeRamBank) // ignore ramBankNumber << 5
-            selectedRomBank &= 0x1F;
-        if (selectedRomBank == 0 || selectedRomBank == 0x20 || selectedRomBank == 0x40 || selectedRomBank == 0x60 )
-            selectedRomBank += 1;
-        selectedRomBank &= romBanks.size() - 1; // make sure it's in range
-		return romBanks[selectedRomBank][addr-0x4000];
+	if (addr <= 0x7FFF)
+	{
+		unsigned char romBankNb = mbc->getRomBank(addr);
+        romBankNb &= romBanks.size() - 1; // make sure it's in range
+		//std::cout << "at address: " << addr << " i muse use romBank: " << (int)romBankNb << std::endl;
+		if (addr <= 0x3FFF)
+			return romBanks[romBankNb][addr];
+		else
+			return romBanks[romBankNb][addr - 0x4000];
 	}
-	else if (addr >= 0xA000 && addr <= 0xBFFF) {
-        if (!bEnableRam) { return internalArray[addr]; }
-        int ramBankNb = !bModeRamBank ? 0 : ramBankNumber;
-		return extraRamBanks[ramBankNb][addr - 0xA000];
+	else if (addr >= 0xA000 && addr <= 0xBFFF)
+	{
+		unsigned char ramBankNb = mbc->getRamBank();
+		if (ramBankNb == 0xFF)// 0xFF stands for no extra ram used
+			return internalArray[addr];
+		else
+		{
+			ramBankNb &= extraRamBanks.size() - 1;
+			return extraRamBanks[ramBankNb][addr - 0xA000];
+		}
 	}
 	else
 		return internalArray[addr];
@@ -247,27 +250,10 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue) {
 
-	if (addr < 0x7FFF) {
-        if (addr >= 0x6000 && addr <= 0x7FFF) {
-            if (newValue)
-                memRef.bModeRamBank = true; // RAM BANK
-            else
-                memRef.bModeRamBank = false; // ROMBANK
-        }
-        if (addr >= 0x4000 && addr <= 0x5FFF) {
-            if (!memRef.bModeRamBank && (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size()))
-                memRef.UpperRomBankNumber = newValue & 0b11;
-            else if (memRef.bModeRamBank && (newValue < memRef.extraRamBanks.size() + 1 || newValue < memRef.romBanks.size()))
-                memRef.ramBankNumber = newValue & 0b11;
-        }
-        if (addr >= 0x2000 && addr <= 0x3FFF)// LOWER ROMBANK
-        {
-            memRef.LowerRomBankNumber = newValue & 0x1F;// shouldnt be equal to 0
-        }
-		if (addr <= 0x1FFF) {
-            memRef.bEnableRam = (newValue &= 0xA);
-        }
-		return value;// TODO XXX that might pose a problem
+	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
+	{
+		memRef.mbc->writeInRom(addr, newValue);
+		return value;// XXX that might pose aproblem or not
 	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))

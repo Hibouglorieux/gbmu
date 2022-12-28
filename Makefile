@@ -22,12 +22,13 @@ FILES = main.cpp \
 		Gameboy.cpp \
 		TilePixels.cpp \
 		CpuStackTrace.cpp \
+		MBC.cpp \
 		Sprite.cpp
 
 
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 
-CXXFLAGS = -std=gnu++14 -Wall -Wextra -g3 -Og -Werror
+CXXFLAGS = -std=gnu++14 -Wall -Wextra -g3 -Og
 
 all: $(NAME)
 
