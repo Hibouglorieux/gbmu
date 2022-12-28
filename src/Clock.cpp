@@ -31,8 +31,7 @@ Clock::Clock()
 }
 
 Clock::~Clock()
-{
-}
+= default;
 
 #define M_DIV	mem[0xFF04]
 #define M_TIMA	mem[0xFF05]

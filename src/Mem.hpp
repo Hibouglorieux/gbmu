@@ -56,10 +56,12 @@ public:
 	bool	isCGB();
 	int		getCartridgeType();
 
-	mutable bool bIsAdvancedBankingMode;
+	mutable bool bModeRamBank = false;
 	mutable bool bEnableRam = false;
-	mutable unsigned char romBankNumber;
-	mutable unsigned char ramBankNumber;
+
+	mutable unsigned char LowerRomBankNumber = 0;
+	mutable unsigned char UpperRomBankNumber = 0;
+	mutable unsigned char ramBankNumber = 0;
 
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
     std::vector<unsigned char*>	extraRamBanks;
@@ -71,8 +73,8 @@ private:
 
 	unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned int	memSize;
-	int 			getRomBanksNb(char romSizeCode);
-	int 			getExtraRamBanksNb(char ramSizeCode);
+	static int 			getRomBanksNb(char romSizeCode);
+	static int 			getExtraRamBanksNb(char ramSizeCode);
 };
 
 #endif

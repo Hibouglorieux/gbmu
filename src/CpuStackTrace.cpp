@@ -17,9 +17,9 @@
 CpuStackTrace::CpuStackTrace()
 {
 	printSize = 3000;
-	maxSize = 10;
+	maxSize = 3;
 	PCBreak = 0;
-	opcodeBreak = 0xFD;
+	opcodeBreak = 0xFF;
 	breakActive = false;
 	queue.resize(maxSize + 1);
 	autoPrint = false;

@@ -117,7 +117,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
 	std::vector<struct OAM_entry> spritesFound, spritesFound2;
-	std::array<SpriteData, PIXEL_PER_LINE> spriteLine;
+	std::array<SpriteData, PIXEL_PER_LINE> spriteLine{};
 	spriteLine.fill({0, false, 0}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;

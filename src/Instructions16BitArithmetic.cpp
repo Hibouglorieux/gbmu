@@ -23,7 +23,7 @@ unsigned char Cpu::dec_r16(unsigned short opcode)
 	// Description
 	// Decrement the contents of register pair reg by 1.
 
-	unsigned short* reg;
+	unsigned short* reg = nullptr;
 	switch (opcode)
 	{
 		case 0x0B:
@@ -58,7 +58,7 @@ unsigned char Cpu::inc_r16(unsigned short opcode)
 	// Description
 	// Increment the contents of register pair reg by 1.
 
-	unsigned short* reg;
+	unsigned short* reg = nullptr;
    	switch (opcode)
 	{
 		case 0x03:
@@ -93,7 +93,7 @@ unsigned char Cpu::add_hl_r16(unsigned short opcode)
 	// Description :
 	// Add the contents of register pair reg to the contents of register pair HL, and store the results in register pair HL.
 
-	unsigned short* reg;
+	unsigned short* reg = nullptr;
 	switch (opcode)
 	{
 		case 0x09:

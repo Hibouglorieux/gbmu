@@ -301,7 +301,7 @@ unsigned char Cpu::rst_n(unsigned short opcode)
     // The RST instruction can be used to jump to 1 of 8 addresses.
     // Because all of the addresses are held in page 0 memory, 0x00 is loaded in the higher-orderbyte of the PC,
     // and [0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38] is loaded in the lower-order byte.
-    unsigned char targetByte;
+    unsigned char targetByte = '\0';
 	if (opcode == 0xC7)
 		targetByte = 0;
 	else if (opcode == 0xD7)
@@ -322,7 +322,6 @@ unsigned char Cpu::rst_n(unsigned short opcode)
 		logErr("called rst_n with wrong opcode");
 
     internalPush(PC);
-
 	PC = targetByte;
     return 4;
 }

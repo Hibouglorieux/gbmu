@@ -25,7 +25,7 @@ bool Loop::loop()
 	const std::chrono::microseconds frameTime(1'000'000 / 60);
 	// TODO unsure about updateScreen ? Do we update everytime ?
 	bool updateScreen = 1;
-	std::array<int, PIXEL_PER_LINE> finalLine;
+	std::array<int, PIXEL_PER_LINE> finalLine{};
 	int clockDiff = 0;
 
 	while (true)

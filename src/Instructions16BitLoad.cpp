@@ -17,6 +17,7 @@ void	Cpu::internalPush(unsigned short valueToPush)
     // Subtract 1 from the stack pointer SP, and put the contents of the higher portion of register pair on the stack.
     // Subtract 2 from SP, and put the lower portion of register pair on the stack.
     // Decrement SP by 2.
+//    std::cout<<(unsigned short)valueToPush << std::endl;
 	mem[--SP] = valueToPush >> 8;
 	mem[--SP] = valueToPush & 0xFF;
 }

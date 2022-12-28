@@ -41,7 +41,7 @@ TilePixels::TilePixels()
 
 TilePixels::TilePixels(int tileAddress, unsigned short newPaletteAddress) : data() {
 	paletteAddress = newPaletteAddress;
-    std::array<std::array<int, 8>, 8> pixels;
+    std::array<std::array<int, 8>, 8> pixels{};
 	for (int y = 0; y < 8; y++) {
 
 		unsigned char byte1 = mem[tileAddress + (y * 2)];

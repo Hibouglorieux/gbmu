@@ -6,7 +6,7 @@
 #include "Gameboy.hpp"
 
 struct TilePixels {
-    std::array<std::array<int, 8>, 8> data;
+    std::array<std::array<int, 8>, 8> data{};
 
     void flipX() {
         for (int i = 0; i < 8; i++)
