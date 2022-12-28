@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 19:58:06 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/28 23:08:51 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 		auto tilePixelColorCodeLine = tilePixels.getLineColorCode(yLine);
 		for (int i = 0; i < 8; i++)
 		{
-			if (!bDrawWindow && i + xPosInLine < (M_SCX % 8))// skip pixel if SCX % 8 != 0
+			if (!bDrawWindow && xPosInLine == 0 && i < (M_SCX % 8))// skip pixel if SCX % 8 != 0
 				continue;				 // if scx == 3 then skip the
 									 // first 3 pixels
 			backgroundLine[xPosInLine].color = tilePixelColorLine[i];
