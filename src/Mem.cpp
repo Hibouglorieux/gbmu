@@ -148,8 +148,7 @@ const Mem&	Mem::operator=(const Mem& rhs)
 	for (auto extraRamBank : rhs.extraRamBanks)
 	{
 		this->extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
-        auto ram = this->extraRamBanks.back();
-//        bzero(ram, RAM_BANK_SIZE);
+        //        bzero(ram, RAM_BANK_SIZE);
 		memcpy(this->extraRamBanks.back(), extraRamBank, RAM_BANK_SIZE);
 	}
 	for (auto romBank : rhs.romBanks)
