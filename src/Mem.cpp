@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 20:28:46 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 22:54:39 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,31 @@ const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
 				
 };
 
-Mem::Mem()
+Mem* Mem::loadFromFile(const std::string& pathToRom)
 {
-	romBanks = {};
-	extraRamBanks = {};
-	internalArray = nullptr;
-	isValid = false;
-	memSize = 0;
+	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
+	if (!file.is_open())
+	{
+		std::cerr << "file not found" << std::endl;
+		return nullptr;
+	}
+
+	// read some values in the 
+	file.seekg(0, std::ifstream::end);
+	int fileLen = file.tellg();
+	if (fileLen < 32'768)
+	{
+			std::cerr << "Error with rom at wrong format" << std::endl;
+			throw("");
+	}
+	file.seekg(0x143, std::ifstream::beg);
+	char CGBCode;
+	file.read(&CGBCode, 1);
+	file.close();
+	if (CGBCode & 0x80)
+		return new CGBMem(pathToRom);
+	else
+		return new Mem(pathToRom);
 }
 
 void Mem::supervisorWrite(unsigned int addr, unsigned char value)
@@ -58,14 +76,8 @@ Mem::Mem(const std::string& pathToRom)
 		return;
 	}
 
-	// read some values in the 
 	file.seekg(0, std::ifstream::end);
 	int fileLen = file.tellg();
-	if (fileLen < 32'768)
-	{
-			std::cerr << "Error with rom at wrong format" << std::endl;
-			throw("");
-	}
 	file.seekg(0x148, std::ifstream::beg);
 	char romSizeCode;
    	file.read(&romSizeCode, 1);
@@ -105,59 +117,7 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
 
-	CGBVramBank = new unsigned char[0x2000];
-	for (int i = 0; i < 8; i++)
-		CGBextraRamBanks[i] = new unsigned char[0x1000];
 	init();
-}
-
-const Mem&	Mem::operator=(const Mem& rhs)
-{
-	if (isValid)
-	{
-		delete[] internalArray;
-		for (unsigned char* ramBank : extraRamBanks)
-			delete[] ramBank;
-		extraRamBanks.clear();
-		for (unsigned char* romBank : romBanks)
-			delete[] romBank;
-		romBanks.clear();
-		delete mbc;
-		delete[] CGBVramBank;
-		for (int i = 0; i < 8; i++)
-			delete[] CGBextraRamBanks[i];
-	}
-
-	if (!rhs.isValid)
-	{
-		isValid = false;
-		memSize = 0;
-		return *this;
-	}
-	this->internalArray = new unsigned char[MEM_SIZE];
-    bzero(internalArray, MEM_SIZE);
-
-    for (int i = 0; i < MEM_SIZE; i++)
-		this->internalArray[i] = rhs.internalArray[i];
-
-	for (auto extraRamBank : rhs.extraRamBanks)
-	{
-		this->extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
-        //        bzero(ram, RAM_BANK_SIZE);
-		memcpy(this->extraRamBanks.back(), extraRamBank, RAM_BANK_SIZE);
-	}
-	for (auto romBank : rhs.romBanks)
-	{
-		this->romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
-		memcpy(this->romBanks.back(), romBank, ROM_BANK_SIZE);
-	}
-	isValid = true;
-	memSize = MEM_SIZE;
-	mbc = MBC::createMBC(getCartridgeType());
-	CGBVramBank = new unsigned char[0x2000];
-	for (int i = 0; i < 8; i++)
-		CGBextraRamBanks[i] = new unsigned char[0x1000];
-	return *this;
 }
 
 void Mem::init()
@@ -183,9 +143,6 @@ Mem::~Mem()
 		delete[] romBank;
 	romBanks.clear();
 	delete mbc;
-	delete[] CGBVramBank;
-	for (int i = 0; i < 8; i++)
-		delete[] CGBextraRamBanks[i];
 }
 
 MemWrap Mem::operator[](unsigned int i)
@@ -243,7 +200,13 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 			return extraRamBanks[ramBankNb][addr - 0xA000];
 		}
 	}
-	else if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
+	else
+		return internalArray[addr];
+}
+
+unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
+{
+	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
 	{
 		if (bIsUsingCGBVram)
 		{
@@ -266,7 +229,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 		}
 	}
 	else
-		return internalArray[addr];
+		return Mem::getRefWithBanks(addr);
 }
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
@@ -288,13 +251,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		return (value);
 	}
 	value = newValue;
-	if (addr == 0xFF4F) // VBK// CGB ONLY
-	{
-		memRef.bIsUsingCGBVram = newValue & 1;
-		//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
-	}
-	if (addr == 0xFF70) // SVBK// CGB ONLY
-		memRef.CGBextraRamBankNb = newValue & 7;
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
     /* recursive call
@@ -345,6 +301,19 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
 		//std::cout << "CGB DMA requested !" << std::endl;
 		memcpy(&mem[srcAddr], &mem[dstAddr], len);
+	}
+	try {
+		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		if (addr == 0xFF4F) // VBK// CGB ONLY
+		{
+			asCGB.bIsUsingCGBVram = newValue & 1;
+			//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
+		}
+		if (addr == 0xFF70) // SVBK// CGB ONLY
+			asCGB.CGBextraRamBankNb = newValue & 7;
+	}catch (...)
+	{
+		// this is normal if mem is DMG
 	}
 	return value;
 }
@@ -420,11 +389,25 @@ std::string Mem::getTitle()
 
 bool	Mem::isCGB()
 {
-	return romBanks[0][0x143] | 0xC0;
+	return romBanks[0][0x143] & 0x80;
 }
 
 int		Mem::getCartridgeType()
 {
 	// might be unused with getRamSize / getRomSize instead
 	return romBanks[0][0x147];
+}
+
+CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
+{
+	CGBVramBank = new unsigned char[0x2000];
+	for (int i = 0; i < 8; i++)
+		CGBextraRamBanks[i] = new unsigned char[0x1000];
+}
+
+CGBMem::~CGBMem()
+{
+	delete[] CGBVramBank;
+	for (int i = 0; i < 8; i++)
+		delete[] CGBextraRamBanks[i];
 }

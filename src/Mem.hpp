@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 20:22:34 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 22:50:34 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,15 @@ class MemWrap {
 
 class Mem {
 public:
-	Mem();
+	Mem() = delete;
 	Mem(const std::string& pathToRom);
-	const Mem& operator=(const Mem& rhs);
-	~Mem();
+	static Mem* loadFromFile(const std::string& pathToRom);
+	virtual ~Mem();
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
+	virtual unsigned char* getCGBVram() {return nullptr;}
 
 
 	std::string getTitle();
@@ -56,21 +57,31 @@ public:
     std::vector<unsigned char*>	extraRamBanks;
     std::vector<unsigned char*>	romBanks;
 	MBC* mbc;
-	mutable bool			bIsUsingCGBVram;
-	mutable unsigned char	CGBextraRamBankNb;
 
-private:
+protected:
 	void init();
 	unsigned char*	internalArray;
-	unsigned char*	CGBVramBank;
 	std::array<unsigned char*, 8> CGBextraRamBanks;
 
 	//std::array<std::array<unsigned char, 0x1000>, 8> CGBextraRamBanks;
 
-	unsigned char&	getRefWithBanks(unsigned short addr) const;
+	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned int	memSize;
 	static int 			getRomBanksNb(char romSizeCode);
 	static int 			getExtraRamBanksNb(char ramSizeCode);
+};
+
+class CGBMem : public Mem{
+public:
+	CGBMem(const std::string& pathToRom);
+	virtual ~CGBMem();
+	virtual unsigned char* getCGBVram() {return CGBVramBank;}
+
+	mutable bool			bIsUsingCGBVram;
+	mutable unsigned char	CGBextraRamBankNb;
+protected:
+	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
+	unsigned char*	CGBVramBank;
 };
 
 #endif
