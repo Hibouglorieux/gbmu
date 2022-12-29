@@ -1,13 +1,14 @@
 #include "Gameboy.hpp"
 #include "imgui/imgui_impl_sdl.h"
 
-Mem Gameboy::gbMem = Mem();
+Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
 bool Gameboy::quit = false;
+bool Gameboy::bIsCGB = false;
 Mem& Gameboy::getMem()
 {
-	return (gbMem);
+	return (*gbMem);
 }
 
 Clock& Gameboy::getClock()
@@ -23,13 +24,21 @@ void	Gameboy::init()
 
 bool Gameboy::loadRom(std::string pathToFile)
 {
-	gbMem = Mem(pathToFile);
-	return gbMem.isValid;
+	gbMem = new Mem(pathToFile);
+	bIsCGB = gbMem->isCGB();
+	std::cout << (bIsCGB ? "cartridge isCGB" : "cartridge is DMG") << std::endl;
+	return gbMem->isValid;
 }
 
 bool Gameboy::run()
 {
-	return (Loop::loop());
+	Loop::loop();
+	return true;
+}
+
+void Gameboy::clear()
+{
+	delete gbMem;
 }
 
 void Gameboy::setState(int newState)

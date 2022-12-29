@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 18:48:14 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 20:28:28 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -418,6 +418,11 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 						stackTrace.print();
 						logErr("exec: Error unknown prefix instruction opcode");
 				}
+				// NOTE need to exit here because of targetBit/Register references
+				// Cpu::debug(opcode);
+				clock = instruction();
+				g_clock += clock;
+				return std::pair<unsigned char, int>((int)opcode, clock);
 			}
 			break;
 		default:

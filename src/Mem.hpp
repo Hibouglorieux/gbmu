@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 19:55:00 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 20:22:34 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ class MemWrap {
 class Mem {
 public:
 	Mem();
-	Mem(int size);
 	Mem(const std::string& pathToRom);
 	const Mem& operator=(const Mem& rhs);
 	~Mem();
@@ -65,6 +64,7 @@ private:
 	unsigned char*	internalArray;
 	unsigned char*	CGBVramBank;
 	std::array<unsigned char*, 8> CGBextraRamBanks;
+
 	//std::array<std::array<unsigned char, 0x1000>, 8> CGBextraRamBanks;
 
 	unsigned char&	getRefWithBanks(unsigned short addr) const;

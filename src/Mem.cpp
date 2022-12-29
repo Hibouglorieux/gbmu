@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 19:58:44 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 20:28:46 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,6 @@ Mem::Mem()
 void Mem::supervisorWrite(unsigned int addr, unsigned char value)
 {
 	Mem::internalArray[addr] = value;
-}
-
-Mem::Mem(int size)
-{
-	isValid = true;
-	internalArray = new unsigned char[size];
-	memSize = size;
-	init();
 }
 
 Mem::Mem(const std::string& pathToRom)
@@ -172,7 +164,7 @@ void Mem::init()
 {
 	for (auto const& it: readOnlyBits)
 	{
-		short address = it.first;
+		unsigned short address = it.first;
 		unsigned char value = it.second;
 		internalArray[address] = value;
 	}

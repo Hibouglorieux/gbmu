@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/08 22:38:23 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/12/29 20:10:15 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@
 class Gameboy {
 public:
 	static bool quit;
-	static Mem gbMem;
 	static Clock gbClock;
 	static void init();
 	static bool loadRom(std::string pathToFile);
@@ -38,9 +37,12 @@ public:
 	static void setState(int newState);
 	static int getState();
 	static void pollEvent();
+	static bool bIsCGB;
+	static void clear();
 //	static void LYCallback();
 private:
 	static int currentState;
+	static Mem* gbMem;
 
 };
 #endif

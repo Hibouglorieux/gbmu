@@ -50,7 +50,7 @@ void	Screen::destroy()
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
     SDL_Quit();
-	std::exit(0); // TODO clean properly
+	//std::exit(0); // TODO clean properly
 }
 
 void Screen::TexturetoImage(SDL_Texture * Texture) {
@@ -266,13 +266,13 @@ void	Screen::handleEvent(SDL_Event *ev)
 	if (ev->type == SDL_WINDOWEVENT) {
 		switch (ev->window.event) {
 			case SDL_WINDOWEVENT_CLOSE:
-				Screen::destroy();
+				Gameboy::quit = true;
 				break;
 		}
 	}
 	if (ev->type == SDL_KEYDOWN)
 	{
 		if (ev->key.keysym.sym == SDLK_ESCAPE)
-			Screen::destroy();
+			Gameboy::quit = true;
 	}
 }
