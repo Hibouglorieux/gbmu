@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:04:54 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 19:55:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,15 @@ public:
     std::vector<unsigned char*>	extraRamBanks;
     std::vector<unsigned char*>	romBanks;
 	MBC* mbc;
+	mutable bool			bIsUsingCGBVram;
+	mutable unsigned char	CGBextraRamBankNb;
 
 private:
 	void init();
 	unsigned char*	internalArray;
+	unsigned char*	CGBVramBank;
+	std::array<unsigned char*, 8> CGBextraRamBanks;
+	//std::array<std::array<unsigned char, 0x1000>, 8> CGBextraRamBanks;
 
 	unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned int	memSize;

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:04:39 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 19:58:44 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,9 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
 
+	CGBVramBank = new unsigned char[0x2000];
+	for (int i = 0; i < 8; i++)
+		CGBextraRamBanks[i] = new unsigned char[0x1000];
 	init();
 }
 
@@ -128,6 +131,9 @@ const Mem&	Mem::operator=(const Mem& rhs)
 			delete[] romBank;
 		romBanks.clear();
 		delete mbc;
+		delete[] CGBVramBank;
+		for (int i = 0; i < 8; i++)
+			delete[] CGBextraRamBanks[i];
 	}
 
 	if (!rhs.isValid)
@@ -156,6 +162,9 @@ const Mem&	Mem::operator=(const Mem& rhs)
 	isValid = true;
 	memSize = MEM_SIZE;
 	mbc = MBC::createMBC(getCartridgeType());
+	CGBVramBank = new unsigned char[0x2000];
+	for (int i = 0; i < 8; i++)
+		CGBextraRamBanks[i] = new unsigned char[0x1000];
 	return *this;
 }
 
@@ -182,6 +191,9 @@ Mem::~Mem()
 		delete[] romBank;
 	romBanks.clear();
 	delete mbc;
+	delete[] CGBVramBank;
+	for (int i = 0; i < 8; i++)
+		delete[] CGBextraRamBanks[i];
 }
 
 MemWrap Mem::operator[](unsigned int i)
@@ -239,12 +251,34 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 			return extraRamBanks[ramBankNb][addr - 0xA000];
 		}
 	}
+	else if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
+	{
+		if (bIsUsingCGBVram)
+		{
+			//std::cout << "accessing CGBVramBank !" << std::endl;
+			return CGBVramBank[addr - 0x8000];
+		}
+		else
+			return internalArray[addr];
+	}
+	else if (addr >= 0xC000 && addr <= 0xDFFF)// CGB ONLY
+	{
+		if (addr <= 0xCFFF)
+			return CGBextraRamBanks[0][addr - 0xC000];
+		else
+		{
+			unsigned char index = CGBextraRamBankNb & 7;
+			if (index == 0)
+				index = 1;
+			return CGBextraRamBanks[index][addr - 0xD000];
+		}
+	}
 	else
 		return internalArray[addr];
 }
 
-unsigned char& MemWrap::operator=(unsigned char newValue) {
-
+unsigned char& MemWrap::operator=(unsigned char newValue)
+{
 	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
 	{
 		memRef.mbc->writeInRom(addr, newValue);
@@ -262,8 +296,14 @@ unsigned char& MemWrap::operator=(unsigned char newValue) {
 		return (value);
 	}
 	value = newValue;
-	//JOYPAD register is 0xFF00
-	if (addr == 0xFF00)
+	if (addr == 0xFF4F) // VBK// CGB ONLY
+	{
+		memRef.bIsUsingCGBVram = newValue & 1;
+		//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
+	}
+	if (addr == 0xFF70) // SVBK// CGB ONLY
+		memRef.CGBextraRamBankNb = newValue & 7;
+	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
     /* recursive call
 //	if (addr == LCDC) {
@@ -303,6 +343,16 @@ unsigned char& MemWrap::operator=(unsigned char newValue) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0xa0);// TODO change with banks
 //			std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
+	}
+	if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
+	{
+		// TODO WIP
+		unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xFC);
+		unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xFC);
+		dstAddr = (dstAddr | 0x8000) & 0x9FFF; 
+		unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
+		//std::cout << "CGB DMA requested !" << std::endl;
+		memcpy(&mem[srcAddr], &mem[dstAddr], len);
 	}
 	return value;
 }
