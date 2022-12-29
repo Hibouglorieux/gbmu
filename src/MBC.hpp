@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:43 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:20:30 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 17:27:57 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,20 +48,26 @@ private:
 
 class MBC2: public MBC {
 public:
-	MBC2() = default;
+	MBC2() {romBankNb = 0; bEnableRam = false;}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 private:
+	unsigned char romBankNb;
+	bool bEnableRam;
 };
 
 class MBC3: public MBC {
 public:
-	MBC3() = default;
+	MBC3() {romBankNb = 0; bEnableRam = false;
+	ramBankNb = 0;}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 private:
+	unsigned char romBankNb;
+	unsigned char ramBankNb;
+	bool bEnableRam;
 };
 
 class MBC5: public MBC {

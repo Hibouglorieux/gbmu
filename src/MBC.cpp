@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:42 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:25:40 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 18:31:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,13 @@ MBC* MBC::createMBC(unsigned char mbcCode)
 		return new MBC1();
 	if (mbcCode >= 5 && mbcCode <= 6)
 	{
-		std::cout << "MBC2 not yet coded !" << std::endl;	
-		throw("1");
-		//return new MBC2();
+		std::cout << "Warning: MBC2 isn't fully supported" << std::endl;
+		return new MBC2();// XXX isnt really supported but works anyway
 	}
 	if (mbcCode >= 0x0F && mbcCode <= 0x13)
 	{
-		std::cout << "MBC3 not yet coded !" << std::endl;	
-		throw("2");
-		//return new MBC3();
+		std::cout << "WARNING: MBC3 is WIP !" << std::endl;
+		return new MBC3();
 	}
 	if (mbcCode >= 0x19 && mbcCode <= 0x1E)
 		return new MBC5();
@@ -110,8 +108,14 @@ unsigned char MBC1::getRamBank()
 
 unsigned char MBC2::writeInRom(unsigned short addr, unsigned char value)
 {
-	(void) addr;
-	(void) value;
+	if (addr <=	0x0FFF)
+	{
+		bEnableRam = (value == 0xA);
+	}
+	if (addr >= 0x2100 && addr <= 0x2FFF)
+	{
+		romBankNb = value & 0x0F;
+	}
 	return value;
 }
 
@@ -119,19 +123,29 @@ unsigned short MBC2::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
-	return 1;
+	return romBankNb == 0 ? 1 : romBankNb;
 }
 
 unsigned char MBC2::getRamBank()
 {
-	return 0xFF;
+	return 0xFF;// wont work with saves but works otherwise
 }
 
 
 unsigned char MBC3::writeInRom(unsigned short addr, unsigned char value)
 {
-	(void) addr;
-	(void) value;
+	//WIP
+	if (addr < 0x1FFF)
+		bEnableRam = value == 0xA;
+	if (addr >= 0xA000 && addr <= 0xBFFF)
+	{
+		if (bEnableRam)
+			;
+	}
+	if (addr >= 0x2000 && addr <= 0x3FFF)
+		romBankNb = value & 0x7F;
+	if (addr >= 0x4000 && addr <= 0x5FFF)
+		ramBankNb = value & 0b11;
 	return value;
 }
 
@@ -139,6 +153,8 @@ unsigned short MBC3::getRomBank(unsigned short addr)
 {
 	if (addr < 0x4000)
 		return 0;
+	if (addr >= 0x4000 && addr <= 0x7FFF)
+		return romBankNb == 0 ? 1 : romBankNb;
 	return 1;
 }
 
