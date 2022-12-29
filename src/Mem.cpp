@@ -14,11 +14,6 @@
 #include "Cpu.hpp"
 #include <fstream>
 #include <iostream>
-#include "Joypad.hpp"
-
-#define MEM_SIZE (0xFFFF + 1)
-#define RAM_BANK_SIZE (8 * 1024)
-#define ROM_BANK_SIZE (16 * 1024)
 
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
@@ -291,13 +286,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue) {
     // rework too
 	if (addr == LYC ) {
 		if (value == M_LY)
-			SET(M_LCDC_STATUS, 2)
+			SET(M_LCDC_STATUS, 2);
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
 	if (addr == LY) {
 		if (value == M_LYC)
-			SET(M_LCDC_STATUS, 2)
+			SET(M_LCDC_STATUS, 2);
 		else
 			RES(M_LCDC_STATUS, 2);
 	}

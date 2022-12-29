@@ -1,9 +1,10 @@
 #include "Gameboy.hpp"
+#include "imgui/imgui_impl_sdl.h"
 
 Mem Gameboy::gbMem = Mem();
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
-
+bool Gameboy::quit = false;
 Mem& Gameboy::getMem()
 {
 	return (gbMem);
@@ -64,11 +65,15 @@ int Gameboy::getState()
 
 void Gameboy::pollEvent()
 {
-	SDL_Event ev;
-
-	while (SDL_PollEvent(&ev) != 0)
-	{
-		Screen::handleEvent(&ev);
-		Joypad::handleEvent(&ev);
+    SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		ImGui_ImplSDL2_ProcessEvent(&event);
+        Screen::handleEvent(&event);
+		Joypad::handleEvent(&event);
+		if (event.type == SDL_QUIT)
+			Gameboy::quit = true;
+		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
+				event.window.windowID == SDL_GetWindowID(Screen::window))
+			Gameboy::quit = true;
 	}
 }

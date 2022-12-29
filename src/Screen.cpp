@@ -13,81 +13,84 @@
 #include "Screen.hpp"
 #include "Cpu.hpp"
 #include "Ppu.hpp"
+#include "Debugger.hpp"
 
-#define QUAD_COLOR 0b11
+SDL_Window* Screen::window = nullptr;
+SDL_Renderer* Screen::renderer = nullptr;
 
-SDL_Window* Screen::window = NULL;
-SDL_Renderer* Screen::renderer = NULL;
+SDL_Texture *Screen::texture = nullptr;
+SDL_Texture *Screen::BGTexture = nullptr;
+SDL_Texture *Screen::VRamTexture = nullptr;
 
-SDL_Window* Screen::vRamWindow = NULL;
-SDL_Renderer* Screen::vRamRenderer = NULL;
-
-SDL_Window* Screen::backgroundWindow = NULL;
-SDL_Renderer* Screen::backgroundRenderer = NULL;
-
-SDL_Texture *Screen::texture = NULL;
-SDL_Texture *Screen::BGTexture = NULL;
-SDL_Texture *Screen::VRamTexture = NULL;
-
-void *Screen::pixels = NULL;
+void *Screen::pixels = nullptr;
 int Screen::pitch = 0;
 
-void *Screen::BGPixels = NULL;
+void *Screen::BGPixels = nullptr;
 int Screen::BGPitch = 0;
 
-void *Screen::VramPixels = NULL;
+void *Screen::VramPixels = nullptr;
 int Screen::VramPitch = 0;
 
 int scale = 4;
 int scaleBG = 2;
 
-SDL_Window*	Screen::get(void)
+SDL_Window*	Screen::get()
 {
 	return (window);
 }
 
-void	Screen::destroy(void)
+void	Screen::destroy()
 {
+    ImGui_ImplSDLRenderer_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
 	SDL_DestroyTexture(texture);
-	SDL_DestroyRenderer(vRamRenderer);
-	SDL_DestroyWindow(vRamWindow);
+	SDL_DestroyTexture(BGTexture);
+	SDL_DestroyTexture(VRamTexture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(backgroundRenderer);
-	SDL_DestroyWindow(backgroundWindow);
-	SDL_Quit();
-	// Cpu::printFIFO(Cpu::fifo);
+    SDL_Quit();
 	std::exit(0); // TODO clean properly
 }
 
-void	Screen::update(void)
-{
-	SDL_UnlockTexture(texture);
-	SDL_UnlockTexture(BGTexture);
-	SDL_UnlockTexture(VRamTexture);
-
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
-	SDL_RenderCopy(vRamRenderer, VRamTexture, NULL, NULL);
-	SDL_RenderCopy(backgroundRenderer, BGTexture, NULL, NULL);
-
-	SDL_RenderPresent(renderer);
-	SDL_RenderPresent(vRamRenderer);
-	SDL_RenderPresent(backgroundRenderer);
+void Screen::TexturetoImage(SDL_Texture * Texture) {
+    SDL_SetRenderTarget(renderer, Texture);
+   	SDL_UnlockTexture(Texture);
+    ImGui::Image((void*)(intptr_t)Texture, ImVec2(200*4, 200*4));
+//	SDL_RenderCopy(renderer, Texture, NULL, NULL);
+    SDL_SetRenderTarget(renderer, nullptr);
 }
 
-void	Screen::clear(void)
+void	Screen::NewframeTexture()
 {
-	SDL_SetRenderDrawColor(renderer,0, 0, 0, 255);
-	SDL_SetRenderDrawColor(vRamRenderer,0, 0, 0, 255);
-	SDL_SetRenderDrawColor(backgroundRenderer,0, 0, 0, 255);
-	SDL_RenderClear(renderer);
-	SDL_RenderClear(vRamRenderer);
-	SDL_RenderClear(backgroundRenderer);
+    ImGui_ImplSDLRenderer_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+    SDL_RenderClear(Screen::renderer);
+
+    if (SDL_LockTexture(texture, nullptr, &pixels, &pitch)) {
+        throw "Could not lock texture\n";
+    }
+    if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
+        throw "Could not lock Vram texture\n";
+    }
+    if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
+        throw "Could not lock BG texture\n";
+    }
+}
+
+void Screen::clear(ImVec4 vec4)
+{
+    ImGui::Render();
+    SDL_SetRenderDrawColor(Screen::renderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+	SDL_RenderPresent(Screen::renderer);
 }
 
 void	Screen::drawBG()
 {
-	unsigned int BGMap  = BIT(M_LCDC, 3) ? 0x9C00 : 0x9800;
+    int bit = (!DBG::bBGMap)? 3 : 6;
+	unsigned int BGMap  = BIT(M_LCDC, bit) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	for (int i = 0; i < 32 * 32; i++) {
@@ -110,11 +113,10 @@ void	Screen::drawBG()
 				drawPoint(x + x_offset, y + y_offset, line[x], BGPixels, BGPitch, scaleBG);
 			}
 		}
-		
 	}
 }
 
-void	Screen::drawVRam(void)
+void	Screen::drawVRam()
 {
     unsigned int vRamAddress = 0x8000;
 
@@ -125,30 +127,75 @@ void	Screen::drawVRam(void)
 		for (int y = 0; y < 8; y++) {
 			auto line = tile.getColorLine(y);
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch);
+				drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch, scaleBG);
 			}
 		}
-		
 	}
+
+}
+
+bool Screen::drawPpu(int *clockDiff) {
+    int clock = *clockDiff;
+
+    Gameboy::setState(GBSTATE_V_BLANK);
+    for (int i = 0; i < 10; i++) {
+        clock = (Cpu::executeClock(114 - clock) - (114 - clock)); // V-BLANK first as LY=0x90 at start
+        Cpu::updateLY(1);
+    }
+    if (BIT(M_LCDC, 7)) {
+        M_LY = 0x00;
+    }
+    for (int i = 0; i < 144; i++) {
+        Gameboy::setState(GBSTATE_OAM_SEARCH);
+        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
+        if (BIT(M_LCDC, 7)) {
+            Ppu::finalLine = Ppu::doOneLine();
+            for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
+                drawPoint(j, i, Ppu::finalLine[j], pixels, pitch);
+            }
+        }
+        Gameboy::setState(GBSTATE_PX_TRANSFERT);
+        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
+        Gameboy::setState(GBSTATE_H_BLANK);
+        clock = (Cpu::executeClock(51 - clock) - (51 - clock));
+        Cpu::updateLY(1);
+        /* Drawing time */
+    }
+    *clockDiff = clock;
+    return true;
 }
 
 bool	Screen::createTexture() {
 	texture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
-		SDL_TEXTUREACCESS_STREAMING, 
+        SDL_TEXTUREACCESS_STREAMING,
 		160 * 4,
 		144 * 4);
-	BGTexture = SDL_CreateTexture(backgroundRenderer,
+    if (!texture) {
+        std::cerr << "Erreur SDL_CreateTexture Ppu : "<< SDL_GetError() << std::endl;
+        return false;
+    }
+
+	BGTexture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
-		SDL_TEXTUREACCESS_STREAMING, 
+        SDL_TEXTUREACCESS_STREAMING,
 		160 * 4,
 		144 * 4);
-	VRamTexture = SDL_CreateTexture(vRamRenderer,
+    if (!BGTexture) {
+        std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+        return false;
+    }
+
+    VRamTexture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
-		SDL_TEXTUREACCESS_STREAMING, 
+        SDL_TEXTUREACCESS_STREAMING,
 		160 * 4,
 		144 * 4);
-	return true;
+    if (!VRamTexture) {
+        std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
+        return false;
+    }
+    return true;
 }
 
 bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
@@ -162,78 +209,55 @@ bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pix
 			p[(y + j) * (pitch / 4) + (i + x)] = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8) | 0xFF;
 		}
 	}
-
-	
-
 	return (true);
 }
 
-bool	Screen::create(void)
+bool	Screen::create()
 {
-	SDL_Init(SDL_INIT_VIDEO);
-
-	vRamWindow = SDL_CreateWindow("VRAM",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			16 * 8 * scale + 16 * scale,
-			16 * 8 * scale + 16 * scale,
-			0);
-
-	if (!vRamWindow) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-	vRamRenderer = SDL_CreateRenderer(vRamWindow, -1, 0);
-	if (!vRamRenderer) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+        std::cerr <<"Error SDL_Init! "<< SDL_GetError() << std::endl;
+		return false;
 	}
 
-	backgroundWindow = SDL_CreateWindow("BGMap",
+	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("GBMU",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			(32) * 8 * scaleBG + 32 * scaleBG,
-			(32) * 8 * scaleBG + 32 * 2 * scaleBG,
-			0);
-
-	if (!backgroundWindow) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-	backgroundRenderer = SDL_CreateRenderer(backgroundWindow, -1, 0);
-	if (!backgroundRenderer) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
-	}
-
-	window = SDL_CreateWindow("GBMU",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			160 * 4,
-			144 * 4,
-			0);
-
+			1980,
+			1024,
+			window_flags);
 	if (!window) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
+        std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;
 		return (false);
 	}
 
 
-	renderer = SDL_CreateRenderer(window, -1, 0);
-	if (!renderer) {
-		std::cerr << __func__ << ":" << __LINE__ << std::endl;
-		return (false);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+	if (!renderer)
+	{
+        std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
+		return false;
 	}
 
+	if (!Screen::createTexture())
+        return false;
+
+	// Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+	ImGui_ImplSDLRenderer_Init(renderer);
 	SDL_RenderClear(renderer);
-	// if (SDL_SetRenderDrawColor(renderer, 33,  200 , 33 , 255) != 0) {
-	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
-	// 	return (false);
-	// }
-	// if (SDL_RenderClear(renderer) != 0) {
-	// 	std::cerr << __func__ << ":" << __LINE__ << std::endl;
-	// 	return (false);
-	// }
 	return (true);
 }
 

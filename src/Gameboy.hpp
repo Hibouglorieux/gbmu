@@ -20,12 +20,14 @@
 #include "Loop.hpp"
 #include "Screen.hpp"
 #include "Joypad.hpp"
+#include "define.hpp"
 
 #define g_clock (Gameboy::getClock())
 #define mem (Gameboy::getMem())
 
 class Gameboy {
 public:
+	static bool quit;
 	static Mem gbMem;
 	static Clock gbClock;
 	static void init();
@@ -36,8 +38,9 @@ public:
 	static void setState(int newState);
 	static int getState();
 	static void pollEvent();
-	static void LYCallback();
+//	static void LYCallback();
 private:
 	static int currentState;
+
 };
 #endif

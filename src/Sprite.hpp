@@ -15,9 +15,7 @@
 # define SPRITE_CLASS_H
 #include <vector>
 #include "Gameboy.hpp"
-
-#define OBP0 (0xFF48) // Object/Sprite palette 0
-#define OBP1 (0xFF49) // Object/Sprite palette 1
+#include "define.hpp"
 
 struct OAM_entry {
 	unsigned char posY;

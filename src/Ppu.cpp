@@ -11,10 +11,10 @@
 /* ************************************************************************** */
 
 #include "Ppu.hpp"
-#include "Gameboy.hpp"
 #include <algorithm>
 #include <iostream>
 
+std::array<int, PIXEL_PER_LINE> Ppu::finalLine{0};
 unsigned char Ppu::windowCounter = 0;
 
 std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
@@ -24,7 +24,6 @@ std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
 	auto backgroundLine = getBackgroundLine();
 
 
-	std::array<int, PIXEL_PER_LINE> finalLine = {0};
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
 		// color code == 0 means sprite pixel is translucent

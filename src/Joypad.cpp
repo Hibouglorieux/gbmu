@@ -1,11 +1,5 @@
 #include "Joypad.hpp"
 #include "Gameboy.hpp"
-#include <iostream>
-
-#define A_BUTTON SDLK_s
-#define B_BUTTON SDLK_a
-#define SELECT_BUTTON SDLK_LSHIFT
-#define START_BUTTON SDLK_RETURN
 
 // TODO We need to have 8 bit for each input
 // so we cannot write into memory directly, need a temp buffer,

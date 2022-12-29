@@ -11,103 +11,100 @@
 /* ************************************************************************** */
 
 #include "Loop.hpp"
-#include "Cpu.hpp"
 #include "Ppu.hpp"
-#include "Screen.hpp"
-#include "Joypad.hpp"
-
+#include "Debugger.hpp"
 #include <chrono>
 #include <thread>
-#include <iostream>
+
+bool Loop::showVram = false;
+bool Loop::showBG = false;
+bool Loop::showHexdump = false;
+bool Loop::showRegisters = true;
 
 bool Loop::loop()
 {
-	const std::chrono::microseconds frameTime(1'000'000 / 60);
+    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	const std::chrono::microseconds frametime(1'000'000 / 60);
 	// TODO unsure about updateScreen ? Do we update everytime ?
-	bool updateScreen = 1;
-	std::array<int, PIXEL_PER_LINE> finalLine{};
 	int clockDiff = 0;
 
-	Screen::createTexture();
-	while (true)
+	while (!Gameboy::quit)
 	{
 		auto beginFrameTime = std::chrono::system_clock::now();
-		/* Render clear */
-		// if (updateScreen) {
-		// 	Screen::clear();
-		// }
 
-		if (SDL_LockTexture(Screen::texture, NULL, &Screen::pixels, &Screen::pitch)) {
-			throw "Could not lock texture\n";
-		}
-		if (SDL_LockTexture(Screen::VRamTexture, NULL, &Screen::VramPixels, &Screen::VramPitch)) {
-			throw "Could not lock Vram texture\n";
-		}
-		if (SDL_LockTexture(Screen::BGTexture, NULL, &Screen::BGPixels, &Screen::BGPitch)) {
-			throw "Could not lock BG texture\n";
-		}
+	    Screen::NewframeTexture();
 
+        {
+            ImGui::Begin("PPU");
+            if (ImGui::Button(showBG ? "Hide BG" : "Show BG")) {
+                showBG = !showBG;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(showVram ? "Hide Vram" : "Show Vram")) {
+                showVram = !showVram;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(showHexdump ? "Hide hexdump" : "Show hexdump")) {
+                showHexdump = !showHexdump;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(showRegisters ? "Show registers" : "Hide registers")) {
+                showRegisters = !showRegisters;
+            }
+            ImGui::NewLine();
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            Screen::drawPpu(&clockDiff);
+            Screen::TexturetoImage(Screen::texture);
+            ImGui::End();
+        }
 
-		Gameboy::setState(GBSTATE_V_BLANK);
-		for (int i = 0 ; i < 10 ; i++) {
-			clockDiff = (Cpu::executeClock(114 - clockDiff) - (114 - clockDiff)); // V-BLANK first as LY=0x90 at start
-			Cpu::updateLY(1);
-		}
-		if (BIT(M_LCDC, 7)) {
-			M_LY = 0x00;
-		}
-		for (int i = 0 ; i < 144 ; i++) {
-			Gameboy::setState(GBSTATE_OAM_SEARCH);
-			clockDiff = (Cpu::executeClock(20 - clockDiff) - (20 - clockDiff));
-			if (BIT(M_LCDC, 7)) {
-				finalLine = Ppu::doOneLine();
-				for (int j = 0 ; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE ; j++) {
-					Screen::drawPoint(j, i, finalLine[j], Screen::pixels, Screen::pitch);
-				}
-				updateScreen = 1;
-			}
-			else {
-				updateScreen = 0;
-			}
-			Gameboy::setState(GBSTATE_PX_TRANSFERT);
-			clockDiff = (Cpu::executeClock(43 - clockDiff) - (43 - clockDiff));
-			Gameboy::setState(GBSTATE_H_BLANK);
-			clockDiff = (Cpu::executeClock(51 - clockDiff) - (51 - clockDiff));
-			Cpu::updateLY(1);
-			/* Drawing time */
-		}
-		if (updateScreen) {
-			Ppu::resetWindowCounter();
-			/*
-			printf("VRAM");
-			for (int i = 0 ; i < 0x200 ; i++) {
-				if (i % 32 == 0) {
-					printf("\n%04x: ", 0x8000 + i);
-				}
-				printf("%02x ", (uint8_t)mem[0x8000 + i]);
-			}
-			*/
-			Screen::drawVRam();
-			Screen::drawBG();
-		}
-		/* Manage events */
+        if (showVram) {
+            {
+                ImGui::Begin("Vram");
+                Screen::drawVRam();
+                Screen::TexturetoImage(Screen::VRamTexture);
+                ImGui::End();
+            }
+        }
+
+        if (showBG) {
+            {
+                ImGui::Begin("BackGround");
+                if (ImGui::Button(DBG::bBGMap ? "Draw BG" : "Draw Window")) {
+                    DBG::bBGMap = !DBG::bBGMap;
+                }
+                Screen::drawBG();
+                Screen::TexturetoImage(Screen::BGTexture);
+                ImGui::End();
+            }
+        }
+
+        if (showRegisters) {
+            DBG::registers();
+        }
+
+        if (showHexdump) {
+            DBG::hexdump();
+        }
+
+        Ppu::resetWindowCounter();
+
 		Gameboy::pollEvent();
-		/* Render present */
-		if (updateScreen) {
-			Screen::update();
-		}
+
 		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		if (timeTakenForFrame.count() < frameTime.count())
+		if (timeTakenForFrame.count() < frametime.count())
 		{
-			//std::cout << "sleeping for: " << std::dec << (frameTime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
-			std::this_thread::sleep_for(frameTime - timeTakenForFrame);
+			//std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+			std::this_thread::sleep_for(frametime - timeTakenForFrame);
 		}
 		else
 		{
 			//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 		}
+
+        Screen::clear(clear_color);
 	}
 	return (true);
 }

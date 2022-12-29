@@ -13,6 +13,7 @@
 # define SCREEN_CLASS_H
 
 #include <SDL2/SDL.h>
+#include "imgui/imgui.h"
 
 class Screen {
 public:
@@ -20,14 +21,16 @@ public:
 	static bool create();
 	static bool drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale = 4);
 	static void destroy();
-	static void update();
-	static void clear();
+    static void	NewframeTexture();
+	static void clear(ImVec4 vec4);
 
 	static void drawBG();
 	static void drawVRam();
-	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
+    static bool drawPpu(int *clockDiff);
+//	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static bool createTexture();
+    static void TexturetoImage(SDL_Texture *);
 
 	static SDL_Window* get();
 	static SDL_Texture*		texture;
@@ -41,13 +44,9 @@ public:
 	static SDL_Texture*		VRamTexture;
 	static void*			VramPixels;
 	static int				VramPitch;
-private:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
-	static SDL_Window*		vRamWindow;
-	static SDL_Renderer*	vRamRenderer;
-	static SDL_Window*		backgroundWindow;
-	static SDL_Renderer*	backgroundRenderer;
+private:
 };
 
 #endif
