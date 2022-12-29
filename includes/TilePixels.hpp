@@ -6,7 +6,7 @@
 #include "Gameboy.hpp"
 
 struct TilePixels {
-    int data[8][8];
+    int data[8][8]{};
 
     void flipX() {
         for (int y = 0; y < 8; y++) {
@@ -35,7 +35,7 @@ struct TilePixels {
 	TilePixels();
     TilePixels(std::array<std::array<int, 8>, 8> val);
     TilePixels(int tileAddress, unsigned short newPaletteAddress);
-	unsigned short paletteAddress;
+	unsigned short paletteAddress{};
 };
 
 #endif
