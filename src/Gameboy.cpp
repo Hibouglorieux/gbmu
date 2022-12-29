@@ -1,6 +1,5 @@
-#include "../includes/Gameboy.hpp"
-#include "../includes/imgui_impl_sdl.h"
-#include "../includes/imgui.h"
+#include "Gameboy.hpp"
+#include "imgui/imgui_impl_sdl.h"
 
 Mem Gameboy::gbMem = Mem();
 Clock Gameboy::gbClock = Clock();

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Cpu.hpp"
+#include "Cpu.hpp"
 
 bool Cpu::getHalfCarry8Bit(unsigned char a, unsigned char b, unsigned char c)
 {

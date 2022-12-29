@@ -1,4 +1,4 @@
-#include "../includes/TilePixels.hpp"
+#include "TilePixels.hpp"
 
 TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val)
 {

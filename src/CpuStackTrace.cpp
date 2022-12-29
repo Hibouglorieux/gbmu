@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/CpuStackTrace.hpp"
+#include "CpuStackTrace.hpp"
 #include <iostream>
 #include <iomanip>
 

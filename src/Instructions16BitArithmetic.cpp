@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Cpu.hpp"
+#include "Cpu.hpp"
 
 unsigned char Cpu::dec_r16(unsigned short opcode)
 {

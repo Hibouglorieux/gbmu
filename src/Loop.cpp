@@ -10,10 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Loop.hpp"
-#include "../includes/Cpu.hpp"
-#include "../includes/Ppu.hpp"
-#include "../includes/Debugger.hpp"
+#include "Loop.hpp"
+#include "Ppu.hpp"
+#include "Debugger.hpp"
 #include <chrono>
 #include <thread>
 

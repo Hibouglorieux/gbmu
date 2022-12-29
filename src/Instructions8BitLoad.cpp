@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Cpu.hpp"
+#include "Cpu.hpp"
 
 unsigned char Cpu::load_a8_a()
 {

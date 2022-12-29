@@ -10,10 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Ppu.hpp"
+#include "Ppu.hpp"
 #include <algorithm>
 #include <iostream>
-
 
 std::array<int, PIXEL_PER_LINE> Ppu::finalLine{0};
 unsigned char Ppu::windowCounter = 0;

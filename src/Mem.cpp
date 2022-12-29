@@ -10,15 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Mem.hpp"
-#include "../includes/Cpu.hpp"
+#include "Mem.hpp"
+#include "Cpu.hpp"
 #include <fstream>
 #include <iostream>
-//#include "../includes/Joypad.hpp"
-
-#define MEM_SIZE (0xFFFF + 1)
-#define RAM_BANK_SIZE (8 * 1024)
-#define ROM_BANK_SIZE (16 * 1024)
 
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
@@ -77,7 +72,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (fileLen < 32'768)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
-			throw("8");
+			throw("");
 	}
 	file.seekg(0x148, std::ifstream::beg);
 	char romSizeCode;
@@ -86,7 +81,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (fileLen != romBanksNb * 1024 * 16)
 	{
 		std::cerr << "Wrong size read in header: " << romBanksNb * 1024 * 16;
-		throw("7");
+		throw("");
 	}
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
@@ -195,12 +190,12 @@ MemWrap Mem::operator[](unsigned int i)
 	{
 		std::cerr << "Error, trying to access mem at: " + std::to_string(i) +
 				" but mem size is: " + std::to_string(memSize) << std::endl;
-		throw("5");
+		throw("");
 	}
 	if (!isValid)
 	{
 		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
-		throw("6");
+		throw("");
 	}
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
@@ -291,13 +286,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue) {
     // rework too
 	if (addr == LYC ) {
 		if (value == M_LY)
-			SET(M_LCDC_STATUS, 2)
+			SET(M_LCDC_STATUS, 2);
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
 	if (addr == LY) {
 		if (value == M_LYC)
-			SET(M_LCDC_STATUS, 2)
+			SET(M_LCDC_STATUS, 2);
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
@@ -345,7 +340,7 @@ int		Mem::getRomBanksNb(char romSizeCode)
 			return value;
 		default:
 			std::cerr << "wrong romSizeCodeReceived" << std::endl;
-			throw("10");
+			throw("");
 	}
 }
 
@@ -365,7 +360,7 @@ int		Mem::getExtraRamBanksNb(char ramSizeCode)
 			return 8;
 		default:
 			std::cerr << "wrong ramSizeCode received" << std::endl;
-			throw("9");
+			throw("");
 	}
 }
 

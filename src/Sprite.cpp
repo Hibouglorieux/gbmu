@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Sprite.hpp"
+#include "Sprite.hpp"
+#include "define.hpp"
 #include <algorithm>
 
 Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)

@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Clock.hpp"
-#include "../includes/Gameboy.hpp"
+#include "Clock.hpp"
+#include "Gameboy.hpp"
 
 bool Clock::cgbMode = false;
 bool Clock::reloadTMA = false;
@@ -32,11 +32,6 @@ Clock::Clock()
 
 Clock::~Clock()
 {}
-
-#define M_DIV	mem[0xFF04]
-#define M_TIMA	mem[0xFF05]
-#define M_TMA	mem[0xFF06]
-#define M_TAC	mem[0xFF07]
 
 // NOTE : addValue is in cycle in this context
 int&	Clock::operator+=(int addValue)

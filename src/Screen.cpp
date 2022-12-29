@@ -10,13 +10,10 @@
 /* ************************************************************************** */
 
 #include <iostream>
-#include "../includes/Screen.hpp"
-#include "../includes/Cpu.hpp"
-#include "../includes/Ppu.hpp"
-#include "../includes/Debugger.hpp"
-
-
-#define QUAD_COLOR 0b11
+#include "Screen.hpp"
+#include "Cpu.hpp"
+#include "Ppu.hpp"
+#include "Debugger.hpp"
 
 SDL_Window* Screen::window = nullptr;
 SDL_Renderer* Screen::renderer = nullptr;

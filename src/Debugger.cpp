@@ -1,8 +1,8 @@
 
-#include "../includes/Debugger.hpp"
+#include "Debugger.hpp"
 #include <SDL2/SDL.h>
 
-bool DBG::bBGMap = 3;
+bool DBG::bBGMap = true;
 
 void DBG::hexdump() {
 	{
@@ -117,64 +117,3 @@ void DBG::registers() {
         ImGui::End();
     }
 }
-//
-//int Debugger::start(int clockDiff, bool updateScreen) {
-//
-//    t1 = high_resolution_clock::now();
-//    ImGui_ImplSDLRenderer_NewFrame();
-//    ImGui_ImplSDL2_NewFrame();
-//    ImGui::NewFrame();
-//    SDL_RenderClear(Screen::DBG_rend);
-//
-//    {
-//        ImGui::Begin("PPU");
-//        if (ImGui::Button(show_BG ? "Hide BG" : "Show BG")) {
-//		    show_BG = !show_BG;
-//	    }
-//        ImGui::SameLine();
-//        if (ImGui::Button(show_Vram ? "show_Vram" : "show_Vram")) {
-//		    show_Vram = !show_Vram;
-//	    }
-//        ImGui::SameLine();
-//        if (ImGui::Button(show_hexdump ? "show_hexdump" : "show_hexdump")) {
-//		    show_hexdump = !show_hexdump;
-//	    }
-//        ImGui::SameLine();
-//        if (ImGui::Button(show_registers ? "show_registers" : "show_registers")) {
-//		    show_registers = !show_registers;
-//	    }
-//        ImGui::NewLine();
-//        Screen::drawPpu(clockDiff, updateScreen);
-//        ImGui::End();
-//    }
-//
-//    if (show_hexdump)
-//        hexdump_debugger();
-//
-//    if (show_Vram) {
-//        {
-//            ImGui::Begin("VRAM");
-//            Screen::drawVRam();
-//            ImGui::End();
-//        }
-//    }
-//
-//    if (show_BG)
-//    {
-//        {
-//            ImGui::Begin("BG");
-//            Screen::drawBG();
-//            ImGui::End();
-//        }
-//    }
-//
-//    if (show_registers) {
-//        register_debugger();
-//    }
-//    // SDL_Delay(3000);
-//    ImGui::Render();
-//    SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);
-//    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-//	SDL_RenderPresent(Screen::DBG_rend);
-//	return updateScreen;
-//}

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Cpu.hpp"
+#include "Cpu.hpp"
 #include <iostream>
 
 void	Cpu::printRegisters()
