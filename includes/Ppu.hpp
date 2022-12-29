@@ -87,6 +87,8 @@ struct BackgroundData {
 class Ppu {
 public:
 	static void setMem(Mem& cpuMem);
+    static std::array<int, PIXEL_PER_LINE> finalLine;
+
 
 	static std::array<int, PIXEL_PER_LINE> doOneLine();
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();

@@ -18,15 +18,15 @@
 //    RUNNING
 //}
 
-class Debugger {
+class DBG {
 public:
 //    DebuggerState state;
-    static bool show_Vram;
-    static bool show_BG;
-    static bool show_hexdump;
-    static bool show_registers;
-    static int start(int, bool);
-//    void stop();
+
+//    static int start(int, bool);
+    static bool bBGMap;
+    static void registers();
+    static void hexdump();
+
 };
 
 

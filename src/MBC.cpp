@@ -22,19 +22,19 @@ MBC* MBC::createMBC(unsigned char mbcCode)
 	if (mbcCode >= 5 && mbcCode <= 6)
 	{
 		std::cout << "MBC2 not yet coded !" << std::endl;	
-		throw("");
+		throw("1");
 		//return new MBC2();
 	}
 	if (mbcCode >= 0x0F && mbcCode <= 0x13)
 	{
 		std::cout << "MBC3 not yet coded !" << std::endl;	
-		throw("");
+		throw("2");
 		//return new MBC3();
 	}
 	if (mbcCode >= 0x19 && mbcCode <= 0x1E)
 		return new MBC5();
 	std::cout << "Unsupported MBC received: " << +mbcCode << std::endl;
-	throw("");
+	throw("3");
 }
 
 unsigned char RomOnly::writeInRom(unsigned short addr, unsigned char value)
@@ -96,7 +96,7 @@ unsigned short MBC1::getRomBank(unsigned short addr)
 	else
 	{
 		std::cout << "error trying to call getRomBank with invalid address: " << addr << std::endl;
-		throw("");
+		throw("4");
 	}
 }
 

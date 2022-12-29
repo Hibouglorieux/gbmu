@@ -2,16 +2,15 @@
 #include "../includes/Debugger.hpp"
 #include <SDL2/SDL.h>
 
-static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-bool Debugger::show_BG = false;
-bool Debugger::show_Vram = false;
-bool Debugger::show_hexdump = false;
-bool Debugger::show_registers = false;
+bool DBG::bBGMap = 3;
 
-void hexdump_debugger() {
+void DBG::hexdump() {
 	{
 		ImGui::Begin("Memory Hexdump:");
 
+//        ImGui::Text("Number of Rom: %d\nCurrent Rombank for 1st slot: %d\nCurrent Rombank for 2nd slot:", mem.mbc->getRomBank(0));
+//        ImGui::SameLine();
+//        ImGui::Text("Number of Ram: %d\nCurrent Rambank: %d\n");
 		// Display contents in a scrolling region
 		ImGui::BeginChild("Scrolling");
 
@@ -61,17 +60,8 @@ void hexdump_debugger() {
 	}
 }
 
-#include <chrono>
-#include <iostream>
-    using std::chrono::high_resolution_clock;
-    using std::chrono::duration_cast;
-    using std::chrono::duration;
-    using std::chrono::milliseconds;
-std::chrono::time_point<std::chrono::high_resolution_clock> t1,t2;
-
-void register_debugger() {
+void DBG::registers() {
     {
-
         ImGui::Begin("Registers:");
         ImGui::Columns(2, "registers", true);
         ImGui::Separator();
@@ -124,73 +114,67 @@ void register_debugger() {
         ImGui::Text(Cpu::getCarryFlag() ? "1" : "0"); ImGui::NextColumn();
         ImGui::Columns(1);
         ImGui::Separator();
-        t2 = high_resolution_clock::now();
-        /* Getting number of milliseconds as a double. */
-        duration<double, std::milli> ms_double = t2 - t1;
-        ImGui::Text("%f ms\n", ms_double.count());
         ImGui::End();
     }
 }
-
-
-
-int Debugger::start(int clockDiff, bool updateScreen) {
-
-    t1 = high_resolution_clock::now();
-    ImGui_ImplSDLRenderer_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-    SDL_RenderClear(Screen::DBG_rend);
-
-    {
-        ImGui::Begin("PPU");
-        if (ImGui::Button(show_BG ? "Hide BG" : "Show BG")) {
-		    show_BG = !show_BG;
-	    }
-        ImGui::SameLine();
-        if (ImGui::Button(show_Vram ? "show_Vram" : "show_Vram")) {
-		    show_Vram = !show_Vram;
-	    }
-        ImGui::SameLine();
-        if (ImGui::Button(show_hexdump ? "show_hexdump" : "show_hexdump")) {
-		    show_hexdump = !show_hexdump;
-	    }
-        ImGui::SameLine();
-        if (ImGui::Button(show_registers ? "show_registers" : "show_registers")) {
-		    show_registers = !show_registers;
-	    }
-        ImGui::NewLine();
-        Screen::drawPpu(clockDiff, updateScreen);
-        ImGui::End();
-    }
-
-    if (show_hexdump)
-        hexdump_debugger();
-
-    if (show_Vram) {
-        {
-            ImGui::Begin("VRAM");
-            Screen::drawVRam();
-            ImGui::End();
-        }
-    }
-
-    if (show_BG)
-    {
-        {
-            ImGui::Begin("BG");
-            Screen::drawBG();
-            ImGui::End();
-        }
-    }
-
-    if (show_registers) {
-        register_debugger();
-    }
-    // SDL_Delay(3000);
-    ImGui::Render();
-    SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-	SDL_RenderPresent(Screen::DBG_rend);
-	return updateScreen;
-}
+//
+//int Debugger::start(int clockDiff, bool updateScreen) {
+//
+//    t1 = high_resolution_clock::now();
+//    ImGui_ImplSDLRenderer_NewFrame();
+//    ImGui_ImplSDL2_NewFrame();
+//    ImGui::NewFrame();
+//    SDL_RenderClear(Screen::DBG_rend);
+//
+//    {
+//        ImGui::Begin("PPU");
+//        if (ImGui::Button(show_BG ? "Hide BG" : "Show BG")) {
+//		    show_BG = !show_BG;
+//	    }
+//        ImGui::SameLine();
+//        if (ImGui::Button(show_Vram ? "show_Vram" : "show_Vram")) {
+//		    show_Vram = !show_Vram;
+//	    }
+//        ImGui::SameLine();
+//        if (ImGui::Button(show_hexdump ? "show_hexdump" : "show_hexdump")) {
+//		    show_hexdump = !show_hexdump;
+//	    }
+//        ImGui::SameLine();
+//        if (ImGui::Button(show_registers ? "show_registers" : "show_registers")) {
+//		    show_registers = !show_registers;
+//	    }
+//        ImGui::NewLine();
+//        Screen::drawPpu(clockDiff, updateScreen);
+//        ImGui::End();
+//    }
+//
+//    if (show_hexdump)
+//        hexdump_debugger();
+//
+//    if (show_Vram) {
+//        {
+//            ImGui::Begin("VRAM");
+//            Screen::drawVRam();
+//            ImGui::End();
+//        }
+//    }
+//
+//    if (show_BG)
+//    {
+//        {
+//            ImGui::Begin("BG");
+//            Screen::drawBG();
+//            ImGui::End();
+//        }
+//    }
+//
+//    if (show_registers) {
+//        register_debugger();
+//    }
+//    // SDL_Delay(3000);
+//    ImGui::Render();
+//    SDL_SetRenderDrawColor(Screen::DBG_rend, clear_color.x * 255, clear_color.y * 255, clear_color.z * 255, clear_color.w * 255);
+//    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+//	SDL_RenderPresent(Screen::DBG_rend);
+//	return updateScreen;
+//}

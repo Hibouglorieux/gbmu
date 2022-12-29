@@ -26,6 +26,7 @@
 
 class Gameboy {
 public:
+	static bool quit;
 	static Mem gbMem;
 	static Clock gbClock;
 	static void init();
@@ -39,5 +40,6 @@ public:
 	static void LYCallback();
 private:
 	static int currentState;
+
 };
 #endif

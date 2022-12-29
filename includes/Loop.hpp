@@ -24,6 +24,10 @@ public:
 	static bool loop();
 
 private:
+    static bool showVram;
+    static bool showBG;
+    static bool showHexdump;
+    static bool showRegisters;
 	static bool shouldStop;
 	static double frameTime;
 	static double fpsRefreshTime;

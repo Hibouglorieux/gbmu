@@ -77,7 +77,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (fileLen < 32'768)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
-			throw("");
+			throw("8");
 	}
 	file.seekg(0x148, std::ifstream::beg);
 	char romSizeCode;
@@ -86,7 +86,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (fileLen != romBanksNb * 1024 * 16)
 	{
 		std::cerr << "Wrong size read in header: " << romBanksNb * 1024 * 16;
-		throw("");
+		throw("7");
 	}
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
@@ -195,12 +195,12 @@ MemWrap Mem::operator[](unsigned int i)
 	{
 		std::cerr << "Error, trying to access mem at: " + std::to_string(i) +
 				" but mem size is: " + std::to_string(memSize) << std::endl;
-		throw("");
+		throw("5");
 	}
 	if (!isValid)
 	{
 		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
-		throw("");
+		throw("6");
 	}
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
@@ -345,7 +345,7 @@ int		Mem::getRomBanksNb(char romSizeCode)
 			return value;
 		default:
 			std::cerr << "wrong romSizeCodeReceived" << std::endl;
-			throw("");
+			throw("10");
 	}
 }
 
@@ -365,7 +365,7 @@ int		Mem::getExtraRamBanksNb(char ramSizeCode)
 			return 8;
 		default:
 			std::cerr << "wrong ramSizeCode received" << std::endl;
-			throw("");
+			throw("9");
 	}
 }
 
