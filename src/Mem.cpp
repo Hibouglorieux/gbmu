@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 22:54:39 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 23:00:19 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,34 +204,6 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 		return internalArray[addr];
 }
 
-unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
-{
-	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
-	{
-		if (bIsUsingCGBVram)
-		{
-			//std::cout << "accessing CGBVramBank !" << std::endl;
-			return CGBVramBank[addr - 0x8000];
-		}
-		else
-			return internalArray[addr];
-	}
-	else if (addr >= 0xC000 && addr <= 0xDFFF)// CGB ONLY
-	{
-		if (addr <= 0xCFFF)
-			return CGBextraRamBanks[0][addr - 0xC000];
-		else
-		{
-			unsigned char index = CGBextraRamBankNb & 7;
-			if (index == 0)
-				index = 1;
-			return CGBextraRamBanks[index][addr - 0xD000];
-		}
-	}
-	else
-		return Mem::getRefWithBanks(addr);
-}
-
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
 	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
@@ -410,4 +382,32 @@ CGBMem::~CGBMem()
 	delete[] CGBVramBank;
 	for (int i = 0; i < 8; i++)
 		delete[] CGBextraRamBanks[i];
+}
+
+unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
+{
+	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
+	{
+		if (bIsUsingCGBVram)
+		{
+			//std::cout << "accessing CGBVramBank !" << std::endl;
+			return CGBVramBank[addr - 0x8000];
+		}
+		else
+			return internalArray[addr];
+	}
+	else if (addr >= 0xC000 && addr <= 0xDFFF)// CGB ONLY
+	{
+		if (addr <= 0xCFFF)
+			return CGBextraRamBanks[0][addr - 0xC000];
+		else
+		{
+			unsigned char index = CGBextraRamBankNb & 7;
+			if (index == 0)
+				index = 1;
+			return CGBextraRamBanks[index][addr - 0xD000];
+		}
+	}
+	else
+		return Mem::getRefWithBanks(addr);
 }

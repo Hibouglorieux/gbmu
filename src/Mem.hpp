@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 22:50:34 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 22:59:50 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ public:
 protected:
 	void init();
 	unsigned char*	internalArray;
-	std::array<unsigned char*, 8> CGBextraRamBanks;
 
 	//std::array<std::array<unsigned char, 0x1000>, 8> CGBextraRamBanks;
 
@@ -82,6 +81,7 @@ public:
 protected:
 	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned char*	CGBVramBank;
+	std::array<unsigned char*, 8> CGBextraRamBanks;
 };
 
 #endif
