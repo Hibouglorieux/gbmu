@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
+#include "../includes/Cpu.hpp"
 #include <functional>
 
 CpuStackTrace Cpu::stackTrace;

@@ -1,5 +1,5 @@
-#include "Joypad.hpp"
-#include "Gameboy.hpp"
+#include "../includes/Joypad.hpp"
+#include "../includes/Gameboy.hpp"
 #include <iostream>
 
 #define A_BUTTON SDLK_s

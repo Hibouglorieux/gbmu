@@ -10,11 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Mem.hpp"
-#include "Cpu.hpp"
+#include "../includes/Mem.hpp"
+#include "../includes/Cpu.hpp"
 #include <fstream>
 #include <iostream>
-#include "Joypad.hpp"
+//#include "../includes/Joypad.hpp"
 
 #define MEM_SIZE (0xFFFF + 1)
 #define RAM_BANK_SIZE (8 * 1024)

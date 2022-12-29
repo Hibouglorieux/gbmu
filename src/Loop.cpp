@@ -10,15 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Loop.hpp"
-#include "Cpu.hpp"
-#include "Ppu.hpp"
-#include "Screen.hpp"
-#include "Joypad.hpp"
+#include "../includes/Loop.hpp"
+#include "../includes/Cpu.hpp"
+#include "../includes/Ppu.hpp"
+//#include "../includes/Screen.hpp"
+//#include "../includes/Joypad.hpp"
 
 #include <chrono>
 #include <thread>
-#include <iostream>
+//#include <iostream>
 
 bool Loop::loop()
 {

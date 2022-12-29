@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Ppu.hpp"
-#include "Gameboy.hpp"
+#include "../includes/Ppu.hpp"
+//#include "../includes/Gameboy.hpp"
 #include <algorithm>
 #include <iostream>
 

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "MBC.hpp"
+#include "../includes/MBC.hpp"
 #include <iostream>
 
 MBC* MBC::createMBC(unsigned char mbcCode)

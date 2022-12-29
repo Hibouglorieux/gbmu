@@ -10,9 +10,9 @@
 /* ************************************************************************** */
 
 #include <iostream>
-#include "Screen.hpp"
-#include "Cpu.hpp"
-#include "Ppu.hpp"
+#include "../includes/Screen.hpp"
+#include "../includes/Cpu.hpp"
+#include "../includes/Ppu.hpp"
 
 #define QUAD_COLOR 0b11
 

@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Clock.hpp"
-#include "Gameboy.hpp"
+#include "../includes/Clock.hpp"
+#include "../includes/Gameboy.hpp"
 
 bool Clock::cgbMode = false;
 bool Clock::reloadTMA = false;

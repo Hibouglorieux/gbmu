@@ -1,5 +1,5 @@
 
-#include "../../includes/Debugger.hpp"
+#include "../includes/Debugger.hpp"
 #include <SDL2/SDL.h>
 
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

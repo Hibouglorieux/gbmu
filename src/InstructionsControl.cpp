@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
+#include "../includes/Cpu.hpp"
 
 unsigned char Cpu::nop()
 {

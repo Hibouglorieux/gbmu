@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Cpu.hpp"
+#include "../includes/Cpu.hpp"
 
 void	Cpu::internalPush(unsigned short valueToPush)
 {
