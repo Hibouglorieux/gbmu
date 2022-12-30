@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:36:35 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 23:41:33 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,9 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
 		// color code == 0 means sprite pixel is translucent
-		if (pixelLine[i].colorCode != 0 &&
-				(pixelLine[i].bIsAboveBackground || backgroundLine[i].colorCode == 0)) {
+		if ((pixelLine[i].colorCode != 0 &&
+				((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))
+		{
 			finalLine[i] = pixelLine[i].color;
 		}
 		else if (BIT(M_LCDC, 0)) {
@@ -98,6 +99,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 									 // first 3 pixels
 			backgroundLine[xPosInLine].color = tilePixelColorLine[i];
 			backgroundLine[xPosInLine].colorCode = tilePixelColorCodeLine[i];
+			backgroundLine[xPosInLine].bIsAboveOAM = tilePixels.isAboveOAM();
 			xPosInLine++;
 			if (xPosInLine >= PIXEL_PER_LINE)
 				break;

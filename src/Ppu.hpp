@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:36:24 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 23:37:23 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ struct SpriteData {
 struct BackgroundData {
 	int color;
 	int colorCode;
+	bool bIsAboveOAM;
 };
 
 class Ppu {

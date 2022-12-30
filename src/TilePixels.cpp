@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:57:37 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 23:42:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,8 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 std::array<short, 8> TilePixels::getColorLine(int y)
 {
 	std::array<short, 8> retLine{};
+	if (!bIsValid)
+		return retLine;
 	unsigned long paletteColor = 0;
 
 	// means the tile is valid, else return 0
@@ -98,6 +100,8 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 std::array<short, 8> TilePixels::getLineColorCode(int y)
 {
 	std::array<short, 8> tmp{};
+	if (!bIsValid)
+		return tmp;
 	for (int x = 0; x < 8; x++) {
 		tmp[x] = data[y][x];
 	}
@@ -106,11 +110,12 @@ std::array<short, 8> TilePixels::getLineColorCode(int y)
 
 TilePixels::TilePixels()
 {
+	bIsValid = false;
 }
-
 
 TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : data()
 {
+	bIsValid = true;
 	mapAddr = mapAddress;
 	unsigned char* vram = mem.getVram();
 	if (Gameboy::bIsCGB)
@@ -144,4 +149,12 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : 
 		if (BIT(attribute, 5))
 			flipX();
 	}
+}
+
+bool TilePixels::isAboveOAM() const
+{
+	if (!Gameboy::bIsCGB)
+		return false;
+	unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+	return BIT(attribute, 7);
 }
