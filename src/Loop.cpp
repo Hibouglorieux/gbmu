@@ -28,6 +28,7 @@ bool Loop::loop()
 
 	while (!Gameboy::quit)
 	{
+       	std::chrono::microseconds frametime(1'000'000 / (int)(60 * DBG::speed));
 		auto beginFrameTime = std::chrono::system_clock::now();
 
 	    Screen::NewframeTexture();
@@ -50,8 +51,20 @@ bool Loop::loop()
                 showRegisters = !showRegisters;
             }
             ImGui::NewLine();
+            ImGui::SliderFloat("Speed", &DBG::speed, 0.25f, 2.0f);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            Gameboy::execFrame(true);
+            if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
+                DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
+            }
+			if (ImGui::Button("Next step")) {
+				DBG::state = DebuggerState::ONCE;
+			}
+			if (DBG::state != DebuggerState::PAUSED) {
+            	Gameboy::execFrame(DBG::state == DebuggerState::ONCE);
+				if (DBG::state == DebuggerState::ONCE) {
+					DBG::state = DebuggerState::PAUSED;
+				}
+			}
             Screen::TexturetoImage(Screen::texture);
             ImGui::End();
         }
@@ -101,7 +114,6 @@ bool Loop::loop()
 	{
 		//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 	}
-
         Screen::clear(clear_color);
 	}
 	Screen::destroy();

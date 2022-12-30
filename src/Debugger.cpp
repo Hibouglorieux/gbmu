@@ -3,6 +3,8 @@
 #include <SDL2/SDL.h>
 
 bool DBG::bBGMap = true;
+DebuggerState DBG::state = DebuggerState::RUNNING;
+float DBG::speed = 1;
 
 void DBG::hexdump() {
 	{
@@ -114,6 +116,35 @@ void DBG::registers() {
         ImGui::Text(Cpu::getCarryFlag() ? "1" : "0"); ImGui::NextColumn();
         ImGui::Columns(1);
         ImGui::Separator();
+        ImGui::Columns(1);
+        ImGui::Separator();
+
+        ImGui::Text("Interrupts:");
+        ImGui::Checkbox("Interupts Master Enable (IME)",&Cpu::interrupts_master_enable);
+    	unsigned char ie = M_EI;
+    	unsigned char iflag = M_IF;
+    	ImGui::Text("Interrupt Enable (0xFFFF): 0x%02X\nInterrupt Flag   (0xFF0F): 0x%02X",ie, iflag);
+    	ImGui::Separator();
+    	ImGui::Columns(6, "flags"); ImGui::NewLine();
+        ImGui::Text("IE ="); ImGui::NextColumn();
+        ImGui::Text("V-Blank");
+    	ImGui::Text(BIT(ie, 0) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text("LCD Status");
+    	ImGui::Text(BIT(ie, 1) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text("Timer");
+    	ImGui::Text(BIT(ie, 2) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text("Serial");
+    	ImGui::Text(BIT(ie, 3) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text("Joypad");
+    	ImGui::Text(BIT(ie, 4) ? "1" : "0"); ImGui::NextColumn();
+        ImGui::Text("IF ="); ImGui::NextColumn();
+    	ImGui::Text(BIT(iflag, 0) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text(BIT(iflag, 1) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text(BIT(iflag, 2) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Text(BIT(iflag, 3) ? "1" : "0"); ImGui::NextColumn();
+        ImGui::Text(BIT(iflag, 4) ? "1" : "0"); ImGui::NextColumn();
+    	ImGui::Columns(1);
+    	ImGui::Separator();
         ImGui::End();
     }
 }

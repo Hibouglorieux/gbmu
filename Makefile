@@ -28,8 +28,10 @@ LNAME				=	libimgui.a
 
 S_PATH				=	src/
 H_PATH				+=	src/
+L_PATH				=	src/imgui/
 B_PATH				=	.build/
 O_PATH				=	.build/objs/
+
 
 ###############################################################################
 #                               Modifications                                 #
@@ -71,17 +73,17 @@ SRC					+= $(S_PATH)Screen.cpp
 SRC					+= $(S_PATH)Sprite.cpp
 SRC					+= $(S_PATH)TilePixels.cpp
 
-SRC					+= $(S_PATH)$(IMGUI)imgui.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_demo.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_draw.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_impl_sdl.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_impl_sdlrenderer.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_stdlib.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_tables.cpp
-SRC					+= $(S_PATH)$(IMGUI)imgui_widgets.cpp
+# Header
 
-
-# Headers
+IMGUIHDR			+=	$(IMGUI)imconfig.h
+IMGUIHDR			+=	$(IMGUI)imgui.h
+IMGUIHDR			+=	$(IMGUI)imgui_impl_sdl.h
+IMGUIHDR			+=	$(IMGUI)imgui_impl_sdlrenderer.h
+IMGUIHDR			+=	$(IMGUI)imgui_internal.h
+IMGUIHDR			+=	$(IMGUI)imgui_stdlib.h
+IMGUIHDR			+=	$(IMGUI)imstb_rectpack.h
+IMGUIHDR			+=	$(IMGUI)imstb_textedit.h
+IMGUIHDR			+=	$(IMGUI)imstb_truetype.h
 
 HDR					+=	Clock.hpp
 HDR					+=	Cpu.hpp
@@ -89,15 +91,6 @@ HDR					+=	CpuStackTrace.hpp
 HDR					+=	Debugger.hpp
 HDR					+=	define.hpp
 HDR					+=	Gameboy.hpp
-HDR					+=	$(IMGUI)imconfig.h
-HDR					+=	$(IMGUI)imgui.h
-HDR					+=	$(IMGUI)imgui_impl_sdl.h
-HDR					+=	$(IMGUI)imgui_impl_sdlrenderer.h
-HDR					+=	$(IMGUI)imgui_internal.h
-HDR					+=	$(IMGUI)imgui_stdlib.h
-HDR					+=	$(IMGUI)imstb_rectpack.h
-HDR					+=	$(IMGUI)imstb_textedit.h
-HDR					+=	$(IMGUI)imstb_truetype.h
 HDR					+=	Instructions.hpp
 HDR					+=	Joypad.hpp
 HDR					+=	Loop.hpp
@@ -117,6 +110,7 @@ HDR					+=	Utility.tpp
 # Objects
 
 OBJ					=	$(patsubst $(S_PATH)%.cpp, $(O_PATH)%.o, $(SRC))
+
 LIB					=	$(LNAME)
 vpath %.h $(H_PATH)
 vpath %.hpp $(H_PATH)
@@ -147,12 +141,6 @@ RANLI				=	ranlib
 RM_RF				=	/bin/rm -rf
 MKDIR				=	mkdir -p
 SLEEP				=	sleep 0.01
-GCFIL				=	"- > Compiling	-"
-RMSHW				=	"- - Removing	-"
-MKSHW				=	"- + Creating	-"
-GCSUC				=	echo "$(G_C)=====>     SUCCESS$(RESET_C)"
-CLSUC				=	echo "$(R_C)=====>     DONE$(RESET_C)"
-NORMD				=	echo "$(G_C)=====>     DONE$(RESET_C)"
 
 .PHONY: all norme clean fclean re
 
@@ -171,35 +159,30 @@ TEST				=
 endif
 
 $(NAME): $(OBJ) $(TEST)
+	make -C $(L_PATH)
 	$(ECHO) $(GCFIL) $(NAME)
-	$(CMPLO) $(NAME) $(OBJ) $(LIB) `sdl2-config --cflags --libs`
+	$(CMPLO) $(NAME) $(OBJ) $(LIB) `sdl2-config --cflags --static-libs`
 	$(GCSUC)
 	echo "---\nCFLAGS - =$(B_C) $(CFLAGS)$(RESET_C)\n---"
 	cp $(NAME) $(B_PATH)$(NAME)
 
-$(OBJ): $(O_PATH)%.o: $(S_PATH)%.cpp $(HDR)
-	$(CMPLC) $< -o $@ `sdl2-config --cflags --libs`
+$(OBJ): $(O_PATH)%.o: $(S_PATH)%.cpp $(HDR) $(IMGUIHDR)
+	$(CMPLC) $< -o $@ `sdl2-config --cflags --static-libs`
 	$(ECHO) $(GCFIL) $<
 
 $(PATHS):
 	$(MKDIR) $(PATHS)
-	$(foreach var,$(PATHS), $(ECHO) $(MKSHW) $(var);)
 
 clean:
 	for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	$(CLSUC)
 
-fclean:
-	clear ; for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
+fclean:	clean
+	for i in $(OBJ); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	for i in $(PATHS); do $(RM_RF) $$i; $(ECHO) $(RMSHW) $$i; done
 	$(RM_RF) $(NAME)
 	$(ECHO) $(RMSHW) $(NAME)
 	$(CLSUC)
-
-help:
-	echo "Makefile for gbmu"
-	echo "usage : make [VERBOSE=1] [DEBUG=g|fsanitize|hard|dev] [all|clean|fclean|re|help]"
-
 re:
 	$(MAKE) --no-print-directory fclean all
 

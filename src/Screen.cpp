@@ -84,7 +84,7 @@ void Screen::clear(ImVec4 vec4)
     ImGui::Render();
     SDL_SetRenderDrawColor(Screen::renderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-	SDL_RenderPresent(Screen::renderer);
+   	SDL_RenderPresent(Screen::renderer);
 }
 
 void	Screen::drawBG()
@@ -202,7 +202,7 @@ bool	Screen::create()
 	}
 
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
 	if (!renderer)
 	{
         std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
