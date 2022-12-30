@@ -12,7 +12,8 @@
 enum class DebuggerState : int {
     PAUSED,
     RUNNING,
-	ONCE
+	ONCE,
+	ONCE_FRAME
 };
 
 class DBG {

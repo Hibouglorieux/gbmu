@@ -56,15 +56,19 @@ bool Loop::loop()
             if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
                 DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
             }
-			if (ImGui::Button("Next step")) {
-				DBG::state = DebuggerState::ONCE;
-			}
-			if (DBG::state != DebuggerState::PAUSED) {
+            if (ImGui::Button("Next step")) {
+            	DBG::state = DebuggerState::ONCE;
+            }
+            if (ImGui::Button("Next frame")) {
+            	DBG::state = DebuggerState::ONCE_FRAME;
+            }
+            if (DBG::state != DebuggerState::PAUSED) {
             	Gameboy::execFrame(DBG::state == DebuggerState::ONCE);
-				if (DBG::state == DebuggerState::ONCE) {
-					DBG::state = DebuggerState::PAUSED;
-				}
-			}
+            	if (DBG::state == DebuggerState::ONCE ||
+            	    DBG::state == DebuggerState::ONCE_FRAME) {
+            	    DBG::state = DebuggerState::PAUSED;
+            	}
+            }
             Screen::TexturetoImage(Screen::texture);
             ImGui::End();
         }
