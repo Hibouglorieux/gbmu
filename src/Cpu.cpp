@@ -458,19 +458,34 @@ StackData	Cpu::captureCurrentState()
 	return stackData;
 }
 
-int	Cpu::executeClock(int clockStop)
+#define NB_CYCLE_LINE 114
+
+int	Cpu::executeLine(bool step, bool updateState)
 {
-	int countClock = 0;
 	std::pair<unsigned char, int>r;
 
-	while (countClock < clockStop)
+	while (Gameboy::clockLine < NB_CYCLE_LINE)
     	{
-			stackTrace.add(captureCurrentState());
-        	Cpu::handle_interrupts();
-        	r = executeInstruction();
-		countClock += r.second;
+		if (updateState && Gameboy::clockLine < 20) {
+			Gameboy::setState(GBSTATE_OAM_SEARCH);
+		} else if (updateState && Gameboy::clockLine < 20 + 43) {
+			Gameboy::setState(GBSTATE_PX_TRANSFERT);
+		} else if (updateState && Gameboy::clockLine < 20 + 43 + 51) {
+			Gameboy::setState(GBSTATE_H_BLANK);
+		}
+		stackTrace.add(captureCurrentState());
+		Cpu::handle_interrupts();
+		r = executeInstruction();
+		Gameboy::clockLine += r.second;
+		if (step) {
+			break;
+		}
     	}
-	return (countClock);
+	if (Gameboy::clockLine >= NB_CYCLE_LINE) {
+		Gameboy::clockLine -= NB_CYCLE_LINE;
+		return (true);
+	}
+	return (false);
 }
 
 void Cpu::debug(int opcode) {

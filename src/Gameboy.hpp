@@ -29,12 +29,15 @@ class Gameboy {
 public:
 	static bool quit;
 	static Clock gbClock;
+	static int	internalLY;
+	static int	clockLine;
 	static void init();
 	static bool loadRom(std::string pathToFile);
 	static bool run();
 	static Mem& getMem();
 	static Clock& getClock();
 	static void setState(int newState);
+	static bool execFrame(bool step);
 	static int getState();
 	static void pollEvent();
 	static bool bIsCGB;

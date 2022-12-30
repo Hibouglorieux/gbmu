@@ -26,7 +26,6 @@ public:
 
 	static void drawBG();
 	static void drawVRam();
-    static bool drawPpu(int *clockDiff);
 //	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static bool createTexture();

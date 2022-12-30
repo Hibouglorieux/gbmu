@@ -4,6 +4,10 @@
 Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
+
+int Gameboy::internalLY = 0;
+int Gameboy::clockLine = 0;
+
 bool Gameboy::quit = false;
 bool Gameboy::bIsCGB = false;
 Mem& Gameboy::getMem()
@@ -20,6 +24,8 @@ void	Gameboy::init()
 {
 	Screen::create();
 	Cpu::loadBootRom();
+	clockLine = 0;
+	internalLY = 0;
 }
 
 bool Gameboy::loadRom(std::string pathToFile)
@@ -43,11 +49,38 @@ void Gameboy::clear()
 	delete gbMem;
 }
 
+bool Gameboy::execFrame(bool step)
+{
+    while (internalLY >= 0 && internalLY < 10) {
+	Gameboy::setState(GBSTATE_V_BLANK);
+        if (Cpu::executeLine(step, false)) {
+		Cpu::updateLY(1);
+		internalLY++;
+	}
+	if (step) {
+		break ;
+	}
+    }
+    if (internalLY == 10 && BIT(M_LCDC, 7)) {
+	M_LY = 0x00;
+    }
+    while (internalLY >= 10 && internalLY < 154) {
+		if (Cpu::executeLine(step, true)) {
+			Cpu::updateLY(1);
+			internalLY++;
+		}
+		if (step) {
+			break ;
+		}
+	}
+	internalLY %= 154;
+	return true;
+}
+
+
 void Gameboy::setState(int newState)
 {
-	currentState = newState;
-
-	if (BIT(M_LCDC, 7)) {
+	if (BIT(M_LCDC, 7) && currentState != newState) {
 		if (newState == GBSTATE_V_BLANK) {
 			if (BIT(M_LCDC_STATUS, 4)) {
 				Cpu::request_interrupt(IT_LCD_STAT);
@@ -55,6 +88,13 @@ void Gameboy::setState(int newState)
 			Cpu::request_interrupt(IT_VBLANK);
 			if (BIT(M_LCDC, 7)) {
 				M_LY = 0x90;
+			}
+		}
+		if (newState == GBSTATE_PX_TRANSFERT) {
+			Ppu::finalLine = Ppu::doOneLine();
+			for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
+				Screen::drawPoint(j, internalLY - 10, Ppu::finalLine[j],
+					Screen::pixels, Screen::pitch);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
@@ -67,6 +107,7 @@ void Gameboy::setState(int newState)
 		lcdcs |= newState;
 		mem.supervisorWrite(LCDC_STATUS, lcdcs);
 	}
+	currentState = newState;
 }
 
 int Gameboy::getState()

@@ -31,7 +31,7 @@ public:
 	static StackData captureCurrentState();
 
 
-	static int executeClock(int clockStop);
+	static int executeLine(bool step, bool updateState);
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
