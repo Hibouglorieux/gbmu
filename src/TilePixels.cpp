@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:35:50 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:57:37 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ TilePixels::TilePixels(std::array<std::array<short, 8>, 8> val)
 // this should get the 4 colors of a cgb palette
 unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
 {
-	CGBMem& asCGB = dynamic_cast<CGBMem&>(mem);
 	unsigned long colors = 0;
 	const unsigned char bytePerPalette = 8;
 	const unsigned char bytePerColor = 2;
@@ -42,8 +41,8 @@ unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
 		// third(2) of low byte of 2nd color of palette 0
 		// ... 9th byte (0x08) should be low byte of 1rst of color of palette 1
 		// there are 8 bytes per 
-		unsigned char low = asCGB.BGPalettes[paletteNb * bytePerPalette + i * bytePerColor];
-		unsigned char high = asCGB.BGPalettes[paletteNb * bytePerPalette + i * bytePerColor + 1];
+		unsigned char low = mem.getBGPalette()[paletteNb * bytePerPalette + i * bytePerColor];
+		unsigned char high = mem.getBGPalette()[paletteNb * bytePerPalette + i * bytePerColor + 1];
 		unsigned short color = (high << 8) | low;
 		colors |= ((long)color << (i * 16));
 	}
@@ -113,10 +112,17 @@ TilePixels::TilePixels()
 TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : data()
 {
 	mapAddr = mapAddress;
+	unsigned char* vram = mem.getVram();
+	if (Gameboy::bIsCGB)
+	{
+		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+		if (BIT(attribute, 3))
+			vram = mem.getCGBVram();
+	}
 	for (int y = 0; y < 8; y++) {
 
-		unsigned char byte1 = mem[tileAddress + (y * 2)];
-		unsigned char byte2 = mem[tileAddress + (y * 2) + 1];
+		unsigned char byte1 = vram[tileAddress + (y * 2) - 0x8000];
+		unsigned char byte2 = vram[tileAddress + (y * 2) + 1 - 0x8000];
 		if (tileAddress >= 0x9800 || tileAddress < 0x8000)
 			std::cerr << "access vram not at vram: "<< tileAddress << std::endl;
 
@@ -129,5 +135,13 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : 
 			unsigned char byteColorCode = (bit2 << 1) | (bit1);
 			data[y][7 - x] = byteColorCode;
 		}
+	}
+	if (Gameboy::bIsCGB)
+	{
+		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+		if (BIT(attribute, 6))
+			flipY();
+		if (BIT(attribute, 5))
+			flipX();
 	}
 }

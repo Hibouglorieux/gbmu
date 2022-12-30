@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:01 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/30 22:35:53 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:58:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ public:
     //Sprite(std::vector<std::array<int, 8>> data);
 
 	unsigned char getSpriteHeight() const {return spriteHeight;}
-	unsigned short getPaletteAddr() const;
+	long getCGBPaletteValue(unsigned char paletteNb) const;
+	long getPaletteValue() const;
 	std::array<short, 8> getLineColorCode(int y) const { return data[y]; }
 	std::array<short, 8> getColoredLine(int y) const;
 	void flipY();

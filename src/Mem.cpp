@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 21:25:17 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 23:04:19 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,6 +293,18 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			//std::cout << "wrote " << +newValue << " to BG palette nb: " << +(BGPAddress / 8) << " at color nb: " << (BGPAddress % 8) << std::endl;
 			return asCGB.BGPalettes[BGPAddress];
 		}
+		if (addr == 0xFF6B) // OPCS/OBPD
+		{
+			unsigned char OCPSVal = memRef[0xFF6A];
+			bool bShouldIncrement = OCPSVal & (1 << 7);
+			unsigned char OBJPAddress = OCPSVal & 0x3F;
+			asCGB.OBJPalettes[OBJPAddress] = newValue;
+			if (bShouldIncrement)
+			{
+				mem[0xFF6A] = (memRef[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F);
+			}
+			return asCGB.OBJPalettes[OBJPAddress];
+		}
 	}
 	catch (...)
 	{
@@ -402,6 +414,13 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 		unsigned char BCPSVal = internalArray[0xFF68];
 		unsigned char BGPAddress = BCPSVal & 0x3F;
 		return BGPalettes[BGPAddress];
+	}
+	
+	if (addr == 0xFF6B)
+	{
+		unsigned char OCPSVal = internalArray[0xFF6A];
+		unsigned char OBJPAddress = OCPSVal & 0x3F;
+		return OBJPalettes[OBJPAddress];
 	}
 	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
 	{

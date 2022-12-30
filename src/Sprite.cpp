@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/30 22:35:11 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 23:15:36 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,16 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 	int spriteAddr = spritesAddrInVram + (tileIndex * sizeOfSpriteInVram);
 	if (spriteAddr >= 0x9800 || spriteAddr < 0x8000)
 		std::cerr << "access vram not at vram: "<< spriteAddr << std::endl;
+	const unsigned char* vram = mem.getVram();
+	if (Gameboy::bIsCGB)
+	{
+		if (OAM_Data.getTileVramBank())
+			vram = mem.getCGBVram();
+	}
 	for (unsigned char y = 0; y < spriteHeight; y++)
 	{
-		unsigned char byte1 = mem[spriteAddr + (y * 2)];
-		unsigned char byte2 = mem[spriteAddr + (y * 2) + 1];
+		unsigned char byte1 = vram[spriteAddr + (y * 2) - 0x8000];
+		unsigned char byte2 = vram[spriteAddr + (y * 2) + 1 - 0x8000];
 		for (unsigned char x = 0; x < 8; x++)
 		{
 			bool bit1 = byte1 & (1 << x);
@@ -46,14 +52,41 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 
 Sprite::~Sprite(void)
 {}
+long Sprite::getCGBPaletteValue(unsigned char paletteNb) const
+{
+	unsigned long colors = 0;
+	const unsigned char bytePerPalette = 8;
+	const unsigned char bytePerColor = 2;
+	for (int i = 0; i < 4; i++)
+	{
+		// there are 0x3F/64 total colors
+		// first byte(0) correspond to low byte of 1rst color of palette 0
+		// second(1) of high byte of 1rst color of palette 0
+		// third(2) of low byte of 2nd color of palette 0
+		// ... 9th byte (0x08) should be low byte of 1rst of color of palette 1
+		// there are 8 bytes per 
+		unsigned char low = mem.getOBJPalette()[paletteNb * bytePerPalette + i * bytePerColor];
+		unsigned char high = mem.getOBJPalette()[paletteNb * bytePerPalette + i * bytePerColor + 1];
+		unsigned short color = (high << 8) | low;
+		colors |= ((long)color << (i * 16));
+	}
+	return colors;
+}
 
-unsigned short Sprite::getPaletteAddr() const
+long Sprite::getPaletteValue() const
 {
 	//TODO change that for CGB
-	if (OAM_Data.getDMGPalette() == 1)
-		return OBP1;
+	if (!Gameboy::bIsCGB)
+	{
+		if (OAM_Data.getDMGPalette() == 1)
+			return mem[OBP1];
+		else
+			return mem[OBP0];
+	}
 	else
-		return OBP0;
+	{
+		return getCGBPaletteValue(OAM_Data.getCGBPalette());
+	}
 }
 
 void Sprite::flipY()
@@ -72,6 +105,6 @@ std::array<short, 8> Sprite::getColoredLine(int y) const
 	std::array<short, 8> retLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
-		retLine[x] = TilePixels::getColor(retLine[x], mem[getPaletteAddr()]);
+		retLine[x] = TilePixels::getColor(retLine[x], getPaletteValue());
 	return retLine;
 }
