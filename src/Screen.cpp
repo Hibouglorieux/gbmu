@@ -147,7 +147,7 @@ bool Screen::drawPpu(int *clockDiff) {
     }
     for (int i = 0; i < 144; i++) {
         Gameboy::setState(GBSTATE_OAM_SEARCH);
-//        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
+        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
         if (BIT(M_LCDC, 7)) {
             Ppu::finalLine = Ppu::doOneLine();
             for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
@@ -155,9 +155,9 @@ bool Screen::drawPpu(int *clockDiff) {
             }
         }
         Gameboy::setState(GBSTATE_PX_TRANSFERT);
-//        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
+        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
         Gameboy::setState(GBSTATE_H_BLANK);
-        clock = (Cpu::executeClock(114  - clock) - (114 - clock));
+        clock = (Cpu::executeClock(51  - clock) - (51 - clock));
         Cpu::updateLY(1);
         /* Drawing time */
     }

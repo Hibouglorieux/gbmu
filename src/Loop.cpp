@@ -66,8 +66,7 @@ bool Loop::loop()
         if (showVram) {
             {
                 ImGui::Begin("Vram");
-
-                    Screen::drawVRam();
+                Screen::drawVRam();
                 Screen::TexturetoImage(Screen::VRamTexture);
                 ImGui::End();
             }
@@ -102,12 +101,12 @@ bool Loop::loop()
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		if (timeTakenForFrame.count() < frametime.count())
 		{
-			std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+//			std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 			std::this_thread::sleep_for(frametime - timeTakenForFrame);
 		}
 		else
 		{
-			std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+//			std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 		}
 
         Screen::clear(clear_color);
