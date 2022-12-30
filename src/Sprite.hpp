@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:01 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/29 22:10:37 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:35:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,13 @@ public:
 
 	unsigned char getSpriteHeight() const {return spriteHeight;}
 	unsigned short getPaletteAddr() const;
-	std::array<int, 8> getLineColorCode(int y) const { return data[y]; }
-	std::array<int, 8> getColoredLine(int y) const;
+	std::array<short, 8> getLineColorCode(int y) const { return data[y]; }
+	std::array<short, 8> getColoredLine(int y) const;
 	void flipY();
 	void flipX();
 private:
 	unsigned char	spriteHeight;
-	std::vector<std::array<int, 8>>	data;
+	std::vector<std::array<short, 8>>	data;
 
 
 	//static GamaeboyMode gbMode// need to know if CGB or DMG

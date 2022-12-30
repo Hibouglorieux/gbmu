@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/29 22:13:42 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:35:11 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,9 @@ void Sprite::flipX()
 		std::reverse(data[i].begin(), data[i].end());
 }
 
-std::array<int, 8> Sprite::getColoredLine(int y) const
+std::array<short, 8> Sprite::getColoredLine(int y) const
 {
-	std::array<int, 8> retLine = getLineColorCode(y);
+	std::array<short, 8> retLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
 		retLine[x] = TilePixels::getColor(retLine[x], mem[getPaletteAddr()]);

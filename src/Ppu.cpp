@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:26:37 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:36:35 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,10 @@
 #include <algorithm>
 #include <iostream>
 
-std::array<int, PIXEL_PER_LINE> Ppu::finalLine{0};
+std::array<short, PIXEL_PER_LINE> Ppu::finalLine{0};
 unsigned char Ppu::windowCounter = 0;
 
-std::array<int, PIXEL_PER_LINE> Ppu::doOneLine()
+std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 {
 	auto pixelLine = getOamLine();
 
@@ -175,8 +175,8 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		if (spriteEntry.getFlipX())
 			sprite.flipX();
 
-		std::array<int, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
-		std::array<int, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
+		std::array<short, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
+		std::array<short, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 		// copy the sprite on the line
 		for (int x=spriteEntry.posX - 8, i=0; (x < spriteEntry.posX) && (x < PIXEL_PER_LINE); x++, i++)
 		{

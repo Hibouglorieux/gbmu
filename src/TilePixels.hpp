@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:27:02 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:36:58 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include "Gameboy.hpp"
 
 struct TilePixels {
-    int data[8][8]{};
+    short data[8][8]{};
 
     void flipX() {
         for (int y = 0; y < 8; y++) {
@@ -41,12 +41,12 @@ struct TilePixels {
     }
 
 	static unsigned long getCGBPaletteColor(unsigned char paletteNb);
-    static int getColor(unsigned char byteColorCode, unsigned long paletteColor);
-	std::array<int, 8> getColorLine(int y);
-	std::array<int, 8> getLineColorCode(int y);
+    static short getColor(unsigned char byteColorCode, unsigned long paletteColor);
+	std::array<short, 8> getColorLine(int y);
+	std::array<short, 8> getLineColorCode(int y);
 
 	TilePixels();
-    TilePixels(std::array<std::array<int, 8>, 8> val);
+    //TilePixels(std::array<std::array<int, 8>, 8> val);
     TilePixels(unsigned short tileAddress, unsigned short mapAddress);
 	unsigned short mapAddr;
 };
