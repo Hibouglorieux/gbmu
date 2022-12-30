@@ -84,7 +84,7 @@ void Screen::clear(ImVec4 vec4)
     ImGui::Render();
     SDL_SetRenderDrawColor(Screen::renderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-	SDL_RenderPresent(Screen::renderer);
+   	SDL_RenderPresent(Screen::renderer);
 }
 
 void	Screen::drawBG()
@@ -147,7 +147,7 @@ bool Screen::drawPpu(int *clockDiff) {
     }
     for (int i = 0; i < 144; i++) {
         Gameboy::setState(GBSTATE_OAM_SEARCH);
-        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
+//        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
         if (BIT(M_LCDC, 7)) {
             Ppu::finalLine = Ppu::doOneLine();
             for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
@@ -155,9 +155,9 @@ bool Screen::drawPpu(int *clockDiff) {
             }
         }
         Gameboy::setState(GBSTATE_PX_TRANSFERT);
-        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
+//        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
         Gameboy::setState(GBSTATE_H_BLANK);
-        clock = (Cpu::executeClock(51 - clock) - (51 - clock));
+        clock = (Cpu::executeClock(114  - clock) - (114 - clock));
         Cpu::updateLY(1);
         /* Drawing time */
     }
@@ -233,7 +233,7 @@ bool	Screen::create()
 	}
 
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
 	if (!renderer)
 	{
         std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;

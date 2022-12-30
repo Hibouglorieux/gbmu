@@ -24,12 +24,12 @@ bool Loop::showRegisters = true;
 bool Loop::loop()
 {
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	const std::chrono::microseconds frametime(1'000'000 / 60);
 	// TODO unsure about updateScreen ? Do we update everytime ?
 	int clockDiff = 0;
 
 	while (!Gameboy::quit)
 	{
+       	std::chrono::microseconds frametime(1'000'000 / (int)(60 * DBG::speed));
 		auto beginFrameTime = std::chrono::system_clock::now();
 
 	    Screen::NewframeTexture();
@@ -52,8 +52,13 @@ bool Loop::loop()
                 showRegisters = !showRegisters;
             }
             ImGui::NewLine();
+            ImGui::SliderFloat("Speed", &DBG::speed, 0.25f, 2.0f);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            Screen::drawPpu(&clockDiff);
+            if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
+                DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
+            }
+            if (DBG::state != DebuggerState::PAUSED)
+                Screen::drawPpu(&clockDiff);
             Screen::TexturetoImage(Screen::texture);
             ImGui::End();
         }
@@ -61,7 +66,8 @@ bool Loop::loop()
         if (showVram) {
             {
                 ImGui::Begin("Vram");
-                Screen::drawVRam();
+
+                    Screen::drawVRam();
                 Screen::TexturetoImage(Screen::VRamTexture);
                 ImGui::End();
             }
@@ -96,12 +102,12 @@ bool Loop::loop()
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		if (timeTakenForFrame.count() < frametime.count())
 		{
-			//std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+			std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 			std::this_thread::sleep_for(frametime - timeTakenForFrame);
 		}
 		else
 		{
-			//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+			std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 		}
 
         Screen::clear(clear_color);

@@ -9,15 +9,15 @@
 #include "imgui/imconfig.h"
 #include "Cpu.hpp"
 
-//enum class DebuggerState : int {
-//    PAUSED,
-//    RUNNING
-//}
+enum class DebuggerState : int {
+    PAUSED,
+    RUNNING
+};
 
 class DBG {
 public:
-//    DebuggerState state;
-
+    static DebuggerState state;
+    static float speed;
     static bool bBGMap;
     static void registers();
     static void hexdump();
