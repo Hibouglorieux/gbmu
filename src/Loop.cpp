@@ -25,8 +25,6 @@ bool Loop::loop()
 {
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	const std::chrono::microseconds frametime(1'000'000 / 60);
-	// TODO unsure about updateScreen ? Do we update everytime ?
-	int clockDiff = 0;
 
 	while (!Gameboy::quit)
 	{
@@ -53,7 +51,7 @@ bool Loop::loop()
             }
             ImGui::NewLine();
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            Screen::drawPpu(&clockDiff);
+            Gameboy::execFrame(true);
             Screen::TexturetoImage(Screen::texture);
             ImGui::End();
         }
@@ -89,20 +87,20 @@ bool Loop::loop()
 
         Ppu::resetWindowCounter();
 
-		Gameboy::pollEvent();
+	Gameboy::pollEvent();
 
-		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
+	std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 
-		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		if (timeTakenForFrame.count() < frametime.count())
-		{
-			//std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
-			std::this_thread::sleep_for(frametime - timeTakenForFrame);
-		}
-		else
-		{
-			//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
-		}
+	/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
+	if (timeTakenForFrame.count() < frametime.count())
+	{
+			// std::cout << "sleeping for: " << std::dec << (frametime - timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+		std::this_thread::sleep_for(frametime - timeTakenForFrame);
+	}
+	else
+	{
+		//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
+	}
 
         Screen::clear(clear_color);
 	}

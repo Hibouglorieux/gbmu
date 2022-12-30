@@ -134,37 +134,6 @@ void	Screen::drawVRam()
 
 }
 
-bool Screen::drawPpu(int *clockDiff) {
-    int clock = *clockDiff;
-
-    Gameboy::setState(GBSTATE_V_BLANK);
-    for (int i = 0; i < 10; i++) {
-        clock = (Cpu::executeClock(114 - clock) - (114 - clock)); // V-BLANK first as LY=0x90 at start
-        Cpu::updateLY(1);
-    }
-    if (BIT(M_LCDC, 7)) {
-        M_LY = 0x00;
-    }
-    for (int i = 0; i < 144; i++) {
-        Gameboy::setState(GBSTATE_OAM_SEARCH);
-        clock = (Cpu::executeClock(20 - clock) - (20 - clock));
-        if (BIT(M_LCDC, 7)) {
-            Ppu::finalLine = Ppu::doOneLine();
-            for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
-                drawPoint(j, i, Ppu::finalLine[j], pixels, pitch);
-            }
-        }
-        Gameboy::setState(GBSTATE_PX_TRANSFERT);
-        clock = (Cpu::executeClock(43 - clock) - (43 - clock));
-        Gameboy::setState(GBSTATE_H_BLANK);
-        clock = (Cpu::executeClock(51 - clock) - (51 - clock));
-        Cpu::updateLY(1);
-        /* Drawing time */
-    }
-    *clockDiff = clock;
-    return true;
-}
-
 bool	Screen::createTexture() {
 	texture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
