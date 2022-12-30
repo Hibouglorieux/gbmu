@@ -15,6 +15,11 @@
 #include <fstream>
 #include <iostream>
 
+bool SC_start =false;
+bool SC_clock =false;
+bool SC_freq = false;
+unsigned char SC_Byte = '\0';
+
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
 						// set to 0 when pressed, last 2 are unused
@@ -231,18 +236,25 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 //			M_LY = 0;
 //		}
 //	}
-//	if (addr == 0xFF02 && newValue == 0x81)
-//	{
-//		if (memRef[0xFF01] == ' ')
-//		{
-//			std::cout << std::endl;
-//		}
-//		else
-//		{
-//			std::cout << (char)(memRef[0xFF01]);
-//		}
-//	}
 */
+	if (addr == 0xFF01) {
+        std::cout << "SC SB" << std::endl;
+        SC_Byte = newValue;
+        mem[0xFF0F] = ~(1 << 3); // just to disable Serial Interrupt
+	}
+    if (addr == 0xFF02) {
+        std::cout << "SC SC" << std::endl;
+        //        newValue &= 0x83;
+//        SC_clock = (value |= 0x80) ? true : false; // true internal clock false external
+//        SC_freq = (value |= 0x02) ? true : false; // true 8khz 16khz false 256 512
+//        SC_start = (newValue |= 0x01) ? true : false; // true start false stop
+//            Cpu::request_interrupt(IT_SERIAL);
+        if (newValue & 1){
+            std::cout << "SC Go" << std::endl;
+            mem[0xFF0F] |= (1 << 3);
+        }
+    }
+
     // rework too
 	if (addr == LYC ) {
 		if (value == M_LY)
