@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:01 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/17 22:54:32 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/29 22:10:37 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,6 @@ public:
 private:
 	unsigned char	spriteHeight;
 	std::vector<std::array<int, 8>>	data;
-
-	int getColor(unsigned char bytecolorcode) const;
 
 
 	//static GamaeboyMode gbMode// need to know if CGB or DMG

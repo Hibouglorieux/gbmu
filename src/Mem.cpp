@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 23:00:19 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 21:25:17 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,6 @@ Mem::Mem(const std::string& pathToRom)
 	{
 		std::cerr << "file not found" << std::endl;
 		isValid = false;
-		memSize = 0;
 		return;
 	}
 
@@ -112,7 +111,6 @@ Mem::Mem(const std::string& pathToRom)
 //    }
     file.close();
 	isValid = true;
-	memSize = MEM_SIZE;
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
@@ -147,10 +145,9 @@ Mem::~Mem()
 
 MemWrap Mem::operator[](unsigned int i)
 {
-	if (i >= memSize)
+	if (i > 0xFFFF)
 	{
-		std::cerr << "Error, trying to access mem at: " + std::to_string(i) +
-				" but mem size is: " + std::to_string(memSize) << std::endl;
+		std::cerr << "Error, trying to access mem at: " + std::to_string(i) << std::endl;
 		throw("");
 	}
 	if (!isValid)
@@ -163,10 +160,9 @@ MemWrap Mem::operator[](unsigned int i)
 
 const MemWrap Mem::operator[](unsigned int i) const
 {
-	if (i >= memSize)
+	if (i > 0xFFFF)
 	{
-		std::cerr << "Error, trying to access mem at: " << i <<
-			" but mem size is: " << memSize<< std::endl;
+		std::cerr << "Error, trying to access mem at: " << i << std::endl;
 		exit(-1);
 	}
 	if (!isValid)
@@ -274,18 +270,33 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		//std::cout << "CGB DMA requested !" << std::endl;
 		memcpy(&mem[srcAddr], &mem[dstAddr], len);
 	}
-	try {
+	try // try block because this is only for CGB registers
+	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
-		if (addr == 0xFF4F) // VBK// CGB ONLY
+		if (addr == 0xFF4F) // VBK
 		{
 			asCGB.bIsUsingCGBVram = newValue & 1;
 			//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
 		}
-		if (addr == 0xFF70) // SVBK// CGB ONLY
+		if (addr == 0xFF70) // SVBK
 			asCGB.CGBextraRamBankNb = newValue & 7;
-	}catch (...)
+		if (addr == 0xFF69) // BCPD/BGPD
+		{
+			unsigned char BCPSVal = memRef[0xFF68];
+			bool bShouldIncrement = BCPSVal & (1 << 7);
+			unsigned char BGPAddress = BCPSVal & 0x3F;
+			asCGB.BGPalettes[BGPAddress] = newValue;
+			if (bShouldIncrement)
+			{
+				mem[0xFF68] = (memRef[0xFF68] & (1 << 7)) | ((BGPAddress + 1) & 0x3F);
+			}
+			//std::cout << "wrote " << +newValue << " to BG palette nb: " << +(BGPAddress / 8) << " at color nb: " << (BGPAddress % 8) << std::endl;
+			return asCGB.BGPalettes[BGPAddress];
+		}
+	}
+	catch (...)
 	{
-		// this is normal if mem is DMG
+		// nothing should happen
 	}
 	return value;
 }
@@ -386,6 +397,12 @@ CGBMem::~CGBMem()
 
 unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 {
+	if (addr == 0xFF69)
+	{
+		unsigned char BCPSVal = internalArray[0xFF68];
+		unsigned char BGPAddress = BCPSVal & 0x3F;
+		return BGPalettes[BGPAddress];
+	}
 	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
 	{
 		if (bIsUsingCGBVram)

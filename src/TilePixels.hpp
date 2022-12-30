@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   TilePixels.hpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
+/*   Updated: 2022/12/30 22:27:02 by nallani          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef TILEPIXELS_HPP
 #define TILEPIXELS_HPP
 
@@ -28,14 +40,15 @@ struct TilePixels {
         }
     }
 
-    static int getColor(unsigned char byteColorCode, unsigned short paletteAddress);
+	static unsigned long getCGBPaletteColor(unsigned char paletteNb);
+    static int getColor(unsigned char byteColorCode, unsigned long paletteColor);
 	std::array<int, 8> getColorLine(int y);
 	std::array<int, 8> getLineColorCode(int y);
 
 	TilePixels();
     TilePixels(std::array<std::array<int, 8>, 8> val);
-    TilePixels(int tileAddress, unsigned short newPaletteAddress);
-	unsigned short paletteAddress{};
+    TilePixels(unsigned short tileAddress, unsigned short mapAddress);
+	unsigned short mapAddr;
 };
 
 #endif

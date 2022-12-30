@@ -104,7 +104,7 @@ void	Screen::drawBG()
 			tileIndex = char(tileIndex);
 			addr = 0x9000;
 		}
-		struct TilePixels tile = TilePixels(addr + (tileIndex * (8 * 2)), BGP);
+		struct TilePixels tile = TilePixels(addr + (tileIndex * (8 * 2)), BGMap + i);
 		int x_offset = (i % 32) * 9;
 		int y_offset = (i / 32) * 9;
 		for (int y = 0; y < 8; y++) {
@@ -121,7 +121,7 @@ void	Screen::drawVRam()
     unsigned int vRamAddress = 0x8000;
 
 	for (int i = 0; i < 256; i++) {
-		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), BGP);
+		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0); // XXX nallani how to get palette there?
 		int x_offset = (i % 16) * 9;
 		int y_offset = (i / 16) * 9;
 		for (int y = 0; y < 8; y++) {
@@ -198,15 +198,36 @@ bool	Screen::createTexture() {
     return true;
 }
 
+int		convertColorFromCGB(int colo)
+{
+	unsigned char r = (colo & 0x1F);
+	unsigned char g = ((colo & (0x1F << 5)) >> 5);
+	unsigned char b = ((colo & (0x1F << 10)) >> 10);
+	r *= 8;
+	g *= 8;
+	b *= 8;
+	//r = 255 - r;
+	//g = 255 - g;
+	//b = 255 - b;
+	return (r << 24) | (g << 16) | (b << 8);
+}
+
 bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
 {
 	x *= pixelScale;
 	y *= pixelScale;
-	int colorForSDL = 255 - color * (255 / 3);
+	int colorForSDL;
+	if (!Gameboy::bIsCGB)
+	{
+		colorForSDL = 255 - color * (255 / 3);
+		colorForSDL = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8);
+	}
+	else
+		colorForSDL = convertColorFromCGB(color);
 	int *p = (int*)pixels;
 	for (int i = 0 ; i < pixelScale ; i++) {
 		for (int j = 0 ; j < pixelScale ; j++) {
-			p[(y + j) * (pitch / 4) + (i + x)] = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8) | 0xFF;
+			p[(y + j) * (pitch / 4) + (i + x)] = colorForSDL | 0xFF;
 		}
 	}
 	return (true);

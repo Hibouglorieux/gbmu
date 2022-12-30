@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 23:08:51 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:26:37 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeig
 	return 0x8000 + entry.tileIndex * spriteHeight * 2;
 }
 
-struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddress)
+struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, unsigned short mapAddress)
 {
 	if (tileAddress == 0x8800)
 	{
@@ -66,7 +66,7 @@ struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, int paletteAddres
 		tileIndex = (char)tileIndex;// make sure it is signed
 	}
 	// fetch the 64 pixels of a tile 
-	return TilePixels(tileAddress + (tileIndex * 2 * 8), paletteAddress);
+	return TilePixels(tileAddress + (tileIndex * 2 * 8), mapAddress);
 }
 
 std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
@@ -83,7 +83,11 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 		if (bDrawWindow)
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
 		else if (bBackgroundEnabled)
+		{
+			//std::cout << std::dec << "creating a tilePixel at LY: " << (int)M_LY << " number of tile: " << (int)(xPosInLine + M_SCX) / 8
+				//<< std::hex << std::endl;
 			tilePixels = getBackgroundTile((xPosInLine + M_SCX) / 8, (M_LY + M_SCY) / 8);//[(M_LY + M_SCY) % 8];
+		}
 		const unsigned char yLine = (bDrawWindow ? (windowCounter % 8) : ((M_LY + M_SCY) % 8));
 		auto tilePixelColorLine = tilePixels.getColorLine(yLine);
 		auto tilePixelColorCodeLine = tilePixels.getLineColorCode(yLine);
@@ -202,8 +206,8 @@ struct TilePixels Ppu::getBackgroundTile(unsigned char xOffsetInMap, unsigned ch
 	xOffsetInMap %= 32;
 
     unsigned int addrInMap = BGMap + xOffsetInMap + (yOffsetInMap * 32);
-    int tileNumber = mem[addrInMap];
-    return getTile(BGDataAddress, tileNumber, BGP);
+    int tileNumber = mem.getVram()[addrInMap - 0x8000];
+    return getTile(BGDataAddress, tileNumber, addrInMap);
 }
 
 // TODO this has been broken
@@ -217,8 +221,8 @@ TilePixels Ppu::getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInM
   // condition is there to see if we need to loop over 1024 it should never happen if i understood correctly
   if (xOffsetInMap > 0x3ff || yOffsetInMap > 0x3ff)
 	  std::cerr << "offset in window tile is superior to 1024 to fetch the tile data and is: " <<  xOffsetInMap + yOffsetInMap << std::endl;
-  int tileNumber = mem[addressInMap];
-  return getTile(windowDataAddress, tileNumber, BGP);
+  int tileNumber = mem.getVram()[addressInMap - 0x8000];
+  return getTile(windowDataAddress, tileNumber, addressInMap);
 }
 
 void	Ppu::resetWindowCounter()
