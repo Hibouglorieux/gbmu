@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/19 16:31:02 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/29 22:13:42 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,25 +67,11 @@ void Sprite::flipX()
 		std::reverse(data[i].begin(), data[i].end());
 }
 
-int	Sprite::getColor(unsigned char byteColorCode) const
-{
-	//TODO, especially for CGB and to convert with SDL color !
-	//
-	// GB color are encoded in 4 bits : 00, 01, 10 , 11
-	// 4 shade
-	// SDL wrapper only need to wrap that for now	
-	// TODO CGB encode 5bits RGB for color in 2 bytes.
-	unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
-	int color = mem[getPaletteAddr()] & (0b11 << bitPosInPalette);
-	color >>= bitPosInPalette;
-	return color;
-}
-
 std::array<int, 8> Sprite::getColoredLine(int y) const
 {
 	std::array<int, 8> retLine = getLineColorCode(y);
 
 	for (int x = 0; x < 8; x++)
-		retLine[x] = getColor(retLine[x]);
+		retLine[x] = TilePixels::getColor(retLine[x], mem[getPaletteAddr()]);
 	return retLine;
 }

@@ -74,11 +74,6 @@
 #define OBP0 (0xFF48) // Object/Sprite palette 0
 #define OBP1 (0xFF49) // Object/Sprite palette 1
 
- /*Main */
-
-#define DEFAULT_PATH_TO_FILE "./roms/cpu_instrs/individual/11-op a,(hl).gb"
-// #define DEFAULT_PATH_TO_FILE "./tetris.gb"
-
 /* PPU */
 
 //VRAM:
@@ -125,7 +120,6 @@
 #define LY (0xFF44) // LCDC Y coordinate // (which line is currently rendered)
 #define LYC (0xFF45) //  LY compare register (compare to this and can set FF41 byte 2 to launch interrupt if needed)
 #define DMA (0xFF46) // DMA transfer and start
-#define BGP (0xFF47) // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
 #define WY (0xFF4A) // Window Y pos, 0 is the top // (where should the window be placed virtually on the background)
 #define WX (0xFF4B) // Window X pos, 7 should be the start https://hacktix.github.io/GBEDG/ppu/ // XXX to check
 #define WX_OFFSET (7)

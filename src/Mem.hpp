@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 22:59:50 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 19:16:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ public:
 	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
 	virtual unsigned char* getCGBVram() {return nullptr;}
+	unsigned char* getVram() {return &internalArray[0x8000];}
 
 
 	std::string getTitle();
@@ -62,10 +63,7 @@ protected:
 	void init();
 	unsigned char*	internalArray;
 
-	//std::array<std::array<unsigned char, 0x1000>, 8> CGBextraRamBanks;
-
 	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
-	unsigned int	memSize;
 	static int 			getRomBanksNb(char romSizeCode);
 	static int 			getExtraRamBanksNb(char ramSizeCode);
 };
@@ -78,6 +76,8 @@ public:
 
 	mutable bool			bIsUsingCGBVram;
 	mutable unsigned char	CGBextraRamBankNb;
+	mutable std::array<unsigned char, 64> BGPalettes;
+	mutable std::array<unsigned char, 64> OBJPalettes;
 protected:
 	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned char*	CGBVramBank;
