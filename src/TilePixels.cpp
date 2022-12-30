@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:27:14 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:35:50 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00
 // only used in DMG
 
-TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val)
+/*
+TilePixels::TilePixels(std::array<std::array<short, 8>, 8> val)
 {
 	for (int y = 0; y < 8; y++) {
 		for (int x = 0; x < 8; x++) {
@@ -24,6 +25,7 @@ TilePixels::TilePixels(std::array<std::array<int, 8>, 8> val)
 		}
 	}
 }
+*/
 
 // this should get the 4 colors of a cgb palette
 unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
@@ -48,7 +50,7 @@ unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
 	return colors;
 }
 
-int TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteColor)
+short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteColor)
 {
 	//TODO, especially for CGB and to convert with SDL color !
 	//
@@ -72,9 +74,9 @@ int TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteColor
 	return color;
 }
 
-std::array<int, 8> TilePixels::getColorLine(int y)
+std::array<short, 8> TilePixels::getColorLine(int y)
 {
-	std::array<int, 8> retLine{};
+	std::array<short, 8> retLine{};
 	unsigned long paletteColor = 0;
 
 	// means the tile is valid, else return 0
@@ -94,9 +96,9 @@ std::array<int, 8> TilePixels::getColorLine(int y)
 	return retLine;
 }
 
-std::array<int, 8> TilePixels::getLineColorCode(int y)
+std::array<short, 8> TilePixels::getLineColorCode(int y)
 {
-	std::array<int, 8> tmp{};
+	std::array<short, 8> tmp{};
 	for (int x = 0; x < 8; x++) {
 		tmp[x] = data[y][x];
 	}

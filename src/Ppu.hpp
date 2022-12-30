@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 22:28:17 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/30 22:36:24 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,10 @@ struct BackgroundData {
 class Ppu {
 public:
 //	static void setMem(Mem& cpuMem);
-    static std::array<int, PIXEL_PER_LINE> finalLine;
+    static std::array<short, PIXEL_PER_LINE> finalLine;
 
 
-	static std::array<int, PIXEL_PER_LINE> doOneLine();
+	static std::array<short, PIXEL_PER_LINE> doOneLine();
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
 	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);

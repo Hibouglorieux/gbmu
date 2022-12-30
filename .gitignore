@@ -38,3 +38,4 @@ roms
 roms/*
 gmon.out
 imgui.ini
+*.a
