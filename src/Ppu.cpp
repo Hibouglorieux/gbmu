@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 23:41:33 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 03:07:24 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,34 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
-		// color code == 0 means sprite pixel is translucent
-		if ((pixelLine[i].colorCode != 0 &&
-				((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))
+		if (!Gameboy::bIsCGB)
 		{
-			finalLine[i] = pixelLine[i].color;
+			// color code == 0 means sprite pixel is translucent
+			if ((pixelLine[i].colorCode != 0 &&
+						((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))
+			{
+				finalLine[i] = pixelLine[i].color;
+			}
+			else if (BIT(M_LCDC, 0)) {
+				finalLine[i] = backgroundLine[i].color;
+			}
 		}
-		else if (BIT(M_LCDC, 0)) {
-			finalLine[i] = backgroundLine[i].color;
+		else
+		{
+			//WIP
+			bool bIsPixel = false;
+			if (backgroundLine[i].colorCode == 0)
+				bIsPixel = true;
+			else if (!BIT(M_LCDC, 0))
+				bIsPixel = true;
+			else if (!backgroundLine[i].bIsAboveOAM && pixelLine[i].bIsAboveBackground)
+				bIsPixel = true;
+			if (bIsPixel && pixelLine[i].bIsSet)// bIsSet takes transparency into account
+				finalLine[i] = pixelLine[i].color;
+			else
+				finalLine[i] = backgroundLine[i].color;
 		}
+		
 	}
 	return finalLine;
 }
@@ -44,18 +63,6 @@ int	Ppu::getPaletteFromOAMEntry(struct OAM_entry entry)
 	//this is for DMG only !!
 	return (entry.getDMGPalette() ? OBP1 : OBP0);
 	// TODO add gameboy flags (bit 	0-2 OPB0 to OBP7)
-}
-
-int Ppu::getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight)
-{
-   	// DMG ONLY !
-	// TODO add gameboy additionnal bank !
-	// which might not be 0x8000 (to see with Mem class)
-
-	// bool bank1 = (*mem)[spriteAddr + 4] & (1 << 3);
-	// 0x8000 is start of OBJ Vram, multiplied by the number of the tile * size of sprite
-	// sprite is spriteHeight * 2 byte long, added
-	return 0x8000 + entry.tileIndex * spriteHeight * 2;
 }
 
 struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, unsigned short mapAddress)
@@ -125,7 +132,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 {
 	std::vector<struct OAM_entry> spritesFound, spritesFound2;
 	std::array<SpriteData, PIXEL_PER_LINE> spriteLine{};
-	spriteLine.fill({0, false, 0}); // Init first the sprite line
+	spriteLine.fill({0, false, 0, false}); // Init first the sprite line
 	if (!BIT(M_LCDC, 1)) { // if OBJ flag isnt enabled, return empty array
 		return spriteLine;
 	}
@@ -151,6 +158,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 
 
 	spritesFound2 = spritesFound;
+	//TODO that has to change according to DMG or CGB mode
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::sort(spritesFound.begin(), spritesFound.end(), [=](struct OAM_entry &a, struct OAM_entry &b){
@@ -184,10 +192,10 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		{
 			if (x >= 0)
 			{
-				if (spriteLine[x].colorCode != 0 && colorCodeSpriteLine[i] == 0)
+				if (spriteLine[x].bIsSet && colorCodeSpriteLine[i] == 0)
 					continue;
 				spriteLine[x] = {coloredSpriteLine[i], bIsAboveBG,
-				colorCodeSpriteLine[i]}; // might need to check color 0 
+				colorCodeSpriteLine[i], colorCodeSpriteLine[i] != 0}; // might need to check color 0 
 														   // which is not winning over BG
 														   // is it after or before palette ?
 														   // (i think its after, then what about 

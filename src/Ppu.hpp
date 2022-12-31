@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 23:37:23 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 02:14:18 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ struct SpriteData {
 	int color;
 	bool bIsAboveBackground;
 	int colorCode;
+	bool bIsSet;
 };
 
 struct BackgroundData {
@@ -42,7 +43,6 @@ public:
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
 	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
 	static int getPaletteFromOAMEntry(struct OAM_entry entry);
-	static int getSpriteAddressInVRam(struct OAM_entry entry, unsigned char spriteHeight);
 
 	static struct TilePixels getTile(int tileAddress, int tileIndex, unsigned short mapAddress);
 	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);

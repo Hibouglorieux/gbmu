@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 23:04:19 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 03:06:56 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -263,6 +263,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
 	{
 		// TODO WIP
+		// NOTE : most of the registers are in readOnlyBits
 		unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xFC);
 		unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xFC);
 		dstAddr = (dstAddr | 0x8000) & 0x9FFF; 
@@ -290,7 +291,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			{
 				mem[0xFF68] = (memRef[0xFF68] & (1 << 7)) | ((BGPAddress + 1) & 0x3F);
 			}
-			//std::cout << "wrote " << +newValue << " to BG palette nb: " << +(BGPAddress / 8) << " at color nb: " << (BGPAddress % 8) << std::endl;
+			//std::cout << "wrote " << +newValue << " to BG palette nb: " << +(BGPAddress / 8) << " at color nb: " << +(BGPAddress % 8) << std::endl;
 			return asCGB.BGPalettes[BGPAddress];
 		}
 		if (addr == 0xFF6B) // OPCS/OBPD
@@ -303,6 +304,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			{
 				mem[0xFF6A] = (memRef[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F);
 			}
+			//std::cout << "wrote color: " << +newValue << " to OBJ Palette nb: " << +(OBJPAddress / 8) << " at color nb: " << +(OBJPAddress % 8) << std::endl;
 			return asCGB.OBJPalettes[OBJPAddress];
 		}
 	}
@@ -396,6 +398,7 @@ int		Mem::getCartridgeType()
 CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 {
 	CGBVramBank = new unsigned char[0x2000];
+	BGPalettes.fill(0xFF);
 	for (int i = 0; i < 8; i++)
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
 }
@@ -422,7 +425,7 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 		unsigned char OBJPAddress = OCPSVal & 0x3F;
 		return OBJPalettes[OBJPAddress];
 	}
-	if (addr >= 0x8000 && addr <= 0x9FFF)// CGB ONLY
+	if (addr >= 0x8000 && addr <= 0x9FFF)
 	{
 		if (bIsUsingCGBVram)
 		{
@@ -432,7 +435,7 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 		else
 			return internalArray[addr];
 	}
-	else if (addr >= 0xC000 && addr <= 0xDFFF)// CGB ONLY
+	else if (addr >= 0xC000 && addr <= 0xDFFF)
 	{
 		if (addr <= 0xCFFF)
 			return CGBextraRamBanks[0][addr - 0xC000];

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 23:42:07 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 03:05:34 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,12 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 
 std::array<short, 8> TilePixels::getColorLine(int y)
 {
-	std::array<short, 8> retLine{};
+	std::array<short, 8> retLine;
 	if (!bIsValid)
+	{
+		retLine.fill(0xFFFF);
 		return retLine;
+	}
 	unsigned long paletteColor = 0;
 
 	// means the tile is valid, else return 0
@@ -88,7 +91,7 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 	else
 	{
 		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
-		unsigned char paletteNb = attribute & 0b11;
+		unsigned char paletteNb = attribute & 0b111;
 		paletteColor = getCGBPaletteColor(paletteNb);
 		//std::cout << "with palette number: " << +paletteNb << " with color: " << paletteColor << std::endl;
 	}
