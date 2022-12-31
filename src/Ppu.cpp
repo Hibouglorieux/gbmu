@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 03:58:29 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:29:53 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,11 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 			bool bIsPixel = false;
 			if (backgroundLine[i].colorCode == 0)
 				bIsPixel = true;
-			if (!BIT(M_LCDC, 0))
+			else if (!BIT(M_LCDC, 0))
 				bIsPixel = true;
 			else if (!backgroundLine[i].bIsAboveOAM && pixelLine[i].bIsAboveBackground)
 				bIsPixel = true;
+
 			if (bIsPixel && pixelLine[i].bIsSet)// bIsSet takes transparency into account
 				finalLine[i] = pixelLine[i].color;
 			else

@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/31 04:03:12 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:33:25 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,8 @@ std::array<short, 8> Sprite::getColoredLine(int y) const
 {
 	std::array<short, 8> retLine = getLineColorCode(y);
 
+	long paletteValue = getPaletteValue();
 	for (int x = 0; x < 8; x++)
-		retLine[x] = TilePixels::getColor(retLine[x], getPaletteValue());
+		retLine[x] = TilePixels::getColor(retLine[x], paletteValue);
 	return retLine;
 }

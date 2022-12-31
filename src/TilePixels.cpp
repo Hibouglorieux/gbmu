@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:03:53 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:36:05 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,8 +90,8 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 	}
 	else
 	{
-		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
-		unsigned char paletteNb = attribute & 0b111;
+		const unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+		const unsigned char paletteNb = attribute & 0b111;
 		paletteColor = getCGBPaletteColor(paletteNb, mem.getBGPalettes());
 		//std::cout << "with palette number: " << +paletteNb << " with color: " << paletteColor << std::endl;
 	}

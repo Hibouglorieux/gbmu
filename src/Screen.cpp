@@ -50,7 +50,6 @@ void	Screen::destroy()
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
     SDL_Quit();
-	//std::exit(0); // TODO clean properly
 }
 
 void Screen::TexturetoImage(SDL_Texture * Texture) {
@@ -134,7 +133,8 @@ void	Screen::drawVRam()
 
 }
 
-bool	Screen::createTexture() {
+bool	Screen::createTexture()
+{
 	texture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING,

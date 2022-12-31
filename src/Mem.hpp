@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:02:20 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:36:33 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ public:
 	void supervisorWrite(unsigned int addr, unsigned char value);
 	unsigned char* getVram() {return &internalArray[0x8000];}
 
-	virtual unsigned char* getCGBVram() {return nullptr;}
+	virtual unsigned char* getCGBVram() {throw("");}
 	virtual const std::array<unsigned char, 64>& getBGPalettes(){throw("");}// should never be called
 	virtual const std::array<unsigned char, 64>& getOBJPalettes(){throw("");}// should never be called
 

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 03:06:56 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 05:19:57 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,22 +260,25 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 //			std::cout << "DMA transfert done" << std::endl;
 		} //TODO CGB DMA FF51->FF55
 	}
-	if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
-	{
-		// TODO WIP
-		// NOTE : most of the registers are in readOnlyBits
-		unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xFC);
-		unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xFC);
-		dstAddr = (dstAddr | 0x8000) & 0x9FFF; 
-		unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
-		//std::cout << "CGB DMA requested !" << std::endl;
-		memcpy(&mem[srcAddr], &mem[dstAddr], len);
-	}
 	try // try block because this is only for CGB registers
 	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
+		{
+			// TODO WIP
+			// NOTE : most of the registers are in readOnlyBits
+			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xFC);
+			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xFC);
+			dstAddr = (dstAddr | 0x8000) & 0x9FFF; 
+			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
+			std::cout << "CGB HDMA requested ! with source: " << srcAddr << " and destination: " << dstAddr << " with a len of: " << len << std::endl;
+			memcpy(&mem[dstAddr], &mem[srcAddr], len);
+			value = 0xFF;// lets say it finished instantly
+			std::cout << "HDMA done and was a " << (newValue & (1 << 7) ? "basic DMA": "HBLANK DMA (heavy one)")<< std::endl;
+		}
 		if (addr == 0xFF4F) // VBK
 		{
+			//std::cout << "changed VBK value !" << std::endl;
 			asCGB.bIsUsingCGBVram = newValue & 1;
 			//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
 		}
@@ -433,7 +436,10 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 			return CGBVramBank[addr - 0x8000];
 		}
 		else
+		{
+			//std::cout << "accessing normalVramBank !" << std::endl;
 			return internalArray[addr];
+		}
 	}
 	else if (addr >= 0xC000 && addr <= 0xDFFF)
 	{
@@ -441,7 +447,7 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 			return CGBextraRamBanks[0][addr - 0xC000];
 		else
 		{
-			unsigned char index = CGBextraRamBankNb & 7;
+			unsigned char index = CGBextraRamBankNb & 0b111;
 			if (index == 0)
 				index = 1;
 			return CGBextraRamBanks[index][addr - 0xD000];

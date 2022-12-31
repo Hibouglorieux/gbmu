@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/29 20:12:08 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 05:13:46 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,5 @@ bool Loop::loop()
 	}
         Screen::clear(clear_color);
 	}
-	Screen::destroy();
 	return (true);
 }

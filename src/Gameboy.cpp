@@ -47,6 +47,7 @@ bool Gameboy::run()
 void Gameboy::clear()
 {
 	delete gbMem;
+	Screen::destroy();
 }
 
 bool Gameboy::execFrame(bool step)
