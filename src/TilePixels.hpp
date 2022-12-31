@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 02:15:30 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:01:56 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ struct TilePixels {
         }
     }
 
-	unsigned long getCGBPaletteColor(unsigned char paletteNb);
+	static unsigned long getCGBPaletteColor(unsigned char paletteNb, const std::array<unsigned char, 64>& paletteArray);
 	// returns the color in a short
 	// if its CGB mode then 
 	// the color is encoded in two bytes

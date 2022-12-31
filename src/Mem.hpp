@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 23:10:19 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 04:02:20 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ public:
 	unsigned char* getVram() {return &internalArray[0x8000];}
 
 	virtual unsigned char* getCGBVram() {return nullptr;}
-	virtual const std::array<unsigned char, 64>& getBGPalette(){throw("");}// should never be called
-	virtual const std::array<unsigned char, 64>& getOBJPalette(){throw("");}// should never be called
+	virtual const std::array<unsigned char, 64>& getBGPalettes(){throw("");}// should never be called
+	virtual const std::array<unsigned char, 64>& getOBJPalettes(){throw("");}// should never be called
 
 	std::string getTitle();
 	bool	isCGB();
@@ -78,8 +78,8 @@ public:
 
 	mutable bool			bIsUsingCGBVram;
 	mutable unsigned char	CGBextraRamBankNb;
-	virtual const std::array<unsigned char, 64>& getBGPalette() {return BGPalettes;}
-	virtual const std::array<unsigned char, 64>& getOBJPalette() {return OBJPalettes;}
+	virtual const std::array<unsigned char, 64>& getBGPalettes() {return BGPalettes;}
+	virtual const std::array<unsigned char, 64>& getOBJPalettes() {return OBJPalettes;}
 	mutable std::array<unsigned char, 64> BGPalettes;
 	mutable std::array<unsigned char, 64> OBJPalettes;
 protected:

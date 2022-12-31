@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/30 23:15:36 by nallani          ###   ########.fr       */
+/*   Updated: 2022/12/31 04:03:12 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,26 +52,6 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 
 Sprite::~Sprite(void)
 {}
-long Sprite::getCGBPaletteValue(unsigned char paletteNb) const
-{
-	unsigned long colors = 0;
-	const unsigned char bytePerPalette = 8;
-	const unsigned char bytePerColor = 2;
-	for (int i = 0; i < 4; i++)
-	{
-		// there are 0x3F/64 total colors
-		// first byte(0) correspond to low byte of 1rst color of palette 0
-		// second(1) of high byte of 1rst color of palette 0
-		// third(2) of low byte of 2nd color of palette 0
-		// ... 9th byte (0x08) should be low byte of 1rst of color of palette 1
-		// there are 8 bytes per 
-		unsigned char low = mem.getOBJPalette()[paletteNb * bytePerPalette + i * bytePerColor];
-		unsigned char high = mem.getOBJPalette()[paletteNb * bytePerPalette + i * bytePerColor + 1];
-		unsigned short color = (high << 8) | low;
-		colors |= ((long)color << (i * 16));
-	}
-	return colors;
-}
 
 long Sprite::getPaletteValue() const
 {
@@ -85,7 +65,7 @@ long Sprite::getPaletteValue() const
 	}
 	else
 	{
-		return getCGBPaletteValue(OAM_Data.getCGBPalette());
+		return TilePixels::getCGBPaletteColor(OAM_Data.getCGBPalette(), mem.getOBJPalettes());
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 03:05:34 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 04:03:53 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ TilePixels::TilePixels(std::array<std::array<short, 8>, 8> val)
 */
 
 // this should get the 4 colors of a cgb palette
-unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
+unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb, const std::array<unsigned char, 64>& paletteArray)
 {
 	unsigned long colors = 0;
 	const unsigned char bytePerPalette = 8;
@@ -41,8 +41,8 @@ unsigned long TilePixels::getCGBPaletteColor(unsigned char paletteNb)
 		// third(2) of low byte of 2nd color of palette 0
 		// ... 9th byte (0x08) should be low byte of 1rst of color of palette 1
 		// there are 8 bytes per 
-		unsigned char low = mem.getBGPalette()[paletteNb * bytePerPalette + i * bytePerColor];
-		unsigned char high = mem.getBGPalette()[paletteNb * bytePerPalette + i * bytePerColor + 1];
+		const unsigned char& low = paletteArray[paletteNb * bytePerPalette + i * bytePerColor];
+		const unsigned char& high = paletteArray[paletteNb * bytePerPalette + i * bytePerColor + 1];
 		unsigned short color = (high << 8) | low;
 		colors |= ((long)color << (i * 16));
 	}
@@ -92,7 +92,7 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 	{
 		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
 		unsigned char paletteNb = attribute & 0b111;
-		paletteColor = getCGBPaletteColor(paletteNb);
+		paletteColor = getCGBPaletteColor(paletteNb, mem.getBGPalettes());
 		//std::cout << "with palette number: " << +paletteNb << " with color: " << paletteColor << std::endl;
 	}
 	for (int x = 0; x < 8; x++)
