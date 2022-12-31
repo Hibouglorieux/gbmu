@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 02:14:18 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 03:35:29 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ public:
 	static std::array<short, PIXEL_PER_LINE> doOneLine();
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
 	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks
-	static int getPaletteFromOAMEntry(struct OAM_entry entry);
 
 	static struct TilePixels getTile(int tileAddress, int tileIndex, unsigned short mapAddress);
 	static TilePixels getWindowTile(unsigned int xOffsetInMap, unsigned int yOffsetInMap);

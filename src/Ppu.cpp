@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 03:07:24 by nathan           ###   ########.fr       */
+/*   Updated: 2022/12/31 03:58:29 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,13 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 				finalLine[i] = backgroundLine[i].color;
 			}
 		}
+		
 		else
 		{
-			//WIP
 			bool bIsPixel = false;
 			if (backgroundLine[i].colorCode == 0)
 				bIsPixel = true;
-			else if (!BIT(M_LCDC, 0))
+			if (!BIT(M_LCDC, 0))
 				bIsPixel = true;
 			else if (!backgroundLine[i].bIsAboveOAM && pixelLine[i].bIsAboveBackground)
 				bIsPixel = true;
@@ -53,16 +53,8 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 			else
 				finalLine[i] = backgroundLine[i].color;
 		}
-		
 	}
 	return finalLine;
-}
-
-int	Ppu::getPaletteFromOAMEntry(struct OAM_entry entry)
-{
-	//this is for DMG only !!
-	return (entry.getDMGPalette() ? OBP1 : OBP0);
-	// TODO add gameboy flags (bit 	0-2 OPB0 to OBP7)
 }
 
 struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, unsigned short mapAddress)
@@ -90,7 +82,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 		TilePixels tilePixels;
 		if (bDrawWindow)
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
-		else if (bBackgroundEnabled)
+		else if (bBackgroundEnabled || Gameboy::bIsCGB)// because in CGB bit 0 of LCDC only matters for superposition
 		{
 			//std::cout << std::dec << "creating a tilePixel at LY: " << (int)M_LY << " number of tile: " << (int)(xPosInLine + M_SCX) / 8
 				//<< std::hex << std::endl;
@@ -158,19 +150,28 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 
 
 	spritesFound2 = spritesFound;
-	//TODO that has to change according to DMG or CGB mode
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
-	std::sort(spritesFound.begin(), spritesFound.end(), [=](struct OAM_entry &a, struct OAM_entry &b){
-		if (a.posX != b.posX)
-			return a.posX > b.posX;
-		else {
+	std::function<bool(struct OAM_entry& a, struct OAM_entry& b)> sortFunction;
+	if (Gameboy::bIsCGB)
+		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
 			// if same X, we pick the sprites earliest in OAM
 			auto ndxA = std::find(spritesFound2.begin(), spritesFound2.end(), a) - spritesFound2.begin();
 			auto ndxB = std::find(spritesFound2.begin(), spritesFound2.end(), b) - spritesFound2.begin();
 			return ndxA > ndxB;
-		}
-	});
+		};
+	else
+		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
+			if (a.posX != b.posX)
+				return a.posX > b.posX;
+			else {
+				// if same X, we pick the sprites earliest in OAM
+				auto ndxA = std::find(spritesFound2.begin(), spritesFound2.end(), a) - spritesFound2.begin();
+				auto ndxB = std::find(spritesFound2.begin(), spritesFound2.end(), b) - spritesFound2.begin();
+				return ndxA > ndxB;
+			}
+		};
+	std::sort(spritesFound.begin(), spritesFound.end(), sortFunction);
 
 	// 3 - copy sprite color into the whole line
 	for (struct OAM_entry spriteEntry : spritesFound)
