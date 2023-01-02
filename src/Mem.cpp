@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 05:19:57 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/02 14:22:08 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
 						// set to 0 when pressed, last 2 are unused
- {0xFF02, 0b0111'1100}, // serial control
+ {0xFF02, 0b0111'1110}, // serial control : TODO bit freq speed is CGB only, we don't need it as we don't support this
  {0xFF07, 0b1111'1000}, // TAC. unused last 5 bits
  {0xFF0F, 0b1110'0000}, // IF, unusued last 7 bits
  {0xFF41, 0b1000'0111}, // LCDC Stat, unused bit7, first 3 bit are readOnly (set by ppu)
@@ -216,6 +216,18 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		// fix comment and add it to readOnlyBits
 		value &= 0x87;
 		value |= (newValue & (~0x87));
+		return (value);
+	}
+	if (addr == 0xFF01) {
+		value = 0xFF;
+		return (value);
+	}
+	if (addr == 0xFF02) {
+		value = newValue;
+		if ((value & 0x81) == 0x81) {
+			printf("Request serial interrupt!\n");
+			mem[0xFF0F] = mem[0xFF0F] | (1 << 3);
+		}
 		return (value);
 	}
 	value = newValue;
