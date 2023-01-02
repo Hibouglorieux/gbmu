@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 22:14:31 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/02 23:57:18 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 	}
 	else
 	{
-		const unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+		const unsigned char attribute = mem.getCGBVram()[mapAddr == 0 ? 0 : - 0x8000];
 		const unsigned char paletteNb = attribute & 0b111;
 		paletteColor = getCGBPaletteColor(paletteNb, mem.getBGPalettes());
 		//std::cout << "with palette number: " << +paletteNb << " with color: " << paletteColor << std::endl;
@@ -163,7 +163,7 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress, in
 
 bool TilePixels::isAboveOAM() const
 {
-	if (!Gameboy::bIsCGB)
+	if (!Gameboy::bIsCGB || !bIsValid)
 		return false;
 	unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
 	return BIT(attribute, 7);

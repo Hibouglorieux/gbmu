@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/30 19:01:05 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/02 23:43:03 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,11 @@ int main(int argc, char** argv)
 	std::cerr << std::hex;
 	std::cout << std::hex;
 	Gameboy::init();
-	Gameboy::run();
+	try {
+		Gameboy::run();
+	} catch (const char* e){
+		std::cerr << e << std::endl;
+	}
 	Gameboy::clear();
 	return (0);
 }

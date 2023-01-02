@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 14:22:08 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/03 00:19:01 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
+		if (extraRamBanks.size() == 0) {
+			throw ("error: trying to acces extra unallocated ram");
+		}
 		unsigned char ramBankNb = mbc->getRamBank();
 		if (ramBankNb == 0xFF)// 0xFF stands for no extra ram used
 			return internalArray[addr];
@@ -225,7 +228,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF02) {
 		value = newValue;
 		if ((value & 0x81) == 0x81) {
-			printf("Request serial interrupt!\n");
 			mem[0xFF0F] = mem[0xFF0F] | (1 << 3);
 		}
 		return (value);
@@ -413,9 +415,12 @@ int		Mem::getCartridgeType()
 CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 {
 	CGBVramBank = new unsigned char[0x2000];
+	bzero(CGBVramBank, 0x2000);
 	BGPalettes.fill(0xFF);
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++) {
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
+		bzero(CGBextraRamBanks[i], 0x1000);
+	}
 }
 
 CGBMem::~CGBMem()
@@ -460,8 +465,9 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 		else
 		{
 			unsigned char index = CGBextraRamBankNb & 0b111;
-			if (index == 0)
+			if (index == 0) {
 				index = 1;
+			}
 			return CGBextraRamBanks[index][addr - 0xD000];
 		}
 	}
