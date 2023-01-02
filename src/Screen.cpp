@@ -173,28 +173,33 @@ void	Screen::drawVRam(bool bIsCGB)
     unsigned int vRamAddress = 0x8000;
 
 	if (!bIsCGB)
-		for (int i = 0; i < 256; i++) {
-			struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0); // XXX nallani how to get palette there?
-			int x_offset = (i % 16) * 9;
-			int y_offset = (i / 16) * 9;
-			for (int y = 0; y < 8; y++) {
-				auto line = tile.getColorLine(y);
-				for (int x = 0; x < 8; x++) {
-					drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+		for (int xx = 0; xx < 16; xx++) {
+			for (int yy = 0; yy < 24; yy++) {
+				struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0); // XXX nallani how to get palette there?
+				int x_offset = xx * 9;
+				int y_offset = yy * 9;
+				for (int y = 0; y < 8; y++) {
+					auto line = tile.getColorLine(y);
+					for (int x = 0; x < 8; x++) {
+						drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+					}
 				}
 			}
 		}
 	else
 	{
 		for (int Vram = 0; Vram < 2; Vram++)
-			for (int i = 0; i < 256; i++) {
-				struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0, Vram == 0 ? FORCE_DMG_TILEPIXELS : FORCE_CGB_TILEPIXELS); // XXX nallani how to get palette there?
-				int x_offset = (i % 16) * 9;
-				int y_offset = (i / 16) * 9;
-				for (int y = 0; y < 8; y++) {
-					auto line = tile.getColorLine(y);
-					for (int x = 0; x < 8; x++) {
-						drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+			for (int xx = 0; xx < 16; xx++) {
+				for (int yy = 0; yy < 24; yy++) {
+					struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0, Vram == 0 ? FORCE_DMG_TILEPIXELS : FORCE_CGB_TILEPIXELS); // XXX nallani how to get palette there?
+					int x_offset = xx * 9;
+					int y_offset = yy * 9;
+					for (int y = 0; y < 8; y++) {
+						auto line = tile.getColorLine(y);
+						for (int x = 0; x < 8; x++) {
+							drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+							//std::cout << "drew at x: " << x + x_offset + Vram * (16 * 9 + 2) << " y: " << y + y_offset << std::endl;
+						}
 					}
 				}
 			}
@@ -205,35 +210,35 @@ void	Screen::drawVRam(bool bIsCGB)
 bool	Screen::createTexture(bool bIsCGB)
 {
 	texture = SDL_CreateTexture(renderer,
-		SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_STREAMING,
-		160 * MAIN_SCREEN_SCALE,
-		144 * MAIN_SCREEN_SCALE);
-    if (!texture) {
-        std::cerr << "Erreur SDL_CreateTexture Ppu : "<< SDL_GetError() << std::endl;
-        return false;
-    }
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			160 * MAIN_SCREEN_SCALE,
+			144 * MAIN_SCREEN_SCALE);
+	if (!texture) {
+		std::cerr << "Erreur SDL_CreateTexture Ppu : "<< SDL_GetError() << std::endl;
+		return false;
+	}
 
 	BGTexture = SDL_CreateTexture(renderer,
-		SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_STREAMING,
-		32 * BG_SCREEN_SCALE * 9,
-		32 * BG_SCREEN_SCALE * 9);
-    if (!BGTexture) {
-        std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
-        return false;
-    }
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			32 * BG_SCREEN_SCALE * 9,
+			32 * BG_SCREEN_SCALE * 9);
+	if (!BGTexture) {
+		std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+		return false;
+	}
 
-    VRamTexture = SDL_CreateTexture(renderer,
-		SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_STREAMING,
-		16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
-		16 * 9 * VRAM_SCREEN_SCALE);
-    if (!VRamTexture) {
-        std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
-        return false;
-    }
-    return true;
+	VRamTexture = SDL_CreateTexture(renderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
+			24 * 9 * VRAM_SCREEN_SCALE);
+	if (!VRamTexture) {
+		std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+	return true;
 }
 
 bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
@@ -261,35 +266,35 @@ bool	Screen::create(bool bIsCGB)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-        std::cerr <<"Error SDL_Init! "<< SDL_GetError() << std::endl;
+		std::cerr <<"Error SDL_Init! "<< SDL_GetError() << std::endl;
 		return false;
 	}
 
 	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    window = SDL_CreateWindow("GBMU",
+	window = SDL_CreateWindow("GBMU",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
 			1980,
 			1024,
 			window_flags);
 	if (!window) {
-        std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;
+		std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;
 		return (false);
 	}
 
 
-    renderer = SDL_CreateRenderer(window, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
+	renderer = SDL_CreateRenderer(window, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
 	if (!renderer)
 	{
-        std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
+		std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
 		return false;
 	}
 
 	if (!Screen::createTexture(bIsCGB))
-        return false;
+		return false;
 
 	// Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
+	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
