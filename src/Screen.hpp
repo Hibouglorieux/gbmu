@@ -50,6 +50,8 @@ public:
 	static int				VramPitch;
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
+
+	static int convertColorFromCGB(int colo, bool bConvertForImGUI = false);
 private:
 };
 

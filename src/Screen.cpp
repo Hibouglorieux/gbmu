@@ -57,7 +57,7 @@ void Screen::TexturetoImage(SDL_Texture * Texture) {
     SDL_SetRenderTarget(renderer, nullptr);
 }
 
-int		convertColorFromCGBToImGui(int colo)
+int		Screen::convertColorFromCGB(int colo, bool bConvertForImGUI)
 {
 	unsigned char r = (colo & 0x1F);
 	unsigned char g = ((colo & (0x1F << 5)) >> 5);
@@ -65,7 +65,13 @@ int		convertColorFromCGBToImGui(int colo)
 	r *= 8;
 	g *= 8;
 	b *= 8;
-	return (r << IM_COL32_R_SHIFT) | (g << IM_COL32_G_SHIFT) | (b << IM_COL32_B_SHIFT) | (0xFF << 24);
+	//r = 255 - r;
+	//g = 255 - g;
+	//b = 255 - b;
+	if (bConvertForImGUI)
+		return (r << IM_COL32_R_SHIFT) | (g << IM_COL32_G_SHIFT) | (b << IM_COL32_B_SHIFT) | (0xFF << 24);
+	else
+		return (r << 24) | (g << 16) | (b << 8);
 }
 
 void	Screen::NewframeTexture()
@@ -143,7 +149,7 @@ void	Screen::drawPalettes()
 				const unsigned char low = palette[paletteNb * 2 * 4 + colorNb];
 				const unsigned char high = palette[paletteNb * 2 * 4 + colorNb + 1];
 				const unsigned short color = (high << 8) | low;
-				const int colorImGUI = convertColorFromCGBToImGui(color);
+				const int colorImGUI = convertColorFromCGB(color, true);
 				ImVec2 min = ImGui::GetItemRectMin();
 				ImVec2 max = ImGui::GetContentRegionMax();
 				max.x += min.x;
@@ -229,20 +235,6 @@ bool	Screen::createTexture(bool bIsCGB)
         return false;
     }
     return true;
-}
-
-int		convertColorFromCGB(int colo)
-{
-	unsigned char r = (colo & 0x1F);
-	unsigned char g = ((colo & (0x1F << 5)) >> 5);
-	unsigned char b = ((colo & (0x1F << 10)) >> 10);
-	r *= 8;
-	g *= 8;
-	b *= 8;
-	//r = 255 - r;
-	//g = 255 - g;
-	//b = 255 - b;
-	return (r << 24) | (g << 16) | (b << 8);
 }
 
 bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
