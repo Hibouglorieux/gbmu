@@ -22,8 +22,8 @@ Clock& Gameboy::getClock()
 
 void	Gameboy::init()
 {
-	Screen::create();
 	Cpu::loadBootRom();
+	Screen::create(bIsCGB);
 	clockLine = 0;
 	internalLY = 0;
 }
@@ -78,7 +78,6 @@ bool Gameboy::execFrame(bool step)
 	return true;
 }
 
-
 void Gameboy::setState(int newState)
 {
 	if (BIT(M_LCDC, 7) && currentState != newState) {
@@ -95,7 +94,7 @@ void Gameboy::setState(int newState)
 			Ppu::finalLine = Ppu::doOneLine();
 			for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
 				Screen::drawPoint(j, internalLY - 10, Ppu::finalLine[j],
-					Screen::pixels, Screen::pitch);
+					Screen::pixels, Screen::pitch, MAIN_SCREEN_SCALE);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {

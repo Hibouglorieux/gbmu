@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/31 05:13:46 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/02 17:49:12 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ bool Loop::loop()
         if (showVram) {
             {
                 ImGui::Begin("Vram");
-                Screen::drawVRam();
+                Screen::drawVRam(Gameboy::bIsCGB);
                 Screen::TexturetoImage(Screen::VRamTexture);
                 ImGui::End();
             }

@@ -15,20 +15,24 @@
 #include <SDL2/SDL.h>
 #include "imgui/imgui.h"
 
+#define MAIN_SCREEN_SCALE 4
+#define VRAM_SCREEN_SCALE 4
+#define BG_SCREEN_SCALE 2
+
 class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
-	static bool create();
-	static bool drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale = 4);
+	static bool create(bool bIsCGB);
+	static bool drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale);
 	static void destroy();
     static void	NewframeTexture();
 	static void clear(ImVec4 vec4);
 
 	static void drawBG();
-	static void drawVRam();
+	static void drawVRam(bool bIsCGB);
 //	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
-	static bool createTexture();
+	static bool createTexture(bool bIsCGB);
     static void TexturetoImage(SDL_Texture *);
 
 	static SDL_Window* get();

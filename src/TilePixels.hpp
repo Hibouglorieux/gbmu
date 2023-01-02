@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:01:56 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/02 17:59:31 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,10 @@
 #include <array>
 #include <algorithm>
 #include "Gameboy.hpp"
+
+#define FORCE_DMG_TILEPIXELS 0
+#define FORCE_CGB_TILEPIXELS 2
+#define SMART_VRAM_TILEPIXELS 1
 
 struct TilePixels {
     short data[8][8]{};
@@ -53,6 +57,7 @@ struct TilePixels {
 	TilePixels();
     //TilePixels(std::array<std::array<int, 8>, 8> val);
     TilePixels(unsigned short tileAddress, unsigned short mapAddress);
+    TilePixels(unsigned short tileAddress, unsigned short mapAddress, int vRamBankSelector);
 	unsigned short mapAddr;
 	bool bIsValid;
 };

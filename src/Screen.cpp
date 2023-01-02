@@ -31,9 +31,6 @@ int Screen::BGPitch = 0;
 void *Screen::VramPixels = nullptr;
 int Screen::VramPitch = 0;
 
-int scale = 4;
-int scaleBG = 2;
-
 SDL_Window*	Screen::get()
 {
 	return (window);
@@ -109,37 +106,53 @@ void	Screen::drawBG()
 		for (int y = 0; y < 8; y++) {
 			auto line = tile.getColorLine(y);
 			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, line[x], BGPixels, BGPitch, scaleBG);
+				drawPoint(x + x_offset, y + y_offset, line[x], BGPixels, BGPitch, BG_SCREEN_SCALE);
 			}
 		}
 	}
 }
 
-void	Screen::drawVRam()
+void	Screen::drawVRam(bool bIsCGB)
 {
     unsigned int vRamAddress = 0x8000;
 
-	for (int i = 0; i < 256; i++) {
-		struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0); // XXX nallani how to get palette there?
-		int x_offset = (i % 16) * 9;
-		int y_offset = (i / 16) * 9;
-		for (int y = 0; y < 8; y++) {
-			auto line = tile.getColorLine(y);
-			for (int x = 0; x < 8; x++) {
-				drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch, scaleBG);
+	if (!bIsCGB)
+		for (int i = 0; i < 256; i++) {
+			struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0); // XXX nallani how to get palette there?
+			int x_offset = (i % 16) * 9;
+			int y_offset = (i / 16) * 9;
+			for (int y = 0; y < 8; y++) {
+				auto line = tile.getColorLine(y);
+				for (int x = 0; x < 8; x++) {
+					drawPoint(x + x_offset, y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+				}
 			}
 		}
+	else
+	{
+		for (int Vram = 0; Vram < 2; Vram++)
+			for (int i = 0; i < 256; i++) {
+				struct TilePixels tile = TilePixels(vRamAddress + (i * 8 * 2), 0, Vram == 0 ? FORCE_DMG_TILEPIXELS : FORCE_CGB_TILEPIXELS); // XXX nallani how to get palette there?
+				int x_offset = (i % 16) * 9;
+				int y_offset = (i / 16) * 9;
+				for (int y = 0; y < 8; y++) {
+					auto line = tile.getColorLine(y);
+					for (int x = 0; x < 8; x++) {
+						drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+					}
+				}
+			}
 	}
 
 }
 
-bool	Screen::createTexture()
+bool	Screen::createTexture(bool bIsCGB)
 {
 	texture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING,
-		160 * 4,
-		144 * 4);
+		160 * MAIN_SCREEN_SCALE,
+		144 * MAIN_SCREEN_SCALE);
     if (!texture) {
         std::cerr << "Erreur SDL_CreateTexture Ppu : "<< SDL_GetError() << std::endl;
         return false;
@@ -148,8 +161,8 @@ bool	Screen::createTexture()
 	BGTexture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING,
-		160 * 4,
-		144 * 4);
+		32 * BG_SCREEN_SCALE * 9,
+		32 * BG_SCREEN_SCALE * 9);
     if (!BGTexture) {
         std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
         return false;
@@ -158,8 +171,8 @@ bool	Screen::createTexture()
     VRamTexture = SDL_CreateTexture(renderer,
 		SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING,
-		160 * 4,
-		144 * 4);
+		16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
+		16 * 9 * VRAM_SCREEN_SCALE);
     if (!VRamTexture) {
         std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
         return false;
@@ -202,7 +215,7 @@ bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pix
 	return (true);
 }
 
-bool	Screen::create()
+bool	Screen::create(bool bIsCGB)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -230,7 +243,7 @@ bool	Screen::create()
 		return false;
 	}
 
-	if (!Screen::createTexture())
+	if (!Screen::createTexture(bIsCGB))
         return false;
 
 	// Setup Dear ImGui context

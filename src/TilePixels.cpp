@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:36:05 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/02 18:00:13 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,17 +116,31 @@ TilePixels::TilePixels()
 	bIsValid = false;
 }
 
-TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : data()
+TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress): TilePixels(tileAddress, mapAddress, Gameboy::bIsCGB)
+{
+	if (Gameboy::bIsCGB)
+	{
+		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
+		if (BIT(attribute, 6))
+			flipY();
+		if (BIT(attribute, 5))
+			flipX();
+	}
+}
+
+TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress, int vRamBankSelector) : data()
 {
 	bIsValid = true;
 	mapAddr = mapAddress;
 	unsigned char* vram = mem.getVram();
-	if (Gameboy::bIsCGB)
+	if (vRamBankSelector == 2)
+		vram = mem.getCGBVram();
+	if (vRamBankSelector == 1)
 	{
 		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
 		if (BIT(attribute, 3))
 			vram = mem.getCGBVram();
-	}
+	}	
 	for (int y = 0; y < 8; y++) {
 
 		unsigned char byte1 = vram[tileAddress + (y * 2) - 0x8000];
@@ -143,14 +157,6 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress) : 
 			unsigned char byteColorCode = (bit2 << 1) | (bit1);
 			data[y][7 - x] = byteColorCode;
 		}
-	}
-	if (Gameboy::bIsCGB)
-	{
-		unsigned char attribute = mem.getCGBVram()[mapAddr - 0x8000];
-		if (BIT(attribute, 6))
-			flipY();
-		if (BIT(attribute, 5))
-			flipX();
 	}
 }
 
