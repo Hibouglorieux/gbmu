@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 22:11:22 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/02 22:14:31 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,9 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 	}
 	else
 	{
-		unsigned char colorShortPos = byteColorCode == 0b11 ? 3 : byteColorCode == 0b10 ? 2 : byteColorCode == 0b01 ? 1 : 0;
-		color = ((paletteColor & ((long)0xFFFF << (colorShortPos * 16))) >> (long)(16 * colorShortPos) & 0xFFFF);
+		const unsigned char colorShortPos = byteColorCode == 0b11 ? 3 : byteColorCode == 0b10 ? 2 : byteColorCode == 0b01 ? 1 : 0;
+		const unsigned char bitsToShift = colorShortPos * 16;
+		color = ((paletteColor & ((long)0xFFFF << (bitsToShift))) >> (bitsToShift) & 0xFFFF);
 		//std::cout << "i have color: " << color << "with byte code: " << +byteColorCode << "from palette: " << paletteColor << std::endl;
 	}
 	return color;
