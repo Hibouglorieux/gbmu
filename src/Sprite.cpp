@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2022/12/31 04:33:25 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/02 22:01:24 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 Sprite::~Sprite(void)
 {}
 
-long Sprite::getPaletteValue() const
+unsigned long Sprite::getPaletteValue() const
 {
 	//TODO change that for CGB
 	if (!Gameboy::bIsCGB)
@@ -84,7 +84,7 @@ std::array<short, 8> Sprite::getColoredLine(int y) const
 {
 	std::array<short, 8> retLine = getLineColorCode(y);
 
-	long paletteValue = getPaletteValue();
+	unsigned long paletteValue = getPaletteValue();
 	for (int x = 0; x < 8; x++)
 		retLine[x] = TilePixels::getColor(retLine[x], paletteValue);
 	return retLine;

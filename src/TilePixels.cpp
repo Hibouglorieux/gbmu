@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 18:00:13 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/02 22:11:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 	// 4 shade
 	// SDL wrapper only need to wrap that for now	
 	// TODO CGB encode 5bits RGB for color in 2 bytes.
-	int color = 0;
+	short color = 0;
 	if (!Gameboy::bIsCGB)
 	{
 		unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
@@ -67,8 +67,8 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 	else
 	{
 		unsigned char colorShortPos = byteColorCode == 0b11 ? 3 : byteColorCode == 0b10 ? 2 : byteColorCode == 0b01 ? 1 : 0;
-		color = (paletteColor & (0xFFFF << (colorShortPos * 16))) >> (16 * colorShortPos) & 0xFFFF;
-		//std::cout << "i have color: " << color << "with byte code: " << +byteColorCode << std::endl;
+		color = ((paletteColor & ((long)0xFFFF << (colorShortPos * 16))) >> (long)(16 * colorShortPos) & 0xFFFF);
+		//std::cout << "i have color: " << color << "with byte code: " << +byteColorCode << "from palette: " << paletteColor << std::endl;
 	}
 	return color;
 }
