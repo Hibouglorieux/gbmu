@@ -145,8 +145,8 @@ void	Screen::drawPalettes()
 			const std::array<unsigned char, 64>& palette = (paletteSelector == 1 ? OBJPalette : BGPalette);
 			for (int colorNb = 0; colorNb < 4; colorNb++)
 			{
-				const unsigned char low = palette[paletteNb * 2 * 4 + colorNb];
-				const unsigned char high = palette[paletteNb * 2 * 4 + colorNb + 1];
+				const unsigned char& low = palette[paletteNb * 2 * 4 + colorNb * 2];
+				const unsigned char& high = palette[paletteNb * 2 * 4 + colorNb * 2 + 1];
 				const unsigned short color = (high << 8) | low;
 				const int colorImGUI = convertColorFromCGB(color, true);
 				ImVec2 min = ImGui::GetItemRectMin();
