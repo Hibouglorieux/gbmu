@@ -131,7 +131,6 @@ void	Screen::drawBG()
 
 void	Screen::drawPalettes()
 {
-	ImGui::ShowDemoWindow();
 	ImGui::Columns(10, "palettes", true);
 	auto white = ImGui::ColorConvertU32ToFloat4(0xFFFFFFFF);
 	auto black = ImGui::ColorConvertU32ToFloat4(0xFF000000);
@@ -139,7 +138,7 @@ void	Screen::drawPalettes()
 	const std::array<unsigned char, 64>& OBJPalette = mem.getOBJPalettes();
 	for (int paletteNb = 0; paletteNb < 8; paletteNb++)
 	{
-		ImGui::Text("Palette %d: ", paletteNb);
+		ImGui::Text("%d:", paletteNb);
 		ImGui::NextColumn();
 		for (int paletteSelector = 0; paletteSelector < 2; paletteSelector++)
 		{
