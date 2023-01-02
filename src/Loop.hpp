@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:45:13 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/08 23:07:37 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/02 18:30:47 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ public:
 private:
     static bool showVram;
     static bool showBG;
+    static bool showPalettes;
     static bool showHexdump;
     static bool showRegisters;
 	static bool shouldStop;

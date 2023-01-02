@@ -57,6 +57,17 @@ void Screen::TexturetoImage(SDL_Texture * Texture) {
     SDL_SetRenderTarget(renderer, nullptr);
 }
 
+int		convertColorFromCGBToImGui(int colo)
+{
+	unsigned char r = (colo & 0x1F);
+	unsigned char g = ((colo & (0x1F << 5)) >> 5);
+	unsigned char b = ((colo & (0x1F << 10)) >> 10);
+	r *= 8;
+	g *= 8;
+	b *= 8;
+	return (r << IM_COL32_R_SHIFT) | (g << IM_COL32_G_SHIFT) | (b << IM_COL32_B_SHIFT) | (0xFF << 24);
+}
+
 void	Screen::NewframeTexture()
 {
     ImGui_ImplSDLRenderer_NewFrame();
@@ -109,6 +120,46 @@ void	Screen::drawBG()
 				drawPoint(x + x_offset, y + y_offset, line[x], BGPixels, BGPitch, BG_SCREEN_SCALE);
 			}
 		}
+	}
+}
+
+void	Screen::drawPalettes()
+{
+	ImGui::ShowDemoWindow();
+	ImGui::Columns(10, "palettes", true);
+	auto white = ImGui::ColorConvertU32ToFloat4(0xFFFFFFFF);
+	auto black = ImGui::ColorConvertU32ToFloat4(0xFF000000);
+	const std::array<unsigned char, 64>& BGPalette = mem.getBGPalettes();
+	const std::array<unsigned char, 64>& OBJPalette = mem.getOBJPalettes();
+	for (int paletteNb = 0; paletteNb < 8; paletteNb++)
+	{
+		ImGui::Text("Palette %d: ", paletteNb);
+		ImGui::NextColumn();
+		for (int paletteSelector = 0; paletteSelector < 2; paletteSelector++)
+		{
+			const std::array<unsigned char, 64>& palette = (paletteSelector == 1 ? OBJPalette : BGPalette);
+			for (int colorNb = 0; colorNb < 4; colorNb++)
+			{
+				const unsigned char low = palette[paletteNb * 2 * 4 + colorNb];
+				const unsigned char high = palette[paletteNb * 2 * 4 + colorNb + 1];
+				const unsigned short color = (high << 8) | low;
+				const int colorImGUI = convertColorFromCGBToImGui(color);
+				ImVec2 min = ImGui::GetItemRectMin();
+				ImVec2 max = ImGui::GetContentRegionMax();
+				max.x += min.x;
+				max.y = min.y + 16;
+
+				ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(),
+						max, colorImGUI);
+				ImGui::TextColored(white, "%04X", color);
+				ImGui::SameLine();
+				ImGui::TextColored(black, "%04X", color);
+				ImGui::NextColumn();
+			}
+			if (paletteSelector == 0)
+				ImGui::NextColumn();
+		}
+		ImGui::Separator();
 	}
 }
 

@@ -30,6 +30,7 @@ public:
 
 	static void drawBG();
 	static void drawVRam(bool bIsCGB);
+	static void drawPalettes();
 //	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
 
 	static bool createTexture(bool bIsCGB);

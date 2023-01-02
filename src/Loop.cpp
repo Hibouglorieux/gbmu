@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/02 17:49:12 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/02 19:48:43 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ bool Loop::showVram = false;
 bool Loop::showBG = false;
 bool Loop::showHexdump = false;
 bool Loop::showRegisters = true;
+bool Loop::showPalettes = false;
 
 bool Loop::loop()
 {
@@ -49,6 +50,10 @@ bool Loop::loop()
             ImGui::SameLine();
             if (ImGui::Button(showRegisters ? "Show registers" : "Hide registers")) {
                 showRegisters = !showRegisters;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(showPalettes ? "Hide palettes" : "Show palettes")) {
+                showPalettes = !showPalettes;
             }
             ImGui::NewLine();
             ImGui::SliderFloat("Speed", &DBG::speed, 0.25f, 2.0f);
@@ -93,6 +98,12 @@ bool Loop::loop()
                 ImGui::End();
             }
         }
+		if (showPalettes)
+		{
+			ImGui::Begin("Palettes");
+			Screen::drawPalettes();
+			ImGui::End();
+		}
 
         if (showRegisters) {
             DBG::registers();
