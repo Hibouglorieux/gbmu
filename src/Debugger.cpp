@@ -2,7 +2,6 @@
 #include "Debugger.hpp"
 #include <SDL2/SDL.h>
 
-bool DBG::bBGMap = true;
 DebuggerState DBG::state = DebuggerState::RUNNING;
 float DBG::speed = 1;
 

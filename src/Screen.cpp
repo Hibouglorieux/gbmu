@@ -15,6 +15,11 @@
 #include "Ppu.hpp"
 #include "Debugger.hpp"
 
+
+#define MAIN_SCREEN_SCALE 4
+#define VRAM_SCREEN_SCALE 2
+#define BG_SCREEN_SCALE 2
+
 SDL_Window* Screen::window = nullptr;
 SDL_Renderer* Screen::renderer = nullptr;
 
@@ -31,6 +36,7 @@ int Screen::BGPitch = 0;
 void *Screen::VramPixels = nullptr;
 int Screen::VramPitch = 0;
 
+bool Screen::bDisplayWindow = false;
 SDL_Window*	Screen::get()
 {
 	return (window);
@@ -52,7 +58,10 @@ void	Screen::destroy()
 void Screen::TexturetoImage(SDL_Texture * Texture) {
     SDL_SetRenderTarget(renderer, Texture);
    	SDL_UnlockTexture(Texture);
-    ImGui::Image((void*)(intptr_t)Texture, ImVec2(200*4, 200*4));
+	int width;
+	int height;
+	SDL_QueryTexture(Texture, nullptr, nullptr, &width, &height);
+    ImGui::Image((void*)(intptr_t)Texture, ImVec2(width, height));
 //	SDL_RenderCopy(renderer, Texture, NULL, NULL);
     SDL_SetRenderTarget(renderer, nullptr);
 }
@@ -100,9 +109,17 @@ void Screen::clear(ImVec4 vec4)
    	SDL_RenderPresent(Screen::renderer);
 }
 
+void	Screen::updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
+		unsigned char currentLine)
+{
+	for (int i = 0; i < PIXEL_PER_LINE; i++)
+		Screen::drawPoint(i, currentLine, lineData[i],
+				pixels, pitch, MAIN_SCREEN_SCALE);
+}
+
 void	Screen::drawBG()
 {
-    int bit = (!DBG::bBGMap)? 3 : 6;
+    int bit = (!bDisplayWindow)? 3 : 6;
 	unsigned int BGMap  = BIT(M_LCDC, bit) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 

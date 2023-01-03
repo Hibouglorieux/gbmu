@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 03:35:29 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/03 01:43:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ struct BackgroundData {
 class Ppu {
 public:
 //	static void setMem(Mem& cpuMem);
-    static std::array<short, PIXEL_PER_LINE> finalLine;
+    static std::array<short, PIXEL_PER_LINE> renderedLine;
 
 
 	static std::array<short, PIXEL_PER_LINE> doOneLine();

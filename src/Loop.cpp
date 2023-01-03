@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/02 19:48:43 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 01:35:30 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,8 +90,8 @@ bool Loop::loop()
         if (showBG) {
             {
                 ImGui::Begin("BackGround");
-                if (ImGui::Button(DBG::bBGMap ? "Draw BG" : "Draw Window")) {
-                    DBG::bBGMap = !DBG::bBGMap;
+                if (ImGui::Button(Screen::bDisplayWindow ? "Draw BG" : "Draw Window")) {
+                    Screen::bDisplayWindow = !Screen::bDisplayWindow;
                 }
                 Screen::drawBG();
                 Screen::TexturetoImage(Screen::BGTexture);

@@ -20,7 +20,6 @@ class DBG {
 public:
     static DebuggerState state;
     static float speed;
-    static bool bBGMap;
     static void registers();
     static void hexdump();
 

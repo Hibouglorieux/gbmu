@@ -91,10 +91,10 @@ void Gameboy::setState(int newState)
 			}
 		}
 		if (newState == GBSTATE_PX_TRANSFERT) {
-			Ppu::finalLine = Ppu::doOneLine();
-			for (int j = 0; BIT(M_LCDC, 7) && j < PIXEL_PER_LINE; j++) {
-				Screen::drawPoint(j, internalLY - 10, Ppu::finalLine[j],
-					Screen::pixels, Screen::pitch, MAIN_SCREEN_SCALE);
+			if (BIT(M_LCDC, 7)) // TODO handle if we need to actually update screen or not (>60 fps)
+			{
+				Ppu::doOneLine();
+				Screen::updateMainScreen(Ppu::renderedLine, internalLY - 10);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {

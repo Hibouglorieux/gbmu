@@ -14,10 +14,8 @@
 
 #include <SDL2/SDL.h>
 #include "imgui/imgui.h"
-
-#define MAIN_SCREEN_SCALE 4
-#define VRAM_SCREEN_SCALE 4
-#define BG_SCREEN_SCALE 2
+#include <array>
+#include "Ppu.hpp"
 
 class Screen {
 public:
@@ -28,6 +26,8 @@ public:
     static void	NewframeTexture();
 	static void clear(ImVec4 vec4);
 
+	static void updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
+			unsigned char currentLine);
 	static void drawBG();
 	static void drawVRam(bool bIsCGB);
 	static void drawPalettes();
@@ -52,6 +52,8 @@ public:
 	static SDL_Renderer*	renderer;
 
 	static int convertColorFromCGB(int colo, bool bConvertForImGUI = false);
+
+    static bool bDisplayWindow;
 private:
 };
 

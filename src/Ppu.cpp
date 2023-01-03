@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:29:53 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/03 01:43:09 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <iostream>
 
-std::array<short, PIXEL_PER_LINE> Ppu::finalLine{0};
+std::array<short, PIXEL_PER_LINE> Ppu::renderedLine{0};
 unsigned char Ppu::windowCounter = 0;
 
 std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
@@ -32,10 +32,10 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 			if ((pixelLine[i].colorCode != 0 &&
 						((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))
 			{
-				finalLine[i] = pixelLine[i].color;
+				renderedLine[i] = pixelLine[i].color;
 			}
 			else if (BIT(M_LCDC, 0)) {
-				finalLine[i] = backgroundLine[i].color;
+				renderedLine[i] = backgroundLine[i].color;
 			}
 		}
 		
@@ -50,12 +50,12 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 				bIsPixel = true;
 
 			if (bIsPixel && pixelLine[i].bIsSet)// bIsSet takes transparency into account
-				finalLine[i] = pixelLine[i].color;
+				renderedLine[i] = pixelLine[i].color;
 			else
-				finalLine[i] = backgroundLine[i].color;
+				renderedLine[i] = backgroundLine[i].color;
 		}
 	}
-	return finalLine;
+	return renderedLine;
 }
 
 struct TilePixels Ppu::getTile(int tileAddress, int tileIndex, unsigned short mapAddress)
