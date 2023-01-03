@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/11 16:16:10 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/03 21:54:53 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,11 @@ unsigned char Cpu::inc_r8(unsigned short opcode)
 			break;
 		case 0x34:
 			reg = &PHL;
-			break;
+			setSubtractFlag(false);
+			setHalfCarryFlag(getHalfCarry8Bit(*reg, 1));
+			mem[HL] = mem[HL] + 1;
+			setZeroFlag(*reg == 0);
+			return(3);
 		default:
 			logErr("Error calling inc_r8 with wrong opcode");
 	}
@@ -59,7 +63,7 @@ unsigned char Cpu::inc_r8(unsigned short opcode)
 	*reg += 1;
 	setZeroFlag(*reg == 0);
 
-	return (reg == &PHL) ? (3) : (1);
+	return (1);
 }
 
 unsigned char Cpu::dec_r8(unsigned short opcode)
@@ -98,8 +102,12 @@ unsigned char Cpu::dec_r8(unsigned short opcode)
 			reg = &A;
 			break;
 		case 0x35:
-			reg = &PHL;
-			break;
+			reg = &mem[HL];
+			setSubtractFlag(true);
+			setHalfCarryFlag(getHalfBorrow8Bit(*reg, 1));
+			mem[HL] = mem[HL] - 1;
+			setZeroFlag(*reg == 0);
+			return (3);
 		default:
 			logErr("Error calling dec_r8 with wrong opcode");
 	};
@@ -111,7 +119,7 @@ unsigned char Cpu::dec_r8(unsigned short opcode)
 	*reg -= 1;
 	setZeroFlag(*reg == 0);
 
-	return (reg == &PHL) ? (3) : (1);
+	return (1);
 }
 
 unsigned char Cpu::add_a_r8(unsigned char& reg)

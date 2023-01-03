@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 00:54:15 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 22:42:44 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,15 +114,18 @@ void	Cpu::request_interrupt(int i)
 	}
 }
 
-bool  interrupt_halt(void) {
-    if (Cpu::halted) {
-        if (Cpu::interrupts_master_enable || (M_EI & M_IF)) {
+bool  interrupt_halt(void)
+{
+    if (Cpu::halted)
+	{
+        if (((M_EI & 0x1F) & (M_IF & 0x1f)) != 0)
+		{
             Cpu::halted = false;
-        } else {
-            return false;
+			return false;
         }
-    }
-    return true;
+		return true;
+	}
+    return false;
 }
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
@@ -130,16 +133,17 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
-    if (!interrupt_halt()) {
+	if (Cpu::halted == true) {
 	    /* Increment one cycle */
 	    clock = 1;
 	    g_clock += clock;
 	    return std::pair<unsigned char, int>((int)opcode, clock);
     }
-    // debug(readByte(false));
+    //debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
+        Cpu::interrupts_flag = false;
     }
     switch (opcode)
 	{
@@ -512,13 +516,14 @@ int	Cpu::executeLine(bool step, bool updateState)
 	return (false);
 }
 
-void Cpu::debug(int opcode) {
+void Cpu::debug(int opcode)
+{
 	static int count = 1;
 
 	std::cout << std::dec << count++ << "\n";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << opcode << ": ";
 	std::cout << std::hex << std::setw(2) << std::setfill('0') << "PC = " << PC << "\tLY = " << (int)M_LY << "\t\tLCDC = " << (int)M_LCDC << "\tLCDCS = " << (int)M_LCDC_STATUS << "\n";
-	printf("IF=%02x EI=%02x JOY=%02x SC=%02x\n", (uint8_t)M_IF, (uint8_t)M_EI, (uint8_t)mem[0xFF00], (uint8_t)mem[0xFF02]);
+	printf("Opcode=%02x IME=%02x IF=%02x EI=%02x JOY=%02x SC=%02x\n", (uint8_t)opcode, Cpu::interrupts_master_enable, (uint8_t)M_IF, (uint8_t)M_EI, (uint8_t)mem[0xFF00], (uint8_t)mem[0xFF02]);
 	std::cout << std::hex << "AF = " << std::setw(4) << std::setfill('0') << AF << "\tBC = " << std::setw(4) << std::setfill('0') << BC << "\tDE = " << std::setw(4) << std::setfill('0') << DE << "\tHL = " << std::setw(4) << std::setfill('0') << HL << "\n";
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
 }
@@ -554,13 +559,17 @@ void do_interrupts(unsigned int addr, unsigned char bit)
     g_clock += 5;
     RES(M_IF, bit);
     Cpu::interrupts_master_enable = false;
-    Cpu::interrupts_flag = false;
+    // Cpu::interrupts_flag = false;
 }
 
-void Cpu::handle_interrupts() {
+void Cpu::handle_interrupts()
+{
 
+    if (interrupt_halt()) {
+		return ;
+	}
     if (Cpu::interrupts_master_enable) {
-        if (M_EI && M_IF) {
+        if (((M_EI & 0x1f) & (M_IF & 0x1f)) != 0) {
                 if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
                         do_interrupts(IT_VBLANK,  0);
 
@@ -577,7 +586,7 @@ void Cpu::handle_interrupts() {
                         do_interrupts(IT_JOYPAD, 4);
                 } else {
                     //std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
-	                Cpu::interrupts_master_enable = false;
+	                // Cpu::interrupts_master_enable = false;
 //                        logErr("exec: Error unknown interrupt");
                 }
         }
