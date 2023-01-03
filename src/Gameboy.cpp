@@ -50,27 +50,33 @@ void Gameboy::clear()
 	Screen::destroy();
 }
 
-bool Gameboy::execFrame(bool step)
+bool Gameboy::execFrame(bool step, bool bRefreshScreen)
 {
-    while (internalLY >= 0 && internalLY < 10) {
-	Gameboy::setState(GBSTATE_V_BLANK);
-        if (Cpu::executeLine(step, false)) {
-		Cpu::updateLY(1);
-		internalLY++;
-	}
-	if (step) {
-		break ;
-	}
-    }
-    if (internalLY == 10 && BIT(M_LCDC, 7)) {
-	M_LY = 0x00;
-    }
-    while (internalLY >= 10 && internalLY < 154) {
-		if (Cpu::executeLine(step, true)) {
+	while (internalLY >= 0 && internalLY < 10)
+	{
+		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
+		if (Cpu::executeLine(step, false, bRefreshScreen))
+		{
 			Cpu::updateLY(1);
 			internalLY++;
 		}
-		if (step) {
+		if (step)
+		{
+			break ;
+		}
+	}
+	if (internalLY == 10 && BIT(M_LCDC, 7)) {
+		M_LY = 0x00;
+	}
+	while (internalLY >= 10 && internalLY < 154)
+	{
+		if (Cpu::executeLine(step, true, bRefreshScreen))
+		{
+			Cpu::updateLY(1);
+			internalLY++;
+		}
+		if (step)
+		{
 			break ;
 		}
 	}
@@ -78,20 +84,26 @@ bool Gameboy::execFrame(bool step)
 	return true;
 }
 
-void Gameboy::setState(int newState)
+void Gameboy::setState(int newState, bool bRefreshScreen)
 {
-	if (BIT(M_LCDC, 7) && currentState != newState) {
-		if (newState == GBSTATE_V_BLANK) {
-			if (BIT(M_LCDC_STATUS, 4)) {
+	if (BIT(M_LCDC, 7) && currentState != newState)
+	{
+		if (newState == GBSTATE_V_BLANK)
+		{
+			if (BIT(M_LCDC_STATUS, 4))
+			{
 				Cpu::request_interrupt(IT_LCD_STAT);
 			}
 			Cpu::request_interrupt(IT_VBLANK);
-			if (BIT(M_LCDC, 7)) {
+			if (BIT(M_LCDC, 7))
+			{
 				M_LY = 0x90;
 			}
 		}
-		if (newState == GBSTATE_PX_TRANSFERT) {
-			if (BIT(M_LCDC, 7)) // TODO handle if we need to actually update screen or not (>60 fps)
+		// should refresh screen
+		if (newState == GBSTATE_PX_TRANSFERT)
+		{
+			if (bRefreshScreen && BIT(M_LCDC, 7))
 			{
 				Ppu::doOneLine();
 				Screen::updateMainScreen(Ppu::renderedLine, internalLY - 10);
@@ -117,10 +129,10 @@ int Gameboy::getState()
 
 void Gameboy::pollEvent()
 {
-    SDL_Event event;
+	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
-        Screen::handleEvent(&event);
+		Screen::handleEvent(&event);
 		Joypad::handleEvent(&event);
 		if (event.type == SDL_QUIT)
 			Gameboy::quit = true;

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 18:45:18 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 17:58:12 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ public:
 	static StackData captureCurrentState();
 
 
-	static int executeLine(bool step, bool updateState);
+	static int executeLine(bool step, bool updateState, bool bRefreshScreen);
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
@@ -58,7 +58,7 @@ public:
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;
-	static void handle_interrupts();
+	static bool handle_interrupts();
 
 
 	static unsigned short PC;

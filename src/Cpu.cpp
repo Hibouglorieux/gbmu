@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 00:54:15 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 19:06:14 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,8 @@ void	Cpu::request_interrupt(int i)
 	}
 }
 
-bool  interrupt_halt(void) {
+bool  interrupt_halt(void)
+{
     if (Cpu::halted) {
         if (Cpu::interrupts_master_enable || (M_EI & M_IF)) {
             Cpu::halted = false;
@@ -484,27 +485,38 @@ StackData	Cpu::captureCurrentState()
 
 #define NB_CYCLE_LINE 114
 
-int	Cpu::executeLine(bool step, bool updateState)
+int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 {
 	std::pair<unsigned char, int>r;
 
 	while (Gameboy::clockLine < NB_CYCLE_LINE)
-    	{
-		if (updateState && Gameboy::clockLine < 20) {
-			Gameboy::setState(GBSTATE_OAM_SEARCH);
-		} else if (updateState && Gameboy::clockLine < 20 + 43) {
-			Gameboy::setState(GBSTATE_PX_TRANSFERT);
-		} else if (updateState && Gameboy::clockLine < 20 + 43 + 51) {
-			Gameboy::setState(GBSTATE_H_BLANK);
+	{
+		if (updateState && Gameboy::clockLine < 20)
+		{
+			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
+		}
+		else if (updateState && Gameboy::clockLine < 20 + 43)
+		{
+			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
+		}
+		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
+		{
+			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
 		}
 		stackTrace.add(captureCurrentState());
-		Cpu::handle_interrupts();
-		r = executeInstruction();
-		Gameboy::clockLine += r.second;
+		if (Cpu::handle_interrupts())
+		{
+			Gameboy::clockLine += 5;// dont execute instruction because clock updated already
+		}
+		else
+		{
+			r = executeInstruction();
+			Gameboy::clockLine += r.second;
+		}
 		if (step) {
 			break;
 		}
-    	}
+	}
 	if (Gameboy::clockLine >= NB_CYCLE_LINE) {
 		Gameboy::clockLine -= NB_CYCLE_LINE;
 		return (true);
@@ -512,7 +524,8 @@ int	Cpu::executeLine(bool step, bool updateState)
 	return (false);
 }
 
-void Cpu::debug(int opcode) {
+void Cpu::debug(int opcode)
+{
 	static int count = 1;
 
 	std::cout << std::dec << count++ << "\n";
@@ -532,7 +545,7 @@ void	Cpu::updateLY(int iter)
 	else {
 		M_LY = 0;
 	}
-    //     //TODO TEST shall i raise INT_IF bit 2 for INT ?
+	//     //TODO TEST shall i raise INT_IF bit 2 for INT ?
 
 	if (M_LY == M_LYC) {
 		SET(M_LCDC_STATUS, 2);
@@ -548,38 +561,40 @@ void	Cpu::updateLY(int iter)
 
 void do_interrupts(unsigned int addr, unsigned char bit)
 {
-    mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
-    mem[--Cpu::SP] = Cpu::PC & 0xFF;
-    Cpu::PC = addr;
-    g_clock += 5;
-    RES(M_IF, bit);
-    Cpu::interrupts_master_enable = false;
-    Cpu::interrupts_flag = false;
+	mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
+	mem[--Cpu::SP] = Cpu::PC & 0xFF;
+	Cpu::PC = addr;
+	g_clock += 5;
+	RES(M_IF, bit);
+	Cpu::interrupts_master_enable = false;
+	Cpu::interrupts_flag = false;
 }
 
-void Cpu::handle_interrupts() {
-
-    if (Cpu::interrupts_master_enable) {
-        if (M_EI && M_IF) {
-                if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
-                        do_interrupts(IT_VBLANK,  0);
-
-                } else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
-                        do_interrupts(IT_LCD_STAT, 1);
-
-                } else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
-                        do_interrupts(IT_TIMER, 2);
-
-                } else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
-                        do_interrupts(IT_SERIAL, 3);
-
-                } else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
-                        do_interrupts(IT_JOYPAD, 4);
-                } else {
-                    //std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
-	                Cpu::interrupts_master_enable = false;
-//                        logErr("exec: Error unknown interrupt");
-                }
-        }
-    }
+bool Cpu::handle_interrupts()
+{
+	if (Cpu::interrupts_master_enable) {
+		if (M_EI && M_IF) {
+			if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
+				do_interrupts(IT_VBLANK,  0);
+				return true;
+			} else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
+				do_interrupts(IT_LCD_STAT, 1);
+				return true;
+			} else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
+				do_interrupts(IT_TIMER, 2);
+				return true;
+			} else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
+				do_interrupts(IT_SERIAL, 3);
+				return true;
+			} else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
+				do_interrupts(IT_JOYPAD, 4);
+				return true;
+			} else {
+				//std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
+				Cpu::interrupts_master_enable = false;
+				//                        logErr("exec: Error unknown interrupt");
+			}
+		}
+	}
+	return false;
 }

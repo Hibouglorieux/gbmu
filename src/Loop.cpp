@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/03 01:35:30 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 19:09:04 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 bool Loop::showVram = false;
 bool Loop::showBG = false;
 bool Loop::showHexdump = false;
-bool Loop::showRegisters = true;
+bool Loop::showRegisters = false;
 bool Loop::showPalettes = false;
 
 bool Loop::loop()
@@ -48,7 +48,7 @@ bool Loop::loop()
                 showHexdump = !showHexdump;
             }
             ImGui::SameLine();
-            if (ImGui::Button(showRegisters ? "Show registers" : "Hide registers")) {
+            if (ImGui::Button(showRegisters ? "Hide registers" : "Show registers")) {
                 showRegisters = !showRegisters;
             }
             ImGui::SameLine();
