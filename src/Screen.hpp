@@ -21,7 +21,7 @@ class Screen {
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create(bool bIsCGB);
-	static bool drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale);
+	static bool inline drawPoint(unsigned short x, unsigned short y, const unsigned short& color, void *pixels, int pitch, int pixelScale);
 	static void destroy();
     static void	NewframeTexture();
 	static void clear(ImVec4 vec4);
@@ -51,7 +51,7 @@ public:
 	static SDL_Window*		window;
 	static SDL_Renderer*	renderer;
 
-	static int convertColorFromCGB(int colo, bool bConvertForImGUI = false);
+	static int inline convertColorFromCGB(int colo, bool bConvertForImGUI = false);
 
     static bool bDisplayWindow;
 private:

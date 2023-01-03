@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 01:03:15 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 02:04:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,14 +187,14 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
-		if (extraRamBanks.size() == 0) {
-			throw ("error: trying to acces extra unallocated ram");
-		}
 		unsigned char ramBankNb = mbc->getRamBank();
 		if (ramBankNb == 0xFF)// 0xFF stands for no extra ram used
 			return internalArray[addr];
 		else
 		{
+			if (extraRamBanks.size() == 0) {
+				throw ("error: trying to acces extra unallocated ram");
+			}
 			ramBankNb &= extraRamBanks.size() - 1;
 			return extraRamBanks[ramBankNb][addr - 0xA000];
 		}

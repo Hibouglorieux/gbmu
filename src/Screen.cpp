@@ -112,7 +112,7 @@ void Screen::clear(ImVec4 vec4)
 void	Screen::updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
 		unsigned char currentLine)
 {
-	for (int i = 0; i < PIXEL_PER_LINE; i++)
+	for (unsigned char i = 0; i < PIXEL_PER_LINE; i++)
 		Screen::drawPoint(i, currentLine, lineData[i],
 				pixels, pitch, MAIN_SCREEN_SCALE);
 }
@@ -123,7 +123,7 @@ void	Screen::drawBG()
 	unsigned int BGMap  = BIT(M_LCDC, bit) ? 0x9C00 : 0x9800;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
-	for (int i = 0; i < 32 * 32; i++) {
+	for (unsigned short i = 0; i < 32 * 32; i++) {
 		// in order to get the background map displayed we need to fetch the tile to display
 		// which is its number (fetched in BGMap which is 32 * 32), then we need
 		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
@@ -190,11 +190,11 @@ void	Screen::drawVRam(bool bIsCGB)
     unsigned int vRamAddress = 0x8000;
 
 	if (!bIsCGB)
-		for (int xx = 0; xx < 16; xx++) {
-			for (int yy = 0; yy < 24; yy++) {
+		for (unsigned char xx = 0; xx < 16; xx++) {
+			for (unsigned char yy = 0; yy < 24; yy++) {
 				struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0); // XXX nallani how to get palette there?
-				int x_offset = xx * 9;
-				int y_offset = yy * 9;
+				const unsigned char x_offset = xx * 9;
+				const unsigned char y_offset = yy * 9;
 				for (int y = 0; y < 8; y++) {
 					auto line = tile.getColorLine(y);
 					for (int x = 0; x < 8; x++) {
@@ -205,15 +205,15 @@ void	Screen::drawVRam(bool bIsCGB)
 		}
 	else
 	{
-		for (int Vram = 0; Vram < 2; Vram++)
-			for (int xx = 0; xx < 16; xx++) {
-				for (int yy = 0; yy < 24; yy++) {
+		for (unsigned char Vram = 0; Vram < 2; Vram++)
+			for (unsigned char xx = 0; xx < 16; xx++) {
+				for (unsigned char yy = 0; yy < 24; yy++) {
 					struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0, Vram == 0 ? FORCE_DMG_TILEPIXELS : FORCE_CGB_TILEPIXELS); // XXX nallani how to get palette there?
-					int x_offset = xx * 9;
-					int y_offset = yy * 9;
+					const unsigned char x_offset = xx * 9;
+					const unsigned char y_offset = yy * 9;
 					for (int y = 0; y < 8; y++) {
 						auto line = tile.getColorLine(y);
-						for (int x = 0; x < 8; x++) {
+						for (unsigned char x = 0; x < 8; x++) {
 							drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], VramPixels, VramPitch, VRAM_SCREEN_SCALE);
 							//std::cout << "drew at x: " << x + x_offset + Vram * (16 * 9 + 2) << " y: " << y + y_offset << std::endl;
 						}
@@ -258,7 +258,7 @@ bool	Screen::createTexture(bool bIsCGB)
 	return true;
 }
 
-bool	Screen::drawPoint(int x, int y, int color, void *pixels, int pitch, int pixelScale)
+bool	Screen::drawPoint(unsigned short x, unsigned short y, const unsigned short& color, void *pixels, int pitch, int pixelScale)
 {
 	x *= pixelScale;
 	y *= pixelScale;
