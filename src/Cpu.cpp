@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:17 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 14:25:05 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/03 00:54:15 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,16 +40,40 @@ unsigned short& Cpu::HL = registers[3];
 void Cpu::loadBootRom()
 {
 	PC = 0x100;
-	BC = 0x0000;
-	DE = 0xFF56;
-	HL = 0x000D;
 	SP = 0xFFFE;
-	A = 0x11;
-	F = 0x80;
-	//M_LY = 0x00;
-	M_LCDC = 0x91;
-	//M_LCDC = 0x80;
 	mem.supervisorWrite(LCDC_STATUS, 0x85);
+	mem.supervisorWrite(HDMA1, 0xFF);
+	mem.supervisorWrite(HDMA2, 0xFF);
+	mem.supervisorWrite(HDMA3, 0xFF);
+	mem.supervisorWrite(HDMA4, 0xFF);
+	mem.supervisorWrite(HDMA5, 0xFF);
+	M_LCDC = 0x91;
+	//M_LY = 0x00;
+	//M_LCDC = 0x80;
+	
+	if (!Gameboy::bIsCGB)
+	{
+		A = 0x01;
+		F = 0;
+		B = 0x00;
+		C = 0x13;
+		D = 0;
+		E = 0xD8;
+		H = 0x01;
+		L = 0x4D;
+	}
+	else
+	{
+		A = 0x11;
+		F = 0;
+		BC = 0;
+		setZeroFlag(1);
+		D = 0xFF;
+		E = 0x56;
+		H = 0;
+		L = 0x0D;
+	}
+
 	stackTrace.PCBreak = 0x021D;
 	stackTrace.breakActive = false;
 	//stackTrace.opcodeBreak = 0xCB27;

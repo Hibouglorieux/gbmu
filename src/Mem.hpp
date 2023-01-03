@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/31 04:36:33 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/03 00:39:23 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,12 @@
 #include <map>
 #include <vector>
 #include "MBC.hpp"
+
+#define HDMA1 0xFF51
+#define HDMA2 0xFF52
+#define HDMA3 0xFF53
+#define HDMA4 0xFF54
+#define HDMA5 0xFF55
 
 class Mem;
 

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 14:22:08 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/03 00:58:55 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,9 +279,9 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		{
 			// TODO WIP
 			// NOTE : most of the registers are in readOnlyBits
-			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xFC);
-			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xFC);
-			dstAddr = (dstAddr | 0x8000) & 0x9FFF; 
+			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
+			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
+			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
 			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
 			std::cout << "CGB HDMA requested ! with source: " << srcAddr << " and destination: " << dstAddr << " with a len of: " << len << std::endl;
 			memcpy(&mem[dstAddr], &mem[srcAddr], len);
@@ -314,14 +314,20 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			unsigned char OCPSVal = memRef[0xFF6A];
 			bool bShouldIncrement = OCPSVal & (1 << 7);
 			unsigned char OBJPAddress = OCPSVal & 0x3F;
+			//std::cout << "wrote in FF6B at addr: " << (int)OBJPAddress << std::endl;
 			asCGB.OBJPalettes[OBJPAddress] = newValue;
 			if (bShouldIncrement)
 			{
-				mem[0xFF6A] = (memRef[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F);
+				mem.supervisorWrite(0xFF6A, (memRef[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F) | (1 << 6));
+				//std::cout << "incremented 0xFF6A: " << (int)mem[0xFF6A] << std::endl;
 			}
 			//std::cout << "wrote color: " << +newValue << " to OBJ Palette nb: " << +(OBJPAddress / 8) << " at color nb: " << +(OBJPAddress % 8) << std::endl;
 			return asCGB.OBJPalettes[OBJPAddress];
 		}
+		/*
+		if (addr == 0xFF6A)
+			std::cout << "wrote in 0xFF6A: " << (int)value << std::endl;
+			*/
 	}
 	catch (...)
 	{
@@ -413,6 +419,8 @@ int		Mem::getCartridgeType()
 CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 {
 	CGBVramBank = new unsigned char[0x2000];
+	for (int i = 0x9800; i < 0xA000; i++)
+		CGBVramBank[i - 0x9800] = 0x00;
 	BGPalettes.fill(0xFF);
 	for (int i = 0; i < 8; i++)
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
