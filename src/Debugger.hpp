@@ -19,7 +19,7 @@ enum class DebuggerState : int {
 class DBG {
 public:
     static DebuggerState state;
-    static float speed;
+    static int fps;
     static void registers();
     static void hexdump();
 

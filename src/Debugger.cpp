@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
-float DBG::speed = 1;
+int DBG::fps = 60;
 
 void DBG::hexdump() {
 	{
