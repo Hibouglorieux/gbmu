@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 23:43:03 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/04 20:00:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@ int main(int argc, char** argv)
 	(void) argc;
 	(void) argv;
 
+	std::cout << std::setfill('0') << std::uppercase;
+	std::cerr << std::setfill('0') << std::uppercase;
+	std::cerr << std::hex;
+	std::cout << std::hex;
 	if (argc == 1 || argc == 3)
 	{
 		if (!Gameboy::loadRom(DEFAULT_PATH_TO_FILE))
@@ -34,10 +38,6 @@ int main(int argc, char** argv)
 			return -1;
 		}
 	}
-	std::cout << std::setfill('0') << std::uppercase;
-	std::cerr << std::setfill('0') << std::uppercase;
-	std::cerr << std::hex;
-	std::cout << std::hex;
 	Gameboy::init();
 	try {
 		Gameboy::run();

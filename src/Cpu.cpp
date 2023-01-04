@@ -21,6 +21,7 @@ unsigned short Cpu::registers[4] = {};
 bool Cpu::interrupts_master_enable = false;
 bool Cpu::interrupts_flag = false;
 bool Cpu::halted = false;
+uint32_t Cpu::halt_counter = 0;
 
 unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
 unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
@@ -83,46 +84,54 @@ void	Cpu::request_interrupt(int i)
 	unsigned char bit;
 	switch (i)
 	{
-	case IT_VBLANK:
-		bit = 0;
-		break;
-	case IT_LCD_STAT:
-		bit = 1;
-		break;
-	case IT_SERIAL:
-		bit = 3;
-		break;
-	case IT_TIMER:
-		bit = 2;
-		break;
-	case IT_JOYPAD:
-		bit = 4;
-		break;
-	
-	default:
-		std::cerr << "Incorrect request ask\n";
-		exit(2);
-		break;
-	}
+		case IT_VBLANK:
+			bit = 0;
+			break;
+		case IT_LCD_STAT:
+			bit = 1;
+			break;
+		case IT_TIMER:
+			bit = 2;
+			break;
+		case IT_SERIAL:
+			bit = 3;
+			break;
+		case IT_JOYPAD:
+			bit = 4;
+			break;
 
+		default:
+			std::cerr << "Incorrect request ask\n";
+			exit(2);
+			break;
+	}
 	SET(M_IF, bit);
-
-	if (interrupts_master_enable) {
-		if (M_EI & bit)
-			halted = false;
-	}
 }
 
-bool  interrupt_halt(void)
+bool  Cpu::isCpuHalted(void)
 {
-    if (Cpu::halted) {
-        if (Cpu::interrupts_master_enable || (M_EI & M_IF)) {
+    if (Cpu::halted)
+	{
+		// TODO we should exit halt even when IME is not set but the behavior is different
+        if (M_EI & M_IF & 0x1F)
+		{
             Cpu::halted = false;
-        } else {
-            return false;
+			Cpu::halt_counter = 0;
+			return false;
+		}
+		else if (Cpu::halt_counter != 0)
+		{
+			Cpu::halt_counter++;
+			if (Cpu::halt_counter > 0x20000) {
+            Cpu::halted = false;
+			Cpu::halt_counter = 0;
+			return false;
+			}
         }
+		else
+            return true;
     }
-    return true;
+    return false;
 }
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
@@ -130,17 +139,12 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
-    if (!interrupt_halt()) {
-	    /* Increment one cycle */
-	    clock = 1;
-	    g_clock += clock;
-	    return std::pair<unsigned char, int>((int)opcode, clock);
-    }
     // debug(readByte(false));
     opcode = readByte();
     if (Cpu::interrupts_flag && opcode != 0xf3) {
         Cpu::interrupts_master_enable = true;
     }
+	Cpu::interrupts_flag = false;
     switch (opcode)
 	{
 		case 0x00:
@@ -445,7 +449,6 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 				// NOTE need to exit here because of targetBit/Register references
 				// Cpu::debug(opcode);
 				clock = instruction();
-				g_clock += clock;
 				return std::pair<unsigned char, int>((int)opcode, clock);
 			}
 			break;
@@ -458,11 +461,10 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	}
 	// Cpu::debug(opcode);
 	clock = instruction();
-	g_clock += clock;
 	return std::pair<unsigned char, int>((int)opcode, clock);
 }
 
-StackData	Cpu::captureCurrentState()
+StackData	Cpu::captureCurrentState(std::string customData)
 {
 	StackData stackData;
 
@@ -483,7 +485,7 @@ StackData	Cpu::captureCurrentState()
 		stackData.opcode <<= 8;
 		stackData.opcode|= mem[PC + 1];
 	}
-	stackData.customData = "";
+	stackData.customData = customData;
 	return stackData;
 }
 
@@ -507,16 +509,11 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 		{
 			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
 		}
-		stackTrace.add(captureCurrentState());
-		if (Cpu::handle_interrupts())
-		{
-			Gameboy::clockLine += 5;// dont execute instruction because clock updated already
-		}
-		else
-		{
-			r = executeInstruction();
-			Gameboy::clockLine += r.second;
-		}
+
+		int clockInc = doMinimumStep();
+		g_clock += clockInc;
+		Gameboy::clockLine += clockInc;
+
 		if (step) {
 			break;
 		}
@@ -544,13 +541,12 @@ void	Cpu::updateLY(int iter)
 {
 	if (!BIT(M_LCDC, 7))// special case LCD diabled
 	{
-		M_LY = 0;
+		mem.supervisorWrite(LY, 0);
 		return;
 	}
-	M_LY += iter;
-	M_LY %= 154;
 
-	//     //TODO TEST shall i raise INT_IF bit 2 for INT ?
+	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
+
 
 	if (M_LY == M_LYC) {
 		SET(M_LCDC_STATUS, 2);
@@ -569,35 +565,66 @@ void do_interrupts(unsigned int addr, unsigned char bit)
 	mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
 	Cpu::PC = addr;
-	g_clock += 5;
 	RES(M_IF, bit);
 	Cpu::interrupts_master_enable = false;
-	Cpu::interrupts_flag = false;
+	Cpu::interrupts_flag = false;// overkill
+}
+
+unsigned char	Cpu::doMinimumStep()
+{
+	if (isCpuHalted())
+	{
+		stackTrace.add(captureCurrentState("IM HALTED"));
+	    /* Increment one cycle */
+		return 1;
+	}
+	else if (handle_interrupts())
+	{
+		// interrupts takes 5 cycles;
+		return 5;
+	}
+	else
+	{
+		stackTrace.add(captureCurrentState());
+		return executeInstruction().second;
+	}
 }
 
 bool Cpu::handle_interrupts()
 {
-	if (Cpu::interrupts_master_enable) {
-		if (M_EI && M_IF) {
-			if (BIT(M_EI, 0) && BIT(M_IF, 0)) {
-				do_interrupts(IT_VBLANK,  0);
+	if (Cpu::interrupts_master_enable)
+	{
+		if (M_EI & M_IF & 0x1f)
+		{
+			if (BIT(M_EI, 0) && BIT(M_IF, 0))
+			{
+				stackTrace.add(captureCurrentState("INTERRUPT VBLANK"));
+				do_interrupts(IT_VBLANK, 0);
 				return true;
-			} else if (BIT(M_EI, 1) && BIT(M_IF, 1)) {
+			}
+			else if (BIT(M_EI, 1) && BIT(M_IF, 1))
+			{
+				stackTrace.add(captureCurrentState("INTERRUPT LCD_STAT"));
 				do_interrupts(IT_LCD_STAT, 1);
 				return true;
-			} else if (BIT(M_EI, 2) && BIT(M_IF, 2)) {
+			}
+			else if (BIT(M_EI, 2) && BIT(M_IF, 2))
+			{
+				stackTrace.add(captureCurrentState("INTERRUPT TIMER"));
 				do_interrupts(IT_TIMER, 2);
 				return true;
-			} else if (BIT(M_EI, 3) && BIT(M_IF, 3)) {
+			}
+			else if (BIT(M_EI, 3) && BIT(M_IF, 3))
+			{
+				stackTrace.add(captureCurrentState("INTERRUPT SERIAL"));
 				do_interrupts(IT_SERIAL, 3);
 				return true;
-			} else if (BIT(M_EI, 4) && BIT(M_IF, 4)) {
+			}
+			else if (BIT(M_EI, 4) && BIT(M_IF, 4))
+			{
+				stackTrace.add(captureCurrentState("INTERRUPT JOYPAD"));
 				do_interrupts(IT_JOYPAD, 4);
 				return true;
-			} else {
-				//std::cout << "M_EI : " << std::hex << (short)M_EI << " M_IF " << std::hex << (short)M_IF << std::endl;
-				Cpu::interrupts_master_enable = false;
-				//                        logErr("exec: Error unknown interrupt");
 			}
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 17:58:12 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 19:19:36 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,10 @@ class Cpu {
 public:
 
 	static CpuStackTrace stackTrace;
-	static StackData captureCurrentState();
+	static StackData captureCurrentState(std::string customData = "");
 
+	static unsigned char	doMinimumStep();
+	static bool isCpuHalted();
 
 	static int executeLine(bool step, bool updateState, bool bRefreshScreen);
 	static void loadBootRom();
@@ -58,6 +60,7 @@ public:
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
 	static bool halted;
+	static uint32_t halt_counter;
 	static bool handle_interrupts();
 
 
