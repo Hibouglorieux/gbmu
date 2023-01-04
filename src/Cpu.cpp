@@ -1,5 +1,4 @@
-/* ************************************************************************** */
-/*                                                                            */
+/* ************************************************************************** */ /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   Cpu.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
@@ -487,6 +486,11 @@ StackData	Cpu::captureCurrentState()
 	stackData.DE = DE;
 	stackData.HL = HL;
 	stackData.opcode = mem[PC];
+	stackData.ie_reg = M_EI;
+	stackData.if_reg = M_IF;
+	stackData.ly_reg = M_LY;
+	stackData.lcdc = M_LCDC;
+	stackData.ime = interrupts_master_enable;
 	if (mem[PC] == 0xCB)
 	{
 		stackData.opcode <<= 8;
@@ -551,13 +555,14 @@ void Cpu::debug(int opcode)
 
 void	Cpu::updateLY(int iter)
 {
-	if (BIT(M_LCDC, 7)) {
-		M_LY += iter;
-		M_LY %= 154;
-	}
-	else {
+	if (!BIT(M_LCDC, 7))// special case LCD diabled
+	{
 		M_LY = 0;
+		return;
 	}
+	M_LY += iter;
+	M_LY %= 154;
+
 	//     //TODO TEST shall i raise INT_IF bit 2 for INT ?
 
 	if (M_LY == M_LYC) {

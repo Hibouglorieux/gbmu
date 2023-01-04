@@ -116,4 +116,6 @@ void Joypad::handleEvent(SDL_Event *ev)
 	}
 	if (bSomethingChanged)
 		refresh();
+	if (keyboardEv.type == SDL_KEYDOWN && keyboardEv.keysym.sym == SDLK_l)
+		CpuStackTrace::autoPrint = true;
 }

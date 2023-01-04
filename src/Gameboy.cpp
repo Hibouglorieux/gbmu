@@ -52,28 +52,36 @@ void Gameboy::clear()
 
 bool Gameboy::execFrame(bool step, bool bRefreshScreen)
 {
-	while (internalLY >= 0 && internalLY < 10)
+	while (internalLY >= 0 && internalLY < 144)
 	{
-		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
-		if (Cpu::executeLine(step, false, bRefreshScreen))
+		if (Cpu::executeLine(step, true, bRefreshScreen))
 		{
 			Cpu::updateLY(1);
-			internalLY++;
+			if (M_LY == 0)
+				internalLY = 0;
+			else
+				internalLY++;
 		}
 		if (step)
 		{
 			break ;
 		}
 	}
+	/*
 	if (internalLY == 10 && BIT(M_LCDC, 7)) {
 		M_LY = 0x00;
 	}
-	while (internalLY >= 10 && internalLY < 154)
+	*/
+	while (internalLY >= 144 && internalLY < 154)
 	{
-		if (Cpu::executeLine(step, true, bRefreshScreen))
+		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
+		if (Cpu::executeLine(step, false, bRefreshScreen))
 		{
 			Cpu::updateLY(1);
-			internalLY++;
+			if (M_LY == 0)
+				internalLY = 0;
+			else
+				internalLY++;
 		}
 		if (step)
 		{
@@ -95,10 +103,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 				Cpu::request_interrupt(IT_LCD_STAT);
 			}
 			Cpu::request_interrupt(IT_VBLANK);
-			if (BIT(M_LCDC, 7))
-			{
-				M_LY = 0x90;
-			}
+			//M_LY = 0x90;
 		}
 		// should refresh screen
 		if (newState == GBSTATE_PX_TRANSFERT)
@@ -106,7 +111,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			if (bRefreshScreen && BIT(M_LCDC, 7))
 			{
 				Ppu::doOneLine();
-				Screen::updateMainScreen(Ppu::renderedLine, internalLY - 10);
+				Screen::updateMainScreen(Ppu::renderedLine, internalLY);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
