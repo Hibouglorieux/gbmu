@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:52:11 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 01:29:23 by lmariott         ###   ########.fr       */
+/*   Updated: 2022/11/08 21:48:09 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,13 @@ unsigned char Cpu::nop()
 
 unsigned char Cpu::stop()
 {
-	Cpu::halted = HALT_STOP_MODE;
-	mem[0xFF04] = 0; // reset DIV
-	mem[0xFF4D] = 0x80;
 //	Cpu::interrupts_master_enable = false;
 	return 2;
 }
 
 unsigned char Cpu::halt()
 {
-	Cpu::halted = HALT_MODE;
+	Cpu::halted = true;
 	return 1;
 }
 

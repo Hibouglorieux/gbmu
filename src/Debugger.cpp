@@ -96,8 +96,6 @@ void DBG::registers() {
         ImGui::Separator();
         ImGui::NextColumn();
 
-        ImGui::Text("       LCDC = [0x%02X]", (uint8_t)M_LCDC);
-        ImGui::Text("       STAT = [0x%02X]", (uint8_t)M_LCDC_STATUS);
         ImGui::Text("       PC = [0x%04X]", Cpu::PC);
         ImGui::NewLine();
         ImGui::Text("       opcode = [0x%02X] %02X %02X", (int)mem[Cpu::PC], (int)mem[Cpu::PC + 1], (int)mem[Cpu::PC + 2]);

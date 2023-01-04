@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 00:15:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/03 17:58:12 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,6 @@
 #include <utility>
 #include "define.hpp"
 
-#define HALT_MODE 1
-#define HALT_STOP_MODE 1
-#define HALT_TIMER_COUNTER 0x20000
 
 class Cpu {
 public:
@@ -60,8 +57,7 @@ public:
 
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
-	static uint8_t halted;
-	static uint32_t halt_counter;
+	static bool halted;
 	static bool handle_interrupts();
 
 
