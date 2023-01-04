@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:52:11 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/08 21:48:09 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 19:54:46 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ unsigned char Cpu::nop()
 
 unsigned char Cpu::stop()
 {
+	Cpu::halted = true;
+	Cpu::halt_counter = 1; // init halt counter
+	mem[0xFF04] = 0; // reset DIV
+	mem[0xFF4D] = 0x80; // request speed change lmariott TBD
 //	Cpu::interrupts_master_enable = false;
 	return 2;
 }
@@ -39,6 +43,8 @@ unsigned char Cpu::di()
 // The effect of EI is delayed by one instruction. This means that EI followed immediately by DI does not allow interrupts between the EI and the DI.
 unsigned char Cpu::ei()
 {
-    Cpu::interrupts_flag = true;
+	// this is because if the IME is already working, there is no need to verify with a delay to enable it
+	if (interrupts_master_enable != true)
+		Cpu::interrupts_flag = true;
 	return 1;
 }

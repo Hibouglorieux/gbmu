@@ -103,7 +103,6 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 				Cpu::request_interrupt(IT_LCD_STAT);
 			}
 			Cpu::request_interrupt(IT_VBLANK);
-			//M_LY = 0x90;
 		}
 		// should refresh screen
 		if (newState == GBSTATE_PX_TRANSFERT)

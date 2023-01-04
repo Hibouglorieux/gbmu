@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 02:04:29 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 19:59:26 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.seekg(0x143, std::ifstream::beg);
 	char CGBCode;
 	file.read(&CGBCode, 1);
+	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
 	if (CGBCode & 0x80)
 		return new CGBMem(pathToRom);
@@ -261,6 +262,8 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			RES(M_LCDC_STATUS, 2);
 	}
 	if (addr == LY) {
+		std::cout << "WARNING riting to LY value: " << (int)value << std::endl;
+		std::cout << "but LY is read only !!" << std::endl;
 		if (value == M_LYC)
 			SET(M_LCDC_STATUS, 2);
 		else

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:53:28 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/11 16:06:15 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/04 16:37:29 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,7 +228,7 @@ unsigned char Cpu::reti()
     // (THe value of SP is 2 larger than before instruction execution.)
     // The next instruction is fetched from the address specified by the content of PC (as usual).
 
-    ei();
+    Cpu::interrupts_master_enable = true;
     return ret(); // returns 4
 }
 
