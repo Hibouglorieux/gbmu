@@ -58,7 +58,10 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		{
 			Cpu::updateLY(1);
 			if (M_LY == 0)
+			{
 				internalLY = 0;
+				Ppu::resetWindowCounter();
+			}
 			else
 				internalLY++;
 		}
@@ -80,6 +83,8 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		if (!loopFunc())
 			break;
 	}
+	if (internalLY >= 154)
+		Ppu::resetWindowCounter();
 	internalLY %= 154;
 	return true;
 }
