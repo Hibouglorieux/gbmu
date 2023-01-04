@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 01:43:09 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 22:45:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,12 @@
 #include <algorithm>
 #include <iostream>
 
-std::array<short, PIXEL_PER_LINE> Ppu::renderedLine{0};
 unsigned char Ppu::windowCounter = 0;
 
 std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 {
+	std::array<short, PIXEL_PER_LINE> renderedLine;
+	renderedLine.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
 	auto pixelLine = getOamLine();
 
 	auto backgroundLine = getBackgroundLine();
@@ -148,7 +149,6 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		}
 		entry++;
 	}
-
 
 	spritesFound2 = spritesFound;
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully

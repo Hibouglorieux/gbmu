@@ -122,10 +122,11 @@ bool  Cpu::isCpuHalted(void)
 		else if (Cpu::halt_counter != 0)
 		{
 			Cpu::halt_counter++;
-			if (Cpu::halt_counter > 0x20000) {
-            Cpu::halted = false;
-			Cpu::halt_counter = 0;
-			return false;
+			if (Cpu::halt_counter > 0x20000)
+			{
+				Cpu::halted = false;
+				Cpu::halt_counter = 0;
+				return false;
 			}
         }
 		else
@@ -552,6 +553,7 @@ void	Cpu::updateLY(int iter)
 		SET(M_LCDC_STATUS, 2);
 		if (BIT(M_LCDC_STATUS, 6)) {
 			// do_interrupts(IT_LCD_STAT, 1);
+			//std::cout << "request interrupt LY==LYC with val: " << (int)M_LY << std::endl;
 			request_interrupt(IT_LCD_STAT);
 		}
 	} else

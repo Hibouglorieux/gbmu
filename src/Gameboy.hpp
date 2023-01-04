@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/03 17:37:48 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 22:56:09 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,19 @@
 #define g_clock (Gameboy::getClock())
 #define mem (Gameboy::getMem())
 
+
 class Gameboy {
 public:
+	enum class Step
+	{
+		full,
+		oneInstruction,
+		oneLine
+	};
+
 	static bool quit;
 	static Clock gbClock;
-	static int	internalLY;
+	static uint8_t	internalLY;
 	static int	clockLine;
 	static void init();
 	static bool loadRom(std::string pathToFile);
@@ -37,7 +45,7 @@ public:
 	static Mem& getMem();
 	static Clock& getClock();
 	static void setState(int newState, bool bRefreshScreen);
-	static bool execFrame(bool step, bool bRefreshScreen = true);
+	static bool execFrame(Step step, bool bRefreshScreen = true);
 	static int getState();
 	static void pollEvent();
 	static bool bIsCGB;

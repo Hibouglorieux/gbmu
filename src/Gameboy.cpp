@@ -5,7 +5,7 @@ Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
 int Gameboy::currentState = 0;
 
-int Gameboy::internalLY = 0;
+uint8_t Gameboy::internalLY = 0;
 int Gameboy::clockLine = 0;
 
 bool Gameboy::quit = false;
@@ -50,11 +50,11 @@ void Gameboy::clear()
 	Screen::destroy();
 }
 
-bool Gameboy::execFrame(bool step, bool bRefreshScreen)
+bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 {
-	while (internalLY >= 0 && internalLY < 144)
+	std::function<bool()> loopFunc = [&]()
 	{
-		if (Cpu::executeLine(step, true, bRefreshScreen))
+		if (Cpu::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
 		{
 			Cpu::updateLY(1);
 			if (M_LY == 0)
@@ -62,31 +62,23 @@ bool Gameboy::execFrame(bool step, bool bRefreshScreen)
 			else
 				internalLY++;
 		}
-		if (step)
-		{
-			break ;
-		}
+		if (step == Step::oneLine || step == Step::oneInstruction)
+			return false;
+		return true;
+	};
+
+	//TODO this needs rework as it might not take a frame if LCD is disabled
+	//but at least it returns when whole 144 lines have been rendered
+	while (internalLY < 144)
+	{
+		if (!loopFunc())
+			break;
 	}
-	/*
-	if (internalLY == 10 && BIT(M_LCDC, 7)) {
-		M_LY = 0x00;
-	}
-	*/
 	while (internalLY >= 144 && internalLY < 154)
 	{
 		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
-		if (Cpu::executeLine(step, false, bRefreshScreen))
-		{
-			Cpu::updateLY(1);
-			if (M_LY == 0)
-				internalLY = 0;
-			else
-				internalLY++;
-		}
-		if (step)
-		{
-			break ;
-		}
+		if (!loopFunc())
+			break;
 	}
 	internalLY %= 154;
 	return true;
@@ -100,6 +92,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		{
 			if (BIT(M_LCDC_STATUS, 4))
 			{
+				//std::cout << "request interrupt VBLANK" << std::endl;
 				Cpu::request_interrupt(IT_LCD_STAT);
 			}
 			Cpu::request_interrupt(IT_VBLANK);
@@ -109,14 +102,15 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		{
 			if (bRefreshScreen && BIT(M_LCDC, 7))
 			{
-				Ppu::doOneLine();
-				Screen::updateMainScreen(Ppu::renderedLine, internalLY);
+				Screen::updateMainScreen(Ppu::doOneLine(), internalLY);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
+			//std::cout << "request interrupt HBLANK" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
+			//std::cout << "request interrupt OAM" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
 		}
 		unsigned char lcdcs = M_LCDC_STATUS & ~0x07;

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/03 20:08:20 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 22:16:02 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,19 @@ bool Loop::loop()
             if (ImGui::Button("Next frame")) {
             	DBG::state = DebuggerState::ONCE_FRAME;
             }
+            if (ImGui::Button("Next line")) {
+            	DBG::state = DebuggerState::ONCE_LINE;
+            }
             if (DBG::state != DebuggerState::PAUSED) {
-            	Gameboy::execFrame(DBG::state == DebuggerState::ONCE);
+				Gameboy::Step step = Gameboy::Step::full;
+				if (DBG::state == DebuggerState::ONCE)
+					step = Gameboy::Step::oneInstruction;
+				if (DBG::state == DebuggerState::ONCE_LINE)
+					step = Gameboy::Step::oneLine;
+            	Gameboy::execFrame(step);
             	if (DBG::state == DebuggerState::ONCE ||
-            	    DBG::state == DebuggerState::ONCE_FRAME) {
+            	    DBG::state == DebuggerState::ONCE_FRAME ||
+					DBG::state == DebuggerState::ONCE_LINE) {
             	    DBG::state = DebuggerState::PAUSED;
             	}
             }
