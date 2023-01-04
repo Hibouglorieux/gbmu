@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 16:33:15 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 17:01:55 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 00:56:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,16 @@
 #include <iostream>
 #include <iomanip>
 
+bool CpuStackTrace::autoPrint = false;
+
 CpuStackTrace::CpuStackTrace()
 {
 	printSize = 3000;
-	maxSize = 3;
+	maxSize = 1;
 	PCBreak = 0;
 	opcodeBreak = 0xFF;
 	breakActive = false;
 	queue.resize(maxSize + 1);
-	autoPrint = false;
 }
 
 CpuStackTrace::~CpuStackTrace()
@@ -63,9 +64,12 @@ void StackData::print()
 {
 	std::cout << std::setfill('0');
 	std::cout << "PC: 0x" << std::setw(4) << PC << "\topcode: 0x" << std::setw(4) <<  opcode << std::endl;
-	std::cout << "SP: 0x" << std::setw(4) << SP << "\tAF: 0x" << std::setw(4) << AF << std::endl;
-	std::cout << "BC: 0x" << std::setw(4) << BC << "\tDE: 0x" << std::setw(4) << DE << std::endl;
-	std::cout << "HL: 0x" << std::setw(4) << HL << std::endl;
+	std::cout << "AF: 0x" << std::setw(4) << AF << "\tBC: 0x" << std::setw(4) << BC << std::endl;
+	std::cout << "DE: 0x" << std::setw(4) << DE << "\tHL: 0x" << std::setw(4) << HL << std::endl;
+	std::cout << "SP: 0x" << std::setw(4) << SP << std::endl;
+	std::cout << "IE: 0x" << std::setw(2) << (int)ie_reg << "\tIF: 0x" << std::setw(2) << (int)if_reg << std::endl;
+	std::cout << "LCDC: 0x" << std::setw(2) << (int)lcdc << "\tLY: 0x" << std::setw(2) << (int)ly_reg  << std::endl;
+	std::cout << "LY: 0x" << std::setw(2) << (int)ly_reg << "\tIME: " << ime << std::endl;
 	if (!customData.empty())
 		std::cout << customData << std::endl;
 }
