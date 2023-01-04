@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <array>
 #include "MBC.hpp"
 
 #define HDMA1 0xFF51
@@ -53,6 +54,7 @@ public:
 	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
 	unsigned char* getVram() {return &internalArray[0x8000];}
+	std::vector<unsigned char> readFile(const std::string& filename);
 
 	virtual unsigned char* getCGBVram() {throw("");}
 	virtual const std::array<unsigned char, 64>& getBGPalettes(){throw("");}// should never be called
