@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/03 01:35:30 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 20:08:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,16 @@
 bool Loop::showVram = false;
 bool Loop::showBG = false;
 bool Loop::showHexdump = false;
-bool Loop::showRegisters = true;
+bool Loop::showRegisters = false;
 bool Loop::showPalettes = false;
 
 bool Loop::loop()
 {
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	const std::chrono::microseconds frametime(1'000'000 / 60);
 
 	while (!Gameboy::quit)
 	{
-       	std::chrono::microseconds frametime(1'000'000 / (int)(60 * DBG::speed));
+       	std::chrono::microseconds frametime(1'000'000 / DBG::fps);
 		auto beginFrameTime = std::chrono::system_clock::now();
 
 	    Screen::NewframeTexture();
@@ -48,7 +47,7 @@ bool Loop::loop()
                 showHexdump = !showHexdump;
             }
             ImGui::SameLine();
-            if (ImGui::Button(showRegisters ? "Show registers" : "Hide registers")) {
+            if (ImGui::Button(showRegisters ? "Hide registers" : "Show registers")) {
                 showRegisters = !showRegisters;
             }
             ImGui::SameLine();
@@ -56,7 +55,7 @@ bool Loop::loop()
                 showPalettes = !showPalettes;
             }
             ImGui::NewLine();
-            ImGui::SliderFloat("Speed", &DBG::speed, 0.25f, 2.0f);
+            ImGui::SliderInt("FPS", &DBG::fps, 1, 300);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
                 DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;

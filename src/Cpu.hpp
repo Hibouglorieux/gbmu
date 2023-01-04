@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 18:45:18 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 00:15:54 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@
 #include <utility>
 #include "define.hpp"
 
+#define HALT_MODE 1
+#define HALT_STOP_MODE 1
+#define HALT_TIMER_COUNTER 0x20000
 
 class Cpu {
 public:
@@ -31,7 +34,7 @@ public:
 	static StackData captureCurrentState();
 
 
-	static int executeLine(bool step, bool updateState);
+	static int executeLine(bool step, bool updateState, bool bRefreshScreen);
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);
@@ -57,8 +60,9 @@ public:
 
 	static bool interrupts_master_enable;
 	static bool interrupts_flag;
-	static bool halted;
-	static void handle_interrupts();
+	static uint8_t halted;
+	static uint32_t halt_counter;
+	static bool handle_interrupts();
 
 
 	static unsigned short PC;

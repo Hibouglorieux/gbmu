@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
-float DBG::speed = 1;
+int DBG::fps = 60;
 
 void DBG::hexdump() {
 	{
@@ -96,7 +96,11 @@ void DBG::registers() {
         ImGui::Separator();
         ImGui::NextColumn();
 
-        ImGui::Text("       PC = [0x%04x]", Cpu::PC);
+        ImGui::Text("       LCDC = [0x%02X]", (uint8_t)M_LCDC);
+        ImGui::Text("       STAT = [0x%02X]", (uint8_t)M_LCDC_STATUS);
+        ImGui::Text("       PC = [0x%04X]", Cpu::PC);
+        ImGui::NewLine();
+        ImGui::Text("       opcode = [0x%02X] %02X %02X", (int)mem[Cpu::PC], (int)mem[Cpu::PC + 1], (int)mem[Cpu::PC + 2]);
         ImGui::NextColumn();
         ImGui::Text("SP = [0x%04X]", Cpu::SP);
         ImGui::NewLine();

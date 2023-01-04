@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2022/12/29 20:10:15 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/03 17:37:48 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ public:
 	static bool run();
 	static Mem& getMem();
 	static Clock& getClock();
-	static void setState(int newState);
-	static bool execFrame(bool step);
+	static void setState(int newState, bool bRefreshScreen);
+	static bool execFrame(bool step, bool bRefreshScreen = true);
 	static int getState();
 	static void pollEvent();
 	static bool bIsCGB;
