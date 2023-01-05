@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:36 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/09 04:35:51 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/05 16:12:54 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,16 @@
 // 	11 -> 16384Hz -> clock cycle / (256 * CGBMODE?2:1)
 
 
-class Clock {
+class Clock
+{
 public:
 	Clock();
 	virtual ~Clock(void);
 	int& operator+=(int addValue);
 	operator int();
+	static bool		cgbMode;
 private:
 	int 			clock;
-	static bool		cgbMode;
 	static bool		reloadTMA;
 	static int		timaClock;
 	static int		divClock;

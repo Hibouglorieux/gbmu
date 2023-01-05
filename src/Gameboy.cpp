@@ -36,7 +36,8 @@ bool Gameboy::loadRom(std::string pathToFile)
 	Gameboy::path = pathToFile;
 	if (!gbMem)
 		return false;
-	bIsCGB = gbMem->isCGB();
+	//bIsCGB = gbMem->isCGB();
+	bIsCGB = true;
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
 	return gbMem->isValid;
 }

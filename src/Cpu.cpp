@@ -122,11 +122,10 @@ bool  Cpu::isCpuHalted(void)
 		else if (Cpu::halt_counter != 0)
 		{
 			Cpu::halt_counter++;
-			if (Cpu::halt_counter > 0x20000)
-			{
-				Cpu::halted = false;
-				Cpu::halt_counter = 0;
-				return false;
+			if (Cpu::halt_counter > 2050) { //0x20000) {
+            Cpu::halted = false;
+			Cpu::halt_counter = 0;
+			return false;
 			}
         }
 		else

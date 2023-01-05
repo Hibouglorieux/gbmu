@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 22:09:08 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/05 22:19:11 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF68, 0b0100'0000}, // BCPS
  {0xFF6A, 0b0100'0000}, // OCPS
  {0xFF70, 0b1111'1000}, // SVBK, only 3 first bits used
+ {0xFF26, 0b0000'1111}, // Sound on/off : required by some game which reading it
 				
 };
 
@@ -56,6 +57,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
+	return new CGBMem(pathToRom);
 	if (CGBCode & 0x80)
 		return new CGBMem(pathToRom);
 	else
@@ -249,6 +251,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	if (addr == 0xFF1A) {
+		mem.supervisorWrite(0xFF26, mem[0xff26] & ~(1 << 2));
+	}
 	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
 	{
 		memRef.mbc->writeInRom(addr, newValue);
@@ -319,10 +324,9 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	}
 	
     if (addr == 0xFF46) {
-//		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0xa0);// TODO change with banks
-//			std::cout << "DMA transfert done" << std::endl;
+			// DMA transfert to OAM : This take 160 cycle and CPU can access only HRAM while TODO
 		}
 	}
 	try // try block because this is only for CGB registers
