@@ -328,18 +328,23 @@ bool	Screen::create(bool bIsCGB)
 	return (true);
 }
 
+#include <fstream>
+
 void	Screen::handleEvent(SDL_Event *ev)
 {
 	if (ev->type == SDL_WINDOWEVENT) {
 		switch (ev->window.event) {
 			case SDL_WINDOWEVENT_CLOSE:
 				Gameboy::quit = true;
+				Gameboy::saveRam();
 				break;
 		}
 	}
 	if (ev->type == SDL_KEYDOWN)
 	{
-		if (ev->key.keysym.sym == SDLK_ESCAPE)
+		if (ev->key.keysym.sym == SDLK_ESCAPE) {
 			Gameboy::quit = true;
+			Gameboy::saveRam();
+		}
 	}
 }

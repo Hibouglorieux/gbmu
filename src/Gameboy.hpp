@@ -22,6 +22,8 @@
 #include "Joypad.hpp"
 #include "define.hpp"
 
+#include <fstream>
+
 #define g_clock (Gameboy::getClock())
 #define mem (Gameboy::getMem())
 
@@ -50,10 +52,12 @@ public:
 	static void pollEvent();
 	static bool bIsCGB;
 	static void clear();
+	static void saveRam();
 //	static void LYCallback();
 private:
 	static int currentState;
 	static Mem* gbMem;
+	static std::string path;
 
 };
 #endif

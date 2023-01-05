@@ -10,6 +10,8 @@ int Gameboy::clockLine = 0;
 
 bool Gameboy::quit = false;
 bool Gameboy::bIsCGB = false;
+std::string Gameboy::path = "";
+
 Mem& Gameboy::getMem()
 {
 	return (*gbMem);
@@ -31,6 +33,7 @@ void	Gameboy::init()
 bool Gameboy::loadRom(std::string pathToFile)
 {
 	gbMem = Mem::loadFromFile(pathToFile);
+	Gameboy::path = pathToFile;
 	if (!gbMem)
 		return false;
 	bIsCGB = gbMem->isCGB();
@@ -123,6 +126,17 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		mem.supervisorWrite(LCDC_STATUS, lcdcs);
 	}
 	currentState = newState;
+}
+
+void Gameboy::saveRam() {
+	if (mem.extraRamBanks.size()) {
+		std::ofstream outfile(path + ".save", std::ios::binary);
+
+		for (unsigned char *elem : mem.extraRamBanks) {
+			outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
+		}
+		outfile.close();
+	}
 }
 
 int Gameboy::getState()
