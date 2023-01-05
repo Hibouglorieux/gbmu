@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 00:05:49 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 00:10:36 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
-	return new CGBMem(pathToRom);
 	if (CGBCode & 0x80)
 		return new CGBMem(pathToRom);
 	else
