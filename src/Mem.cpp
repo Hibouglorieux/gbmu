@@ -108,19 +108,6 @@ Mem::Mem(const std::string& pathToRom)
 	for (int i = 0; i < extraRamBanksNb; i++)
 		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
 
-	// Check if there is a save
-	std::ifstream tmp(pathToRom + ".save");
-	if (tmp.good()) {
-		std::cout << "Save was detected" << std::endl;
-
-		std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
-		for (int i = 0; i < extraRamBanksNb; i++) {
-			memcpy(extraRamBanks[i], saveContent.data() + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
-		}
-	} else
-		std::cout << "No saves were detected" << std::endl;
-
-
 	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
@@ -138,6 +125,27 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
+
+	// Check if there is a save
+	std::ifstream tmp(pathToRom + ".save");
+	if (tmp.good()) {
+		std::cout << "Save was detected" << std::endl;
+		std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
+
+		if (mbc->hasTimer) {
+			// Fetching timer save
+			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
+			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
+			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
+			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << "\n";
+		}
+
+		for (int i = 0; i < extraRamBanksNb; i++) {
+			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
+		}
+	} else
+		std::cout << "No saves were detected" << std::endl;
+
 
 	init();
 }
@@ -218,7 +226,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 			if (typeMBC == 3) {
 				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
 				if (ptr) {
-					return *(((unsigned char *)&ptr->time) + ptr->rtcBindNb);
+					return *(((unsigned char *)&ptr->rtc_register) + ptr->rtcBindNb);
 				} else
 					throw "Could not dynamically cast MBC3";
 			}

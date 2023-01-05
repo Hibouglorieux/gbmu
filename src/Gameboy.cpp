@@ -129,9 +129,17 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 }
 
 void Gameboy::saveRam() {
-	std::cout << "Saving game with " << mem.extraRamBanks.size() << " ram banks\n";
-	if (mem.extraRamBanks.size()) {
+	std::cout << "Saving game with " << mem.extraRamBanks.size() << " ram banks and timer : " << mem.mbc->hasTimer << "\n";
+	if (mem.extraRamBanks.size() || mem.mbc->hasTimer) {
 		std::ofstream outfile(path + ".save", std::ios::binary);
+
+		if (mem.mbc->hasTimer) {
+			MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
+			if (!ptr)
+				throw "Could not dynamically cast MBC3 (saveRam function)";
+			outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
+			std::cout << "Saved timer : " << std::dec << (int)ptr->start << "\n";
+		}
 
 		for (unsigned char *elem : mem.extraRamBanks) {
 			outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
