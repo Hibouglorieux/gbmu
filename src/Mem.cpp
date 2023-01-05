@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 19:59:26 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/05 22:09:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,7 +323,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0xa0);// TODO change with banks
 //			std::cout << "DMA transfert done" << std::endl;
-		} //TODO CGB DMA FF51->FF55
+		}
 	}
 	try // try block because this is only for CGB registers
 	{
@@ -335,7 +335,8 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
 			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
 			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
-			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
+			unsigned short len = ((newValue & 0x7F) + ((bool)!BIT(newValue, 7))) * 0x10;
+			std::cout << "writing to HMDA5: " << +newValue << std::endl;
 			std::cout << "CGB HDMA requested ! with source: " << srcAddr << " and destination: " << dstAddr << " with a len of: " << len << std::endl;
 			memcpy(&mem[dstAddr], &mem[srcAddr], len);
 			value = 0xFF;// lets say it finished instantly

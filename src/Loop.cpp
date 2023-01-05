@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/04 22:16:02 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/04 23:53:52 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,8 +120,6 @@ bool Loop::loop()
         if (showHexdump) {
             DBG::hexdump();
         }
-
-        Ppu::resetWindowCounter();
 
 	Gameboy::pollEvent();
 
