@@ -129,6 +129,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 }
 
 void Gameboy::saveRam() {
+	std::cout << "Saving game with " << mem.extraRamBanks.size() << " ram banks\n";
 	if (mem.extraRamBanks.size()) {
 		std::ofstream outfile(path + ".save", std::ios::binary);
 
