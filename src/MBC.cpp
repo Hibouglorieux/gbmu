@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "MBC.hpp"
+#include "define.hpp"
 #include <iostream>
 
 MBC* MBC::createMBC(unsigned char mbcCode)
@@ -108,9 +109,16 @@ unsigned char MBC1::getRamBank()
 
 unsigned char MBC2::writeInRom(unsigned short addr, unsigned char value)
 {
-	if (addr <=	0x0FFF)
+	if (addr <=	0x3FFF)
 	{
-		bEnableRam = (value == 0xA);
+		if (!BIT(addr, 8)) {
+			// Controls RAM enable
+			bEnableRam = (value == 0xA);
+
+		} else {
+			// Controls ROM Bank
+			romBankNb = (value & 0b1111);
+		}
 	}
 	if (addr >= 0x2100 && addr <= 0x2FFF)
 	{
@@ -131,21 +139,75 @@ unsigned char MBC2::getRamBank()
 	return 0xFF;// wont work with saves but works otherwise
 }
 
+rtc MBC3::getCurrentTime() {
+	// TODO
+	rtc current_time;
+
+	memset(&time, 0, sizeof(rtc));
+
+  	return current_time;
+}
+
 
 unsigned char MBC3::writeInRom(unsigned short addr, unsigned char value)
 {
 	//WIP
 	if (addr < 0x1FFF)
 		bEnableRam = value == 0xA;
-	if (addr >= 0xA000 && addr <= 0xBFFF)
-	{
-		if (bEnableRam)
-			;
+	// if (addr >= 0xA000 && addr <= 0xBFFF)
+	// {
+	// 	if (bEnableRam)
+	// 		;
+	// }
+	if (addr >= 0x2000 && addr <= 0x3FFF) {
+		// 2000-3FFF - ROM Bank Number
+		romBankNb = (value & 0b01111111);
 	}
-	if (addr >= 0x2000 && addr <= 0x3FFF)
-		romBankNb = value & 0x7F;
-	if (addr >= 0x4000 && addr <= 0x5FFF)
-		ramBankNb = value & 0b11;
+	if (addr >= 0x4000 && addr <= 0x5FFF) {
+		// 4000-5FFF - RAM Bank Number - or - RTC Register Select
+		if (value <= 0x07) {
+			// RAM Bank Number
+			ramBankNb = value;
+
+		} else if (value <= 0x0C) {
+			// RTC Register Select
+			switch (value)
+			{
+			case 0x08:
+				// Bind Seconds
+				rtcBindNb = 0;
+				break;
+			case 0x09:
+				// Bind Minutes
+				rtcBindNb = 1;
+				break;
+			case 0x0A:
+				// Bind Hours
+				rtcBindNb = 2;
+				break;
+			case 0x0B:
+				// Bind Lower 8 bits of day counter
+				rtcBindNb = 3;
+				break;
+			case 0x0C:
+				// Bind Upper 1 bit of day counter
+				rtcBindNb = 4;
+				break;
+			default:
+				throw "Wrong value written in RTC Select (MBC3)";
+			}
+			ramBankNb = 0xFF;
+		}
+	}
+	else if (addr >= 0x6000 && addr <= 0x7FFF) {
+		if (lastVal == 0 && value == 1) {
+			if (!latched)
+				time = getCurrentTime();
+			latched = !latched;
+		}
+	}
+
+	lastVal = value;
 	return value;
 }
 
@@ -160,7 +222,7 @@ unsigned short MBC3::getRomBank(unsigned short addr)
 
 unsigned char MBC3::getRamBank()
 {
-	return 0xFF;
+	return ramBankNb;
 }
 
 

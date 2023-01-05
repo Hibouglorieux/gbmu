@@ -12,6 +12,7 @@
 
 #include "Mem.hpp"
 #include "Cpu.hpp"
+#include "Utility.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -66,6 +67,14 @@ void Mem::supervisorWrite(unsigned int addr, unsigned char value)
 	Mem::internalArray[addr] = value;
 }
 
+std::vector<unsigned char> Mem::readFile(const std::string& filename) {
+    std::ifstream infile(filename, std::ios::binary);
+    std::vector<unsigned char> fileContent((std::istreambuf_iterator<char>(infile)),
+                                           std::istreambuf_iterator<char>());
+    infile.close();
+    return fileContent;
+}
+
 Mem::Mem(const std::string& pathToRom)
 {
 	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
@@ -98,6 +107,20 @@ Mem::Mem(const std::string& pathToRom)
 
 	for (int i = 0; i < extraRamBanksNb; i++)
 		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
+
+	// Check if there is a save
+	std::ifstream tmp(pathToRom + ".save");
+	if (tmp.good()) {
+		std::cout << "Save was detected" << std::endl;
+
+		std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
+		for (int i = 0; i < extraRamBanksNb; i++) {
+			memcpy(extraRamBanks[i], saveContent.data() + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
+		}
+	} else
+		std::cout << "No saves were detected" << std::endl;
+
+
 	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
@@ -176,6 +199,8 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
+	unsigned char typeMBC = mbc->getType();
+
 	if (addr <= 0x7FFF)
 	{
 		unsigned char romBankNb = mbc->getRomBank(addr);
@@ -189,8 +214,16 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
 		unsigned char ramBankNb = mbc->getRamBank();
-		if (ramBankNb == 0xFF)// 0xFF stands for no extra ram used
+		if (ramBankNb == 0xFF) { // 0xFF stands for no extra ram used
+			if (typeMBC == 3) {
+				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
+				if (ptr) {
+					return *(((unsigned char *)&ptr->time) + ptr->rtcBindNb);
+				} else
+					throw "Could not dynamically cast MBC3";
+			}
 			return internalArray[addr];
+		}
 		else
 		{
 			if (extraRamBanks.size() == 0) {
@@ -210,6 +243,11 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	{
 		memRef.mbc->writeInRom(addr, newValue);
 		return value;// XXX that might pose aproblem or not
+	}
+	else if (addr >= 0xA000 && addr <= memRef.mbc->getRamUpperAddress()) {
+		// Write in RAM Bank
+		
+
 	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
