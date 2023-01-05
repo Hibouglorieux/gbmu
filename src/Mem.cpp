@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 22:19:11 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/06 00:05:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ Mem::Mem(const std::string& pathToRom)
 			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
 			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
 			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << "\n";
+			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
 		memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
@@ -336,10 +336,12 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		{
 			// TODO WIP
 			// NOTE : most of the registers are in readOnlyBits
+			// TODO need to create HDMA class and do it clock by clock in order
+			// to be able to stop it
 			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
 			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
 			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
-			unsigned short len = ((newValue & 0x7F) + ((bool)!BIT(newValue, 7))) * 0x10;
+			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;// this breaks crystal 
 			std::cout << "writing to HMDA5: " << +newValue << std::endl;
 			std::cout << "CGB HDMA requested ! with source: " << srcAddr << " and destination: " << dstAddr << " with a len of: " << len << std::endl;
 			memcpy(&mem[dstAddr], &mem[srcAddr], len);

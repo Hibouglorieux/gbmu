@@ -145,6 +145,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
         Cpu::interrupts_master_enable = true;
     }
 	Cpu::interrupts_flag = false;
+	bool bIsPHL = ((opcode & 0x0F) == 0x06) | ((opcode & 0x0F) == 0x0E);
     switch (opcode)
 	{
 		case 0x00:
@@ -263,37 +264,77 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 		case 0x38:
 			instruction = [&](){ return jr_s8_flag(opcode);};
 			break;
-		case 0x40 ... 0x6F:
-		case 0x78 ... 0x7F:
+		case 0x40 ... 0x45:
+		case 0x47 ... 0x4D:
+		case 0x4F ... 0x55:
+		case 0x57 ... 0x5D:
+		case 0x5F ... 0x65:
+		case 0x67 ... 0x6D:
+		case 0x6F:
+		case 0x78 ... 0x7D:
+		case 0x7F:
 			instruction = [&](){ return load_r_r(getTargetRegister(opcode), getSourceRegister(opcode));};
+			break;
+		case 0x46:
+		case 0x56:
+		case 0x66:
+		case 0x4E:
+		case 0x5E:
+		case 0x6E:
+		case 0x7E:
+			instruction = [&](){ return load_r_hl(getTargetRegister(opcode));};
 			break;
 		case 0x70 ... 0x75:
 		case 0x77:
 			instruction = [&](){ return load_hl_r(getSourceRegister(opcode));};
 			break;
 		case 0x80 ... 0x87:
-			instruction = [&](){ return add_a_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return add_a_phl();};
+			else
+				instruction = [&](){ return add_a_r8(getSourceRegister(opcode));};
 			break;
 		case 0x88 ... 0x8F:
-			instruction = [&](){ return adc_a_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return adc_a_phl();};
+			else
+				instruction = [&](){ return adc_a_r8(getSourceRegister(opcode));};
 			break;
 		case 0x90 ... 0x97:
-			instruction = [&](){ return sub_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return sub_phl();};
+			else
+				instruction = [&](){ return sub_r8(getSourceRegister(opcode));};
 			break;
 		case 0x98 ... 0x9F:
-			instruction = [&](){ return sbc_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return sbc_phl();};
+			else
+				instruction = [&](){ return sbc_r8(getSourceRegister(opcode));};
 			break;
 		case 0xA0 ... 0xA7:
-			instruction = [&](){ return and_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return and_phl();};
+			else
+				instruction = [&](){ return and_r8(getSourceRegister(opcode));};
 			break;
 		case 0xA8 ... 0xAF:
-			instruction = [&](){ return xor_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return xor_phl();};
+			else
+				instruction = [&](){ return xor_r8(getSourceRegister(opcode));};
 			break;
 		case 0xB0 ... 0xB7:
-			instruction = [&](){ return or_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return or_phl();};
+			else
+				instruction = [&](){ return or_r8(getSourceRegister(opcode));};
 			break;
 		case 0xB8 ... 0xBF:
-			instruction = [&](){ return cp_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return cp_phl();};
+			else
+				instruction = [&](){ return cp_r8(getSourceRegister(opcode));};
 			break;
 		case 0xC0:
 		case 0xC8:
@@ -406,41 +447,74 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 			{
 				opcode = readByte();
 
-				unsigned char& targetRegister = getSourceRegister(opcode);
+				bIsPHL = ((opcode & 0x0F) == 0x06) | ((opcode & 0x0F) == 0x0E);
 				unsigned char targetBit = getTargetBit(opcode);
 				switch (opcode) {
 					case 0x00 ... 0x07:
-						instruction = [&](){ return rlc_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rlc_phl();};
+						else
+							instruction = [&](){ return rlc_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x08 ... 0x0F:
-						instruction = [&](){ return rrc_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rrc_phl();};
+						else
+							instruction = [&](){ return rrc_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x10 ... 0x17:
-						instruction = [&](){ return rl_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rl_phl();};
+						else
+							instruction = [&](){ return rl_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x18 ... 0x1F:
-						instruction = [&](){ return rr_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rr_phl();};
+						else
+							instruction = [&](){ return rr_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x20 ... 0x27:
-						instruction = [&](){ return sla_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return sla_phl();};
+						else
+							instruction = [&](){ return sla_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x28 ... 0x2F:
-						instruction = [&](){ return sra_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return sra_phl();};
+						else
+							instruction = [&](){ return sra_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x30 ... 0x37:
-						instruction = [&](){ return swap_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return swap_phl();};
+						else
+							instruction = [&](){ return swap_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x38 ... 0x3F:
-						instruction = [&](){ return srl_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return srl_phl();};
+						else
+							instruction = [&](){ return srl_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x40 ... 0x7F:
-						instruction = [&](){ return bit_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return bit_n_phl(targetBit);};
+						else
+							instruction = [&](){ return bit_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					case 0x80 ... 0xBF:
-						instruction = [&](){ return res_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return res_n_phl(targetBit);};
+						else
+							instruction = [&](){ return res_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					case 0xC0 ... 0xFF:
-						instruction = [&](){ return set_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return set_n_phl(targetBit);};
+						else
+							instruction = [&](){ return set_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					default:
 						stackTrace.print();

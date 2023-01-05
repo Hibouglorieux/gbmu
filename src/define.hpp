@@ -1,7 +1,6 @@
 #include "Mem.hpp"
 
 /* CPU */
-#define PHL (mem[HL])
 #define M_EI (mem[0xFFFF])
 #define M_IF (mem[0xFF0F])
 #define IT_VBLANK 0x40
