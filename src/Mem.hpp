@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <array>
 #include "MBC.hpp"
 
 #define HDMA1 0xFF51

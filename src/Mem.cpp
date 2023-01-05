@@ -176,6 +176,8 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
+	unsigned char typeMBC = mbc->getType();
+
 	if (addr <= 0x7FFF)
 	{
 		unsigned char romBankNb = mbc->getRomBank(addr);
@@ -189,8 +191,16 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
 		unsigned char ramBankNb = mbc->getRamBank();
-		if (ramBankNb == 0xFF)// 0xFF stands for no extra ram used
+		if (ramBankNb == 0xFF) { // 0xFF stands for no extra ram used
+			if (typeMBC == 3) {
+				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
+				if (ptr) {
+					return *(((unsigned char *)&ptr->time) + ptr->rtcBindNb);
+				} else
+					throw "Could not dynamically cast MBC3";
+			}
 			return internalArray[addr];
+		}
 		else
 		{
 			if (extraRamBanks.size() == 0) {
@@ -210,6 +220,11 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	{
 		memRef.mbc->writeInRom(addr, newValue);
 		return value;// XXX that might pose aproblem or not
+	}
+	else if (addr >= 0xA000 && addr <= memRef.mbc->getRamUpperAddress()) {
+		// Write in RAM Bank
+		
+
 	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
