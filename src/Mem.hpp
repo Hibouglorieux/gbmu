@@ -64,6 +64,8 @@ public:
 	bool	isCGB();
 	int		getCartridgeType();
 
+	unsigned char *getInternalArray() {return internalArray; }
+
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
     std::vector<unsigned char*>	extraRamBanks;
     std::vector<unsigned char*>	romBanks;

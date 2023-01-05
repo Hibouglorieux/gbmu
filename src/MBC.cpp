@@ -13,6 +13,8 @@
 #include "MBC.hpp"
 #include "define.hpp"
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 
 MBC::MBC(int mbcCode) {
 	std::cout << "MBC constructor\n";
@@ -151,8 +153,6 @@ unsigned char MBC2::getRamBank()
 {
 	return 0xFF;// wont work with saves but works otherwise
 }
-#include <ctime>
-#include <cstdlib>
 
 rtc MBC3::getCurrentTime() {
 	// TODO
@@ -183,7 +183,7 @@ rtc MBC3::getCurrentTime() {
 	result.DL = (days & 0xFF);
 	result.DH = (days & 0x0100);
 	
-	std::cout << "current time diff is : " << std::dec << days << " days, " << hours << " hours, " << minutes << " minutes, " << seconds << " seconds\n";
+	// std::cout << "current time diff is : " << std::dec << days << " days, " << hours << " hours, " << minutes << " minutes, " << seconds << " seconds\n";
     // Print the current time
     // std::cout << "The current time is: " << asctime(localTime);
 

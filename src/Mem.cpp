@@ -140,8 +140,10 @@ Mem::Mem(const std::string& pathToRom)
 			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << "\n";
 		}
 
+		memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
+
 		for (int i = 0; i < extraRamBanksNb; i++) {
-			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
+			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;
