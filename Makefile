@@ -72,6 +72,7 @@ SRC					+= $(S_PATH)Ppu.cpp
 SRC					+= $(S_PATH)Screen.cpp
 SRC					+= $(S_PATH)Sprite.cpp
 SRC					+= $(S_PATH)TilePixels.cpp
+SRC					+= $(S_PATH)Hdma.cpp
 
 # Header
 
@@ -101,6 +102,7 @@ HDR					+=	Screen.hpp
 HDR					+=	Sprite.hpp
 HDR					+=	TilePixels.hpp
 HDR					+=	Utility.hpp
+HDR					+=	Hdma.hpp
 HDR					+=	Utility.tpp
 
 ###############################################################################

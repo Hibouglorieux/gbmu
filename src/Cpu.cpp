@@ -11,6 +11,7 @@
 
 #include "Cpu.hpp"
 #include <functional>
+#include "Hdma.hpp"
 
 CpuStackTrace Cpu::stackTrace;
 
@@ -584,8 +585,10 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
 		}
 
+		uint8_t speed = (Clock::cgbMode == true ? 2 : 1);
 		int clockInc = doMinimumStep();
 		g_clock += clockInc;
+		Hdma::update(clockInc, speed, Gameboy::getState() == GBSTATE_H_BLANK);
 		Gameboy::clockLine += clockInc;
 
 		if (step) {
