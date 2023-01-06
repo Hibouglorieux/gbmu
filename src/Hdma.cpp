@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/06 18:35:22 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 21:14:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		std::cout << std::endl;
 		bIsWritting = false;
 		mem.supervisorWrite(0xFF55, newValue);
-		exit(0);
+		//exit(0);
 	}
 	else
 	{
@@ -73,7 +73,7 @@ void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 	//clockToAdd *= speed; // NOTE shall we ignore this ?
 	(void)speed;
 	clockToAdd += leftClocks;
-	int countDebug = 1;
+	int countDebug = 0;
 	if (clockToAdd >= MAGIC_DEBUG_VALUE)
 		std::cout << "update hdma, len left is: " << len << std::endl;
 	else
@@ -81,15 +81,17 @@ void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 		leftClocks = clockToAdd;
 		return;
 	}
-	while (clockToAdd >= MAGIC_DEBUG_VALUE && len > 0)
+	// TODO this isnt WORKING AT ALL
+	// letting just len > 0 will make it like a memcpy instantly
+	while (/*clockToAdd >= MAGIC_DEBUG_VALUE &&*/ len > 0)
 	{
-		std::cout << "wrote in hdma: " << countDebug++ << " times" << std::endl;
-		std::cout << "srcAddr: " << +src << std::endl;
-		std::cout << "dstAddr: " << +dst << std::endl;
+		//std::cout << "srcAddr: " << +src << std::endl;
+		//std::cout << "dstAddr: " << +dst << std::endl;
 		clockToAdd -= MAGIC_DEBUG_VALUE;
 
-		for (int i = 0; i < 0x20 && len > 0; i++)
+		for (int i = 0; i < 0x10 && len > 0; i++)
 		{
+			countDebug++;
 			mem[dst] = +(mem[src]);
 			dst++;
 			src++;
@@ -97,6 +99,7 @@ void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 		}
 
 	}
+	std::cout << "wrote in hdma: " << countDebug << " times" << std::endl;
 	mem.supervisorWrite(0xFF55, (uint8_t)((uint8_t)(len / 16) - 1 + (len % 16 == 0 ? 0 : 1)));
 	std::cout << "exit hdma update, len left: " << len << std::endl;
 	std::cout << "exit hdma update, FF55 is equal to: " << (int)mem[0xFF55] << std::endl;

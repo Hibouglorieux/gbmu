@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/06 21:09:10 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 21:15:52 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ bool Loop::loop()
 			ImGui::SetNextItemWidth(180);
             ImGui::SliderInt("FPS", &DBG::fps, 1, 300);
 			ImGui::SetNextItemWidth(180);
-            ImGui::InputInt("StopAtFrame: ", (int*)&DBG::stopAtFrame);
+            ImGui::InputInt("frameNb Break", (int*)&DBG::stopAtFrame);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::SameLine();
             if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
