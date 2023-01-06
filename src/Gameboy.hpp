@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/05 17:39:11 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/06 20:09:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,11 @@ public:
 	static bool bIsCGB;
 	static void clear();
 	static void saveRam();
-//	static void LYCallback();
+	static void changeLCD(bool bActivateLCD);
 private:
 	static int currentState;
+	static bool bLCDWasOff;
+	static bool bShouldRenderFrame;
 	static Mem* gbMem;
 	static std::string path;
 

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 22:49:29 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 20:04:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ public:
 	static struct TilePixels getBackgroundTile(unsigned char xOffsetInMap, unsigned char yOffsetInMap);
 //    static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 	static void resetWindowCounter();
+
+	static std::array<short, PIXEL_PER_LINE> getDefaultWhiteLine();
 
 private:
 	static unsigned char windowCounter;

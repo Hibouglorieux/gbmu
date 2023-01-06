@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 01:27:24 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/06 20:37:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,6 +234,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 				} else
 					throw "Could not dynamically cast MBC3";
 			}
+			internalArray[addr] = 0;
 			return internalArray[addr];
 		}
 		else
@@ -329,6 +330,8 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			// DMA transfert to OAM : This take 160 cycle and CPU can access only HRAM while TODO
 		}
 	}
+	if (addr == 0xFF40)
+		Gameboy::changeLCD(BIT(newValue, 7));// special case for LCD disable/enable
 	try // try block because this is only for CGB registers
 	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
