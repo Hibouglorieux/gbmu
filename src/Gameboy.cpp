@@ -77,8 +77,6 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	if (bLogFrameNb)
 		std::cout << "frameNb: " << std::endl;
 	frameNb++;
-	if (frameNb == 0xE88)
-		DBG::fps = 10;
 	// render a white screen if LCD is off
 	// normal render wont be called since we wont enter pxl transfer state
 	if (!bShouldRenderFrame)
@@ -141,7 +139,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			Cpu::request_interrupt(IT_VBLANK);
 		}
 		// should refresh screen
-		if (newState == GBSTATE_PX_TRANSFERT)
+		if (newState == GBSTATE_H_BLANK)
 		{
 			if (bRefreshScreen)
 			{
