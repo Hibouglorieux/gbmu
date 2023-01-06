@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/04 23:53:52 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 21:09:10 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,17 +55,24 @@ bool Loop::loop()
                 showPalettes = !showPalettes;
             }
             ImGui::NewLine();
+			ImGui::SetNextItemWidth(180);
             ImGui::SliderInt("FPS", &DBG::fps, 1, 300);
+			ImGui::SetNextItemWidth(180);
+            ImGui::InputInt("StopAtFrame: ", (int*)&DBG::stopAtFrame);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::SameLine();
             if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
                 DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
             }
+			ImGui::SameLine();
             if (ImGui::Button("Next step")) {
             	DBG::state = DebuggerState::ONCE;
             }
+			ImGui::SameLine();
             if (ImGui::Button("Next frame")) {
             	DBG::state = DebuggerState::ONCE_FRAME;
             }
+			ImGui::SameLine();
             if (ImGui::Button("Next line")) {
             	DBG::state = DebuggerState::ONCE_LINE;
             }
@@ -82,6 +89,8 @@ bool Loop::loop()
             	    DBG::state = DebuggerState::PAUSED;
             	}
             }
+			if (DBG::stopAtFrame == Gameboy::frameNb)
+				DBG::state = DebuggerState::PAUSED;
             Screen::TexturetoImage(Screen::texture);
             ImGui::End();
         }

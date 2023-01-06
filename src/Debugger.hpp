@@ -23,7 +23,7 @@ public:
     static int fps;
     static void registers();
     static void hexdump();
-
+	static unsigned int stopAtFrame;
 };
 
 

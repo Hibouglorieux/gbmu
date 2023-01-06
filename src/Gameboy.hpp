@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/06 20:09:49 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 20:57:48 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ public:
 	static void clear();
 	static void saveRam();
 	static void changeLCD(bool bActivateLCD);
+	static unsigned int frameNb;
 private:
 	static int currentState;
 	static bool bLCDWasOff;

@@ -1,6 +1,7 @@
 #include "Gameboy.hpp"
 #include "imgui/imgui_impl_sdl.h"
 #include "Hdma.hpp"
+#include "Debugger.hpp"
 
 Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
@@ -14,7 +15,9 @@ bool Gameboy::bShouldRenderFrame = true;
 bool Gameboy::quit = false;
 bool Gameboy::bIsCGB = false;
 std::string Gameboy::path = "";
-int frameNb = 0;
+unsigned int Gameboy::frameNb = 0;
+
+bool bLogFrameNb = false;
 
 Mem& Gameboy::getMem()
 {
@@ -71,6 +74,11 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	bShouldRenderFrame = !bLCDWasOff;
 	bLCDWasOff = !BIT(M_LCDC, 7);
 
+	if (bLogFrameNb)
+		std::cout << "frameNb: " << std::endl;
+	frameNb++;
+	if (frameNb == 0xE88)
+		DBG::fps = 10;
 	// render a white screen if LCD is off
 	// normal render wont be called since we wont enter pxl transfer state
 	if (!bShouldRenderFrame)
