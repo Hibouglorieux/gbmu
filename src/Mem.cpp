@@ -13,6 +13,7 @@
 #include "Mem.hpp"
 #include "Cpu.hpp"
 #include "Utility.hpp"
+#include "APU.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -284,6 +285,15 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	value = newValue;
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
+
+	if (addr == NR14)
+		APU::checkTrigger(1);
+	else if (addr == NR24)
+		APU::checkTrigger(2);
+	else if (addr == NR34)
+		APU::checkTrigger(3);
+	else if (addr == NR44)
+		APU::checkTrigger(4);
     /* recursive call
 //	if (addr == LCDC) {
 //		if ((value & 0x80) == 0) {

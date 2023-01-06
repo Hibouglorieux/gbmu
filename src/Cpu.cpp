@@ -10,6 +10,7 @@
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "APU.hpp"
 #include <functional>
 
 CpuStackTrace Cpu::stackTrace;
@@ -513,6 +514,7 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 		int clockInc = doMinimumStep();
 		g_clock += clockInc;
+		// APU::tick();
 		Gameboy::clockLine += clockInc;
 
 		if (step) {
