@@ -24,7 +24,8 @@ FILES = main.cpp \
 		CpuStackTrace.cpp \
 		MBC.cpp \
 		Sprite.cpp \
-		Debugger.cpp
+		Debugger.cpp \
+		Hdma.cpp
 
 
 

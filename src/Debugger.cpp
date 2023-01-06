@@ -4,6 +4,7 @@
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
 int DBG::fps = 60;
+unsigned int DBG::stopAtFrame = 0;
 
 void DBG::hexdump() {
 	{
@@ -101,6 +102,7 @@ void DBG::registers() {
         ImGui::Text("       opcode = [0x%02X] %02X %02X", (int)mem[Cpu::PC], (int)mem[Cpu::PC + 1], (int)mem[Cpu::PC + 2]);
         ImGui::NextColumn();
         ImGui::Text("SP = [0x%04X]", Cpu::SP);
+        ImGui::Text("frameNumber : %u", Gameboy::frameNb);
         ImGui::NewLine();
 
         ImGui::NextColumn();

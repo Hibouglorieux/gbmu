@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 23:57:11 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 20:05:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,16 @@
 
 unsigned char Ppu::windowCounter = 0;
 
+std::array<short, PIXEL_PER_LINE> Ppu::getDefaultWhiteLine()
+{
+	std::array<short, PIXEL_PER_LINE> line;
+	line.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
+	return line;
+}
+
 std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 {
-	std::array<short, PIXEL_PER_LINE> renderedLine;
-	renderedLine.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
+	std::array<short, PIXEL_PER_LINE> renderedLine = getDefaultWhiteLine();
 	auto pixelLine = getOamLine();
 
 	auto backgroundLine = getBackgroundLine();

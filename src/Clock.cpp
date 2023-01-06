@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 16:45:06 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/06 18:28:33 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int&	Clock::operator+=(int addValue)
 	static int clocks_array[4] = {1024, 16, 64, 256};
 	int timaFreqDivider = 0;
 	// TODO cgb double speed Mode impl
-	uint8_t clockMul = (cgbMode ? 8 : 4);
+	uint8_t clockMul = (cgbMode ? 2 : 4);
 
 	clock += addValue * clockMul;
 

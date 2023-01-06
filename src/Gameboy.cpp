@@ -1,5 +1,7 @@
 #include "Gameboy.hpp"
 #include "imgui/imgui_impl_sdl.h"
+#include "Hdma.hpp"
+#include "Debugger.hpp"
 
 Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
@@ -8,9 +10,14 @@ int Gameboy::currentState = 0;
 uint8_t Gameboy::internalLY = 0;
 int Gameboy::clockLine = 0;
 
+bool Gameboy::bLCDWasOff = false;
+bool Gameboy::bShouldRenderFrame = true;
 bool Gameboy::quit = false;
 bool Gameboy::bIsCGB = false;
 std::string Gameboy::path = "";
+unsigned int Gameboy::frameNb = 0;
+
+bool bLogFrameNb = false;
 
 Mem& Gameboy::getMem()
 {
@@ -53,8 +60,31 @@ void Gameboy::clear()
 	Screen::destroy();
 }
 
+void Gameboy::changeLCD(bool bActivateLCD)
+{
+	if (!bActivateLCD)
+	{
+		bLCDWasOff = false;
+		bShouldRenderFrame = false;
+	}
+}
+
 bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 {
+	bShouldRenderFrame = !bLCDWasOff;
+	bLCDWasOff = !BIT(M_LCDC, 7);
+
+	if (bLogFrameNb)
+		std::cout << "frameNb: " << std::endl;
+	frameNb++;
+	if (frameNb == 0xE88)
+		DBG::fps = 10;
+	// render a white screen if LCD is off
+	// normal render wont be called since we wont enter pxl transfer state
+	if (!bShouldRenderFrame)
+		for (int i = 0; i < 144; i++)
+			Screen::updateMainScreen(Ppu::getDefaultWhiteLine(), i);
+
 	std::function<bool()> loopFunc = [&]()
 	{
 		if (Cpu::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
@@ -62,7 +92,10 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 			Cpu::updateLY(1);
 			if (M_LY == 0)
 			{
-				internalLY = 0;
+				if (BIT(M_LCDC, 7))
+					internalLY = 0;
+				else
+					internalLY++;
 				Ppu::resetWindowCounter();
 			}
 			else
@@ -75,6 +108,8 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 
 	//TODO this needs rework as it might not take a frame if LCD is disabled
 	//but at least it returns when whole 144 lines have been rendered
+	//implementation: if lcdc is off then count clocks in order to give the screen
+	//(even if it's white), otherwise always return when ly > 144 because of Screen Tearing
 	while (internalLY < 144)
 	{
 		if (!loopFunc())
@@ -108,14 +143,18 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		// should refresh screen
 		if (newState == GBSTATE_PX_TRANSFERT)
 		{
-			if (bRefreshScreen && BIT(M_LCDC, 7))
+			if (bRefreshScreen)
 			{
-				Screen::updateMainScreen(Ppu::doOneLine(), internalLY);
+				// we need to have the ternary because the
+				// frame after the lcd was put on is still white
+				Screen::updateMainScreen( bShouldRenderFrame ? Ppu::doOneLine() : Ppu::getDefaultWhiteLine()
+						, internalLY);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
 			//std::cout << "request interrupt HBLANK" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
+			Hdma::updateHBlank();
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
 			//std::cout << "request interrupt OAM" << std::endl;
