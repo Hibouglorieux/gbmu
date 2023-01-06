@@ -17,7 +17,8 @@
 #include <array>
 #include "Ppu.hpp"
 
-class Screen {
+class Screen
+{
 public:
 	static void handleEvent(SDL_Event *ev);
 	static bool create(bool bIsCGB);
@@ -28,7 +29,7 @@ public:
 
 	static void updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
 			unsigned char currentLine);
-	static void drawBG();
+	static void drawBG(int mapAddr);
 	static void drawVRam(bool bIsCGB);
 	static void drawPalettes();
 //	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
@@ -53,7 +54,7 @@ public:
 
 	static int inline convertColorFromCGB(int colo, bool bConvertForImGUI = false);
 
-    static bool bDisplayWindow;
+	static int				mapAddr;
 private:
 };
 

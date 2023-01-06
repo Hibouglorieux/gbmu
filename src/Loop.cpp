@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/04 23:53:52 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 17:07:25 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,30 @@ bool Loop::loop()
 
         if (showBG) {
             {
-                ImGui::Begin("BackGround");
-                if (ImGui::Button(Screen::bDisplayWindow ? "Draw BG" : "Draw Window")) {
-                    Screen::bDisplayWindow = !Screen::bDisplayWindow;
+				char buf[64] = {0};
+				ImGui::Begin("Background/Window Map");
+				snprintf(buf, 64, "BG map address=%04x", (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800));
+				ImGui::Text(buf);
+				bzero(buf, 64);
+				snprintf(buf, 64, "Window map address=%04x", (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800));
+				ImGui::Text(buf);
+				bzero(buf, 64);
+				snprintf(buf, 64, "Displayed map address = %04x", Screen::mapAddr);
+				ImGui::Text(buf);
+				bzero(buf, 64);
+                if (ImGui::Button("Draw Window")) {
+					Screen::mapAddr = (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800);
                 }
-                Screen::drawBG();
+                if (ImGui::Button("Draw Background")) {
+					Screen::mapAddr = (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800);
+                }
+                if (ImGui::Button("Draw 0x9800")) {
+					Screen::mapAddr = 0x9800;
+				}
+                if (ImGui::Button("Draw 0x9C00")) {
+					Screen::mapAddr = 0x9C00;
+				}
+                Screen::drawBG(Screen::mapAddr);
                 Screen::TexturetoImage(Screen::BGTexture);
                 ImGui::End();
             }

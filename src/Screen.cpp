@@ -36,7 +36,7 @@ int Screen::BGPitch = 0;
 void *Screen::VramPixels = nullptr;
 int Screen::VramPitch = 0;
 
-bool Screen::bDisplayWindow = false;
+int Screen::mapAddr = 0x9c00;
 SDL_Window*	Screen::get()
 {
 	return (window);
@@ -117,10 +117,9 @@ void	Screen::updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
 				pixels, pitch, MAIN_SCREEN_SCALE);
 }
 
-void	Screen::drawBG()
+void	Screen::drawBG(int mapAddr)
 {
-    int bit = (!bDisplayWindow)? 3 : 6;
-	unsigned int BGMap  = BIT(M_LCDC, bit) ? 0x9C00 : 0x9800;
+	unsigned int BGMap  = mapAddr;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	for (unsigned short i = 0; i < 32 * 32; i++) {
