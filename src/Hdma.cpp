@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/06 02:46:59 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/06 18:35:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,15 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 	if (bIsWritting && !bStopping)
 	{
 		std::cerr << "HDMA WEIRD CASE HAPPENING !!!!" << std::endl;
+		exit(0);
 	}
 	else if (bStopping && bIsWritting)
 	{
-		std::cout << "STOPPED hdma" << std::endl;
+		std::cout << "STOPPED hdma, len left was: " << len << " dstAdr: " << dst << std::endl;
+		std::cout << std::endl;
 		bIsWritting = false;
 		mem.supervisorWrite(0xFF55, newValue);
+		exit(0);
 	}
 	else
 	{
@@ -50,10 +53,11 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		std::cout << (bIsInHBlankMode ? "starting hdma in HBLANK" : "started hdma normal") << std::endl;
 		std::cout << "hdma val is: " << +newValue << std::endl;
 		std::cout << "hdma len is: " << len << std::endl;
+		std::cout << std::endl;
 	}
 }
 
-#define MAGIC_DEBUG_VALUE (8 * speed)
+#define MAGIC_DEBUG_VALUE (1)
 
 void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 {
@@ -73,22 +77,52 @@ void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 	if (clockToAdd >= MAGIC_DEBUG_VALUE)
 		std::cout << "update hdma, len left is: " << len << std::endl;
 	else
+	{
+		leftClocks = clockToAdd;
 		return;
+	}
 	while (clockToAdd >= MAGIC_DEBUG_VALUE && len > 0)
 	{
 		std::cout << "wrote in hdma: " << countDebug++ << " times" << std::endl;
 		std::cout << "srcAddr: " << +src << std::endl;
 		std::cout << "dstAddr: " << +dst << std::endl;
-		mem[dst] = +(mem[src]);
-		dst++;
-		src++;
 		clockToAdd -= MAGIC_DEBUG_VALUE;
-		len--;
+
+		for (int i = 0; i < 0x20 && len > 0; i++)
+		{
+			mem[dst] = +(mem[src]);
+			dst++;
+			src++;
+			len--;
+		}
+
 	}
-	mem.supervisorWrite(0xFF55, (uint8_t)((uint8_t)((len + 15) / 16) - 1));
+	mem.supervisorWrite(0xFF55, (uint8_t)((uint8_t)(len / 16) - 1 + (len % 16 == 0 ? 0 : 1)));
 	std::cout << "exit hdma update, len left: " << len << std::endl;
 	std::cout << "exit hdma update, FF55 is equal to: " << (int)mem[0xFF55] << std::endl;
 	leftClocks = clockToAdd;
+	if (len == 0)
+		bIsWritting = false;
+	std::cout << std::endl;
+}
+
+void Hdma::updateHBlank()
+{
+	bJustStarted = false;
+	if (!bIsWritting || !bIsInHBlankMode)
+		return;
+	for (int i = 0; i < 0x10; i++)
+	{
+		std::cout << "srcAddr: " << +src << std::endl;
+		std::cout << "dstAddr: " << +dst << std::endl;
+		mem[dst] = +(mem[src]);
+		dst++;
+		src++;
+		len--;
+	}
+	mem.supervisorWrite(0xFF55, (uint8_t)((uint8_t)(len / 16) - 1 + (len % 16 == 0 ? 0 : 1)));
+	std::cout << "exit hdma update, len left: " << len << std::endl;
+	std::cout << "exit hdma update, FF55 is equal to: " << (int)mem[0xFF55] << std::endl;
 	if (len == 0)
 		bIsWritting = false;
 	std::cout << std::endl;

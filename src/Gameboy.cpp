@@ -1,5 +1,6 @@
 #include "Gameboy.hpp"
 #include "imgui/imgui_impl_sdl.h"
+#include "Hdma.hpp"
 
 Mem* Gameboy::gbMem = nullptr;
 Clock Gameboy::gbClock = Clock();
@@ -116,6 +117,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
 			//std::cout << "request interrupt HBLANK" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
+			Hdma::updateHBlank();
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
 			//std::cout << "request interrupt OAM" << std::endl;

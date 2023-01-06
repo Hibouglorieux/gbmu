@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:58 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/06 02:14:10 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/06 17:51:49 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ class Hdma {
 public:
 	static void writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue);
 	static void update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank = false);
+	static void updateHBlank();
 private:
 	static uint16_t src;
 	static uint16_t dst;
