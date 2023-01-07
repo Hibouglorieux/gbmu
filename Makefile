@@ -25,7 +25,8 @@ FILES = main.cpp \
 		MBC.cpp \
 		Sprite.cpp \
 		Debugger.cpp \
-		Hdma.cpp
+		Hdma.cpp \
+		Common.cpp
 
 
 

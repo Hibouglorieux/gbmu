@@ -51,15 +51,15 @@ public:
 	virtual ~Mem();
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
-	bool isValid;
 	void supervisorWrite(unsigned int addr, unsigned char value);
 	unsigned char* getVram() {return &internalArray[0x8000];}
-	std::vector<unsigned char> readFile(const std::string& filename);
+	static std::vector<unsigned char> readFile(const std::string& filename);
 
 	virtual unsigned char* getCGBVram() {throw("");}
 	virtual const std::array<unsigned char, 64>& getBGPalettes(){throw("");}// should never be called
 	virtual const std::array<unsigned char, 64>& getOBJPalettes(){throw("");}// should never be called
 
+	bool isValid;
 	std::string getTitle();
 	bool	isCGB();
 	int		getCartridgeType();
@@ -92,6 +92,8 @@ public:
 	virtual const std::array<unsigned char, 64>& getOBJPalettes() {return OBJPalettes;}
 	mutable std::array<unsigned char, 64> BGPalettes;
 	mutable std::array<unsigned char, 64> OBJPalettes;
+
+	std::array<unsigned char*, 8> getCGBExtraRamBanks() {return CGBextraRamBanks;}
 protected:
 	virtual unsigned char&	getRefWithBanks(unsigned short addr) const;
 	unsigned char*	CGBVramBank;

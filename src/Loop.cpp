@@ -23,7 +23,8 @@ bool Loop::showRegisters = false;
 bool Loop::showPalettes = false;
 
 bool Loop::loop()
-{
+{	
+
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	while (!Gameboy::quit)
@@ -75,6 +76,9 @@ bool Loop::loop()
 			ImGui::SameLine();
             if (ImGui::Button("Next line")) {
             	DBG::state = DebuggerState::ONCE_LINE;
+            }
+            if (ImGui::Button("Save State")) {
+            	Gameboy::saveState();
             }
             if (DBG::state != DebuggerState::PAUSED) {
 				Gameboy::Step step = Gameboy::Step::full;

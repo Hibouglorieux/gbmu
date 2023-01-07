@@ -47,6 +47,8 @@ public:
 	static void resetWindowCounter();
 
 	static std::array<short, PIXEL_PER_LINE> getDefaultWhiteLine();
+	static unsigned char getWindowCounter() { return windowCounter;}
+	static void setWindowCounter(unsigned char val) {windowCounter = val;}
 
 private:
 	static unsigned char windowCounter;

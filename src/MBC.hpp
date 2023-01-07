@@ -27,6 +27,8 @@ public:
 	virtual unsigned char getType() = 0;
 	static MBC* createMBC(unsigned char mbcCode);
 
+	void setTimer(bool val) {hasTimer = val;}
+
 	bool hasTimer;
 };
 
@@ -52,6 +54,16 @@ public:
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
 	virtual unsigned char getRamBank();
 	virtual unsigned char getType() { return 1; }
+
+	bool getAdvancedBankingMode() { return bAdvancedBankingMode; }
+	bool getEnableRam() { return bEnableRam; }
+	unsigned char getLowBitsRomBankNumber() {return lowBitsRomBankNumber; }
+	unsigned char getHighLowBitsRomBankNumber() { return highBitsRomBankNumberOrRam; }
+
+	void setAdvancedBankingMode(bool val) {bAdvancedBankingMode = val;}
+	void setEnableRam(bool val) {bEnableRam = val;}
+	void setLowBitsRomBankNumber(unsigned char val) {lowBitsRomBankNumber = val;}
+	void setHighBitsRomBankNumberOrRam(unsigned char val) {highBitsRomBankNumberOrRam = val;}
 private:
 	bool bAdvancedBankingMode;
 	bool bEnableRam;
@@ -69,6 +81,12 @@ public:
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0xA1FF;}
 	virtual unsigned char getType() { return 2; }
+
+	bool getEnableRam() {return bEnableRam;}
+	unsigned char getRomBankNb() {return romBankNb;}
+	
+	void setRomBankNb(unsigned char val) {romBankNb = val;}
+	void setEnableRam(bool val) {bEnableRam = val;}
 private:
 	unsigned char romBankNb;
 	bool bEnableRam;
@@ -102,6 +120,28 @@ public:
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
 	virtual unsigned char getType() { return 3; }
 	rtc getCurrentTime();
+
+	time_t getStart() {return start;}
+	rtc getRTC() { return rtc_register; }
+	unsigned char getRTCBind() {return rtcBindNb;}
+
+	void setStart(time_t val) {start = val;}
+	void setRTC(rtc val) {rtc_register = val;}
+	void setRTCBind(unsigned char val) {rtcBindNb = val;}
+	
+	unsigned char getEnableRam() {return bEnableRam;}
+	unsigned short getRomBankNb() {return romBankNb;}
+	unsigned char getRamBankNb() {return ramBankNb;}
+	unsigned char getLastVal() { return lastVal; }
+	bool getLatch() {return latched;}
+
+	void setRomBankNb(unsigned char val) {romBankNb = val;}
+	void setRamBankNb(unsigned char val) {ramBankNb = val;}
+	void setEnableRam(bool val) {bEnableRam = val;}
+	void setLastVal(unsigned char val) {lastVal = val;}
+	void setLatch(bool val) {latched = val;}
+
+
 	time_t start;
 	rtc rtc_register;
 	unsigned char rtcBindNb;
@@ -124,6 +164,16 @@ public:
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
 	virtual unsigned char getType() { return 5; }
+
+	bool getEnableRam() {return bEnableRam;}
+	unsigned char getRamBankNb() {return ramBankNb;}
+	unsigned char getLeastSignificantRomByte() {return leastSignificantRomByte;}
+	bool getBit9() { return bit9; }
+
+	void setEnableRam(bool val) {bEnableRam = val;}
+	void setLeastSignificantRomByte(unsigned char val) { leastSignificantRomByte = val; }
+	void setBit9(bool val) {bit9 = val;}
+	void setRamBankNb(unsigned char val) {ramBankNb = val;}
 private:
 	bool bEnableRam;
 	unsigned char leastSignificantRomByte;
