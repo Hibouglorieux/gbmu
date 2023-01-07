@@ -6,14 +6,14 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:52:08 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 17:25:58 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/07 19:43:21 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Gameboy.hpp"
 #include <iostream>
 
-#define DEFAULT_PATH_TO_FILE "./roms/42roms/Pokemon - Version Cristal.gbc"
+#define DEFAULT_PATH_TO_FILE "./roms/42roms/Legend of Zelda, The - Oracle of Ages.gbc"
 
 int main(int argc, char** argv)
 {

@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/06 21:28:10 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/07 20:48:55 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 uint16_t Hdma::src = 0;
 uint16_t Hdma::dst = 0;
 uint16_t Hdma::len = 0;
-uint8_t Hdma::leftClocks = 0;
+int8_t Hdma::leftClocks = 0;
 bool Hdma::bIsWritting = 0;
 bool Hdma::bIsInHBlankMode = 0;
 bool Hdma::bJustStarted = 0;
@@ -48,7 +48,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		dst = dstAddr;
 		len = ((newValue & 0x7F) + 1) * 0x10;
 		bIsWritting = true;
-		leftClocks = 0;
+		leftClocks = bIsInHBlankMode ? 0 : 0; // counts for delay
 		bIsInHBlankMode = bIsHBlank;
 		std::cout << (bIsInHBlankMode ? "starting hdma in HBLANK" : "started hdma normal") << std::endl;
 		std::cout << "hdma val is: " << +newValue << std::endl;
@@ -83,13 +83,15 @@ void Hdma::update(int8_t clockToAdd, uint8_t speed, bool bGameboyInHBlank)
 	}
 	// TODO this isnt WORKING AT ALL
 	// letting just len > 0 will make it like a memcpy instantly
-	while (/*clockToAdd >= MAGIC_DEBUG_VALUE &&*/ len > 0)
+	while (clockToAdd >= MAGIC_DEBUG_VALUE && len > 0)
 	{
 		//std::cout << "srcAddr: " << +src << std::endl;
 		//std::cout << "dstAddr: " << +dst << std::endl;
 		clockToAdd -= MAGIC_DEBUG_VALUE;
 
-		for (int i = 0; i < 0x10 && len > 0; i++)
+		//NOTE XXX 0xC is the minimum for pokemon yellow to work
+		//but since i cant understand how it works i just let it at 0xC
+		for (int i = 0; i < 0xC && len > 0; i++)
 		{
 			countDebug++;
 			mem[dst] = +(mem[src]);

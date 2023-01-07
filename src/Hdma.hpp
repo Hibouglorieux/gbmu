@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:58 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/06 17:51:49 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/07 19:34:36 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ private:
 	static uint16_t src;
 	static uint16_t dst;
 	static uint16_t len;
-	static uint8_t leftClocks;
+	static int8_t leftClocks;
 	static bool bIsWritting;
 	static bool bIsInHBlankMode;
 	static bool bJustStarted;

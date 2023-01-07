@@ -3,8 +3,8 @@
 #include <SDL2/SDL.h>
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
-int DBG::fps = 60;
-unsigned int DBG::stopAtFrame = 0;
+int DBG::fps = 250;
+unsigned int DBG::stopAtFrame = 3786;
 
 void DBG::hexdump() {
 	{

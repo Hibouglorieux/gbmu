@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 20:37:29 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/07 20:51:23 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Cpu.hpp"
 #include "Utility.hpp"
 #include "Hdma.hpp"
+#include "Debugger.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -191,6 +192,8 @@ MemWrap Mem::operator[](unsigned int i)
 		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
 		throw("");
 	}
+	if (i == 0xffA6 && Gameboy::frameNb > DBG::stopAtFrame)
+		std::cout << "creating memwrap at addr 0xFFA6" << std::endl;
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
 
@@ -206,6 +209,8 @@ const MemWrap Mem::operator[](unsigned int i) const
 		std::cerr << "trying to access bad memory" << std::endl;
 		exit(-1);
 	}
+	if (i == 0xffA6 && Gameboy::frameNb > DBG::stopAtFrame)
+		std::cout << "creating const memwrap at addr 0xFFA6" << std::endl;
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
 
@@ -264,6 +269,10 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		// Write in RAM Bank
 		
 
+	}
+	if (addr == 0xFFA6 && Gameboy::frameNb > DBG::stopAtFrame)
+	{
+		std::cout << "assigning from memref to 0xFFA6: " << (int)newValue << std::endl;
 	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))

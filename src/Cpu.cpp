@@ -561,6 +561,7 @@ StackData	Cpu::captureCurrentState(std::string customData)
 		stackData.opcode <<= 8;
 		stackData.opcode|= mem[PC + 1];
 	}
+	customData = string_format("FFA6: %2X   ", (int)mem[0xFFA6]) + customData;
 	stackData.customData = customData;
 	return stackData;
 }

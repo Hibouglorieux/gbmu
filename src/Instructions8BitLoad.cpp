@@ -6,11 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 23:31:28 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/07 20:52:59 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Debugger.hpp"
 
 unsigned char Cpu::load_a8_a()
 {
@@ -73,7 +74,10 @@ unsigned char Cpu::load_a_a8()
 	std::cout << "read at address: " << (0xFF00 | (unsigned short)mem[PC])
 		<< " value: " << (int)mem[(0xFF00 |(unsigned short)mem[PC])]  << std::endl;
 		*/
-    A = mem[0xFF00 | readByte()];
+	unsigned char lowAddr = readByte();
+	if (Gameboy::frameNb > DBG::stopAtFrame)
+	printf("reading at address %X, which has value: %X\n", (0xFF00 | lowAddr), (int)mem[0xFF00|lowAddr]);
+    A = mem[0xFF00 | lowAddr];
     return 3;
 }
 
