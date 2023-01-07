@@ -71,6 +71,8 @@ private:
 
 typedef struct {
 
+	size_t romHash;
+
 	struct {
 		// std::string path;
 		int currentState;

@@ -182,6 +182,12 @@ void Gameboy::loadSaveState(std::string path) {
 	std::vector<unsigned char> content = Mem::readFile(path);
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
+	size_t romHash = 0;
+	for (int i = 0; i < mem.romBanks.size(); i++)
+		romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
+	if (romHash != tmp.romHash)
+		throw "Could not load save state from a different game\n";
+
 	// Load CPU state
 	Cpu::interrupts_master_enable = tmp.cpu.interrupts_master_enable;
 	Cpu::interrupts_flag = tmp.cpu.interrupts_flag;
@@ -293,6 +299,12 @@ void Gameboy::loadSaveState(std::string path) {
 void Gameboy::saveState() {
 	std::cout << "Saving game state\n";
 	s_state tmp;
+
+	tmp.romHash = 0;
+	for (int i = 0; i < mem.romBanks.size(); i++)
+		tmp.romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
+
+	std::cout << "Rom hash : " << std::dec << tmp.romHash << "\n";
 	
 	// Save CPU state
 	tmp.cpu.interrupts_master_enable = Cpu::interrupts_master_enable;
