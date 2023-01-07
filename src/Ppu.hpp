@@ -46,6 +46,9 @@ public:
 //    static std::array<int, 8> fetch_tile_color(int tileAddr, int yOffset, int paletteAddr);
 	static void resetWindowCounter();
 
+	static unsigned char getWindowCounter() { return windowCounter;}
+	static void setWindowCounter(unsigned char val) {windowCounter = val;}
+
 private:
 	static unsigned char windowCounter;
 };

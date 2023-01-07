@@ -47,6 +47,16 @@ public:
 	int& operator+=(int addValue);
 	operator int();
 	static bool		cgbMode;
+
+	static bool getReloadTMA() {return reloadTMA;}
+	static int getTimaClock() {return timaClock;}
+	static int getDivClock() {return divClock;}
+	int getClock() {return clock;}
+
+	static void setReloadTMA(bool val) {reloadTMA = val;}
+	static void setTimaClock(int val) {timaClock = val;}
+	static void setDivClock(int val) {divClock = val;}
+	void setClock(int val) {clock = val;}
 private:
 	int 			clock;
 	static bool		reloadTMA;

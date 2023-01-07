@@ -136,6 +136,7 @@ bool  Cpu::isCpuHalted(void)
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
+	// std::cout << "Execute instruction : " << std::hex << Cpu::PC << "\n";
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};

@@ -81,7 +81,7 @@ public:
 	static unsigned short& DE;
 	static unsigned short& HL;
 	static void printRegisters();
-	static Clock cpuClock;
+	// static Clock cpuClock;
 
 	static void debug(int opcode);
 private:

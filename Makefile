@@ -72,6 +72,7 @@ SRC					+= $(S_PATH)Ppu.cpp
 SRC					+= $(S_PATH)Screen.cpp
 SRC					+= $(S_PATH)Sprite.cpp
 SRC					+= $(S_PATH)TilePixels.cpp
+SRC					+= $(S_PATH)Common.cpp
 
 # Header
 
