@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/07 20:52:59 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/08 21:07:30 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,8 @@ unsigned char Cpu::load_a_a8()
 		<< " value: " << (int)mem[(0xFF00 |(unsigned short)mem[PC])]  << std::endl;
 		*/
 	unsigned char lowAddr = readByte();
-	if (Gameboy::frameNb > DBG::stopAtFrame)
-	printf("reading at address %X, which has value: %X\n", (0xFF00 | lowAddr), (int)mem[0xFF00|lowAddr]);
+	//if (Gameboy::frameNb > DBG::stopAtFrame)
+		//printf("reading at address %X, which has value: %X\n", (0xFF00 | lowAddr), (int)mem[0xFF00|lowAddr]);
     A = mem[0xFF00 | lowAddr];
     return 3;
 }

@@ -561,7 +561,7 @@ StackData	Cpu::captureCurrentState(std::string customData)
 		stackData.opcode <<= 8;
 		stackData.opcode|= mem[PC + 1];
 	}
-	customData = string_format("FFA6: %2X   ", (int)mem[0xFFA6]) + customData;
+	//customData = string_format("SCX: %2X    mem[0xC49D]: %2X\nmem[0xC497]: %2X    mem[HL]: %2X\n", (int)mem[0xFF43], (int)mem[0xC49D], (int)mem[0xC497], (int)mem[HL]) + customData;
 	stackData.customData = customData;
 	return stackData;
 }
@@ -587,10 +587,8 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
 		}
 
-		uint8_t speed = (Clock::cgbMode == true ? 2 : 4);
 		int clockInc = doMinimumStep();
 		g_clock += clockInc;
-		Hdma::update(clockInc, speed, false);
 		Gameboy::clockLine += clockInc;
 
 		if (step) {
@@ -652,6 +650,12 @@ void do_interrupts(unsigned int addr, unsigned char bit)
 
 unsigned char	Cpu::doMinimumStep()
 {
+	// the cpu is halted during hdma
+	int cycleForHdma = Hdma::update();
+	if (cycleForHdma)
+	{
+		return cycleForHdma;
+	}
 	if (isCpuHalted())
 	{
 		stackTrace.add(captureCurrentState("IM HALTED"));

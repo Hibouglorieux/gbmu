@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/07 20:51:23 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/08 21:03:39 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,8 +192,6 @@ MemWrap Mem::operator[](unsigned int i)
 		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
 		throw("");
 	}
-	if (i == 0xffA6 && Gameboy::frameNb > DBG::stopAtFrame)
-		std::cout << "creating memwrap at addr 0xFFA6" << std::endl;
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
 
@@ -209,8 +207,6 @@ const MemWrap Mem::operator[](unsigned int i) const
 		std::cerr << "trying to access bad memory" << std::endl;
 		exit(-1);
 	}
-	if (i == 0xffA6 && Gameboy::frameNb > DBG::stopAtFrame)
-		std::cout << "creating const memwrap at addr 0xFFA6" << std::endl;
 	return MemWrap(*this, i, getRefWithBanks(i));
 }
 
