@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:58 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/11 03:24:36 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/12 02:02:01 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ private:
 	static uint16_t len;
 	static bool bIsWritting;
 	static bool bIsInHBlankMode;
+	static bool bJustStarted;
 };
 
 #endif

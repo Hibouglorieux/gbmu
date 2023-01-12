@@ -18,6 +18,7 @@ CpuStackTrace Cpu::stackTrace;
 unsigned short Cpu::PC = 0;
 unsigned short Cpu::SP = 0;
 unsigned short Cpu::registers[4] = {};
+float rest;
 
 bool Cpu::interrupts_master_enable = false;
 bool Cpu::interrupts_flag = false;
@@ -589,7 +590,15 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 		int clockInc = doMinimumStep();
 		g_clock += clockInc;
-		Gameboy::clockLine += clockInc;
+		if (Clock::cgbMode)
+		{
+			int entireClock = (clockInc / 2.0) + rest;
+			if (entireClock >= 1)
+				Gameboy::clockLine += entireClock;
+			rest = ((clockInc / 2.0) + rest) - entireClock;
+		}
+		else
+			Gameboy::clockLine += clockInc;
 
 		if (step) {
 			break;
@@ -654,7 +663,12 @@ unsigned char	Cpu::doMinimumStep()
 	int cycleForHdma = Hdma::update();
 	if (cycleForHdma)
 	{
-		return cycleForHdma;
+		if (cycleForHdma == -1) // special case startup
+		{
+			if (Clock::cgbMode)
+				g_clock += 1;
+		}
+		return 1;
 	}
 	if (isCpuHalted())
 	{

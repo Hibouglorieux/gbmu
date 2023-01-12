@@ -125,6 +125,24 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	return true;
 }
 
+void Gameboy::doHblankHdma()
+{
+	int clockHblankForHdma = Hdma::updateHBlank();
+	if (clockHblankForHdma)
+	{
+		// update g_clock/clock here instead of cpu
+		// because it has to be done once per hblank
+		g_clock += clockHblankForHdma;
+		/*
+		if (Clock::cgbMode)
+			g_clock += 2; // overhead (always 4 clock)
+		else
+			g_clock += 1; // overhead (always 4 clock)
+		*/
+		clockLine += clockHblankForHdma;
+	}
+}
+
 void Gameboy::setState(int newState, bool bRefreshScreen)
 {
 	if (BIT(M_LCDC, 7) && currentState != newState)
@@ -153,14 +171,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			//std::cout << "request interrupt HBLANK" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
 			// need to check hblank hdma
-			int clockHblankForHdma = Hdma::updateHBlank();
-			if (clockHblankForHdma)
-			{
-				// update g_clock/clock here instead of cpu
-				// because it has to be done once per hblank
-				g_clock += clockHblankForHdma;
-				clockLine += clockHblankForHdma;
-			}
+			doHblankHdma();
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
 			//std::cout << "request interrupt OAM" << std::endl;

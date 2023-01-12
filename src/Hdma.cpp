@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/11 03:27:48 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/12 02:25:55 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,10 @@ uint16_t Hdma::dst = 0;
 uint16_t Hdma::len = 0;
 bool Hdma::bIsWritting = false;
 bool Hdma::bIsInHBlankMode = false;
+bool Hdma::bJustStarted = false;
 
+
+#define HDMA_HEADER_CYCLE 1
 
 void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 {
@@ -40,6 +43,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 	}
 	else
 	{
+		bJustStarted = false;
 		src = srcAddr;
 		dst = dstAddr;
 		len = ((newValue & 0x7F) + 1) * 0x10;
@@ -49,15 +53,20 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		std::cout << "hdma val is: " << +newValue << std::endl;
 		std::cout << "hdma len is: " << len << std::endl;
 		std::cout << std::endl;
+		if (Gameboy::getState() == GBSTATE_H_BLANK)
+			Gameboy::doHblankHdma();
 	}
 }
-
-#define MAGIC_DEBUG_VALUE (1)
 
 int Hdma::update()
 {
 	if (!bIsWritting || bIsInHBlankMode)
 		return 0;
+	if (bJustStarted == true)
+	{
+		bJustStarted = false;
+		return -1;
+	}
 	for (int i = 0; i < 2; i++)
 	{
 		mem[dst] = +(mem[src]);

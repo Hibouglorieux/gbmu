@@ -4,7 +4,7 @@
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
 int DBG::fps = 250;
-unsigned int DBG::stopAtFrame = 3786;
+unsigned int DBG::stopAtFrame = 3790;
 
 void DBG::hexdump() {
 	{

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/06 20:57:48 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/12 02:25:27 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ public:
 	static unsigned int frameNb;
 	static void saveState();
 	static void loadSaveState(std::string path);
+
+	static void doHblankHdma();
 //	static void LYCallback();
 private:
 	static int currentState;
