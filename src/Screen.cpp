@@ -286,12 +286,12 @@ bool	Screen::create(bool bIsCGB)
 		return false;
 	}
 
-	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE);
 	window = SDL_CreateWindow("GBMU",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			1980,
-			1024,
+			880,
+			824,
 			window_flags);
 	if (!window) {
 		std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;

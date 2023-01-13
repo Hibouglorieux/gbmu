@@ -14,6 +14,7 @@ bool Gameboy::bLCDWasOff = false;
 bool Gameboy::bShouldRenderFrame = true;
 bool Gameboy::quit = false;
 bool Gameboy::bIsCGB = false;
+bool Gameboy::bIsROM = false;
 std::string Gameboy::path = "";
 unsigned int Gameboy::frameNb = 0;
 
@@ -31,7 +32,7 @@ Clock& Gameboy::getClock()
 
 void	Gameboy::init()
 {
-	Cpu::loadBootRom();
+//	Cpu::loadBootRom();
 	Screen::create(bIsCGB);
 	clockLine = 0;
 	internalLY = 0;
@@ -45,11 +46,15 @@ bool Gameboy::loadRom(std::string pathToFile)
 		return false;
 	bIsCGB = gbMem->isCGB();
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
+    Cpu::loadBootRom();
 	return gbMem->isValid;
 }
 
 bool Gameboy::run()
 {
+    Screen::create(bIsCGB);
+	clockLine = 0;
+	internalLY = 0;
 	Loop::loop();
 	return true;
 }
@@ -183,7 +188,7 @@ void Gameboy::loadSaveState(std::string path) {
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
 	size_t romHash = 0;
-	for (int i = 0; i < mem.romBanks.size(); i++)
+	for (size_t i = 0; i < mem.romBanks.size(); i++)
 		romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
 	if (romHash != tmp.romHash)
 		throw "Could not load save state from a different game\n";
@@ -269,8 +274,8 @@ void Gameboy::loadSaveState(std::string path) {
 
 	offset += MEM_SIZE;
 
-	for (int i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
-		memcpy(Gameboy::getMem().extraRamBanks[i], content.data() + offset, RAM_BANK_SIZE);
+	for (auto & extraRamBank : Gameboy::getMem().extraRamBanks) {
+		memcpy(extraRamBank, content.data() + offset, RAM_BANK_SIZE);
 		offset += RAM_BANK_SIZE;
 	}
 
@@ -408,7 +413,6 @@ void Gameboy::saveState() {
 
 	outfile.write(reinterpret_cast<char*>(mem.getInternalArray()), MEM_SIZE);
 
-	int i = 1;
 	for (unsigned char *elem : mem.extraRamBanks) {
 		outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
 	}
@@ -448,6 +452,14 @@ int Gameboy::getState()
 	return (currentState);
 }
 
+bool Gameboy::ProcessFile(char * filename) {
+    std::string str = filename;
+    auto extension = str.substr(str.find_last_of(".") + 1);
+    if(extension == "gb" || extension == "cgb")
+        return true;
+    return false;
+}
+
 void Gameboy::pollEvent()
 {
 	SDL_Event event;
@@ -455,6 +467,14 @@ void Gameboy::pollEvent()
 		ImGui_ImplSDL2_ProcessEvent(&event);
 		Screen::handleEvent(&event);
 		Joypad::handleEvent(&event);
+        if (event.type == SDL_DROPFILE) {
+            auto filePath = event.drop.file;
+            if (Gameboy::ProcessFile(filePath)) {
+                Gameboy::bIsROM = true;
+                Gameboy::loadRom(filePath);
+            }
+            SDL_free(filePath);
+       }
 		if (event.type == SDL_QUIT)
 			Gameboy::quit = true;
 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
