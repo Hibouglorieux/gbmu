@@ -3,12 +3,12 @@
 #include <SDL2/SDL.h>
 
 DebuggerState DBG::state = DebuggerState::RUNNING;
-int DBG::fps = 250;
-unsigned int DBG::stopAtFrame = 3790;
+int DBG::fps = 60;
+unsigned int DBG::stopAtFrame = 0;
 
 void DBG::hexdump() {
 	{
-		ImGui::Begin("Memory Hexdump:");
+	ImGui::Begin("Memory Hexdump:");
 
 //        ImGui::Text("Number of Rom: %d\nCurrent Rombank for 1st slot: %d\nCurrent Rombank for 2nd slot:", mem.mbc->getRomBank(0));
 //        ImGui::SameLine();
@@ -150,4 +150,21 @@ void DBG::registers() {
     	ImGui::Separator();
         ImGui::End();
     }
+}
+
+void DBG::Sprites() {
+	const int OAM_Addr = 0xFE00;
+
+	for (int i = 0; i < MAX_SPRITES; i++) {
+		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
+		ImGui::Text("Sprite Index:%02d", i);
+		ImGui::Text("tileIndex:%02x ", entry->tileIndex);
+            	ImGui::SameLine();
+		ImGui::Text("posY:%02x ", entry->posY);
+            	ImGui::SameLine();
+		ImGui::Text("posX:%02x ", entry->posX);
+            	ImGui::SameLine();
+		ImGui::Text("attributes:%02x", entry->attributes);
+		ImGui::NewLine();
+	}
 }

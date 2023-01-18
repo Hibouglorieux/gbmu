@@ -22,6 +22,7 @@ public:
     static DebuggerState state;
     static int fps;
     static void registers();
+    static void Sprites();
     static void hexdump();
 	static unsigned int stopAtFrame;
 };

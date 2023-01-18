@@ -30,6 +30,7 @@ public:
 	static void updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
 			unsigned char currentLine);
 	static void drawBG(int mapAddr);
+	static void drawSprite(void);
 	static void drawVRam(bool bIsCGB);
 	static void drawPalettes();
 //	static void display_tile(unsigned short location, unsigned short tileNum, int x, int y);
@@ -45,6 +46,10 @@ public:
 	static SDL_Texture*		BGTexture;
 	static void*			BGPixels;
 	static int				BGPitch;
+
+	static SDL_Texture*		SpriteTexture;
+	static void*			SpritePixels;
+	static int				SpritePitch;
 
 	static SDL_Texture*		VRamTexture;
 	static void*			VramPixels;

@@ -16,6 +16,7 @@
 uint16_t Hdma::src = 0;
 uint16_t Hdma::dst = 0;
 uint16_t Hdma::len = 0;
+uint8_t	Hdma::vbank = 0;
 bool Hdma::bIsWritting = false;
 bool Hdma::bIsInHBlankMode = false;
 bool Hdma::bJustStarted = false;
@@ -47,6 +48,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		src = srcAddr;
 		dst = dstAddr;
 		len = ((newValue & 0x7F) + 1) * 0x10;
+		vbank = mem[0xFF4F] & 0x1;
 		bIsWritting = true;
 		bIsInHBlankMode = bIsHBlank;
 		std::cout << (bIsInHBlankMode ? "starting hdma in HBLANK" : "started hdma normal") << std::endl;
@@ -62,6 +64,9 @@ int Hdma::update()
 {
 	if (!bIsWritting || bIsInHBlankMode)
 		return 0;
+	if (vbank != (mem[0xFF4F] & 0x1)) {
+		printf("error: switching bank while DMA not terminated\n");
+	}
 	if (bJustStarted == true)
 	{
 		bJustStarted = false;
@@ -84,6 +89,10 @@ int Hdma::updateHBlank()
 {
 	if (!bIsWritting || !bIsInHBlankMode)
 		return 0;
+	if (vbank != (mem[0xFF4F] & 0x1)) {
+		printf("error: switching bank while DMA not terminated\n");
+		return (0);
+	}
 	for (int i = 0; i < 0x10; i++)
 	{
 		//std::cout << "srcAddr: " << +src << std::endl;

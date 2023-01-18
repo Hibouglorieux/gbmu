@@ -18,6 +18,7 @@
 
 bool Loop::showVram = false;
 bool Loop::showBG = false;
+bool Loop::showSprite = false;
 bool Loop::showHexdump = false;
 bool Loop::showRegisters = false;
 bool Loop::showPalettes = false;
@@ -38,6 +39,10 @@ bool Loop::loop()
             ImGui::Begin("PPU");
             if (ImGui::Button(showBG ? "Hide BG" : "Show BG")) {
                 showBG = !showBG;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(showSprite ? "Hide Sprites" : "Show Sprites")) {
+                showSprite = !showSprite;
             }
             ImGui::SameLine();
             if (ImGui::Button(showVram ? "Hide Vram" : "Show Vram")) {
@@ -108,27 +113,38 @@ bool Loop::loop()
             }
         }
 
+        if (showSprite) {
+		ImGui::Begin("Sprite Map 8x8 only");
+		Screen::drawSprite();
+                Screen::TexturetoImage(Screen::SpriteTexture);
+		DBG::Sprites();
+                ImGui::End();
+	}
         if (showBG) {
             {
-				ImGui::Begin("Background/Window Map");
-				ImGui::Text("Displaying map address: %04x", Screen::mapAddr);
-				ImGui::Text("BG map address:         %04x", (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800));
-				ImGui::Text("Window map address:     %04x", (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800));
+		ImGui::Begin("Background/Window Map");
+		ImGui::Text("Displaying map address: %04x", Screen::mapAddr);
+		ImGui::Text("BG map address:         %04x", (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800));
+		ImGui::Text("Window map address:     %04x", (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800));
                 if (ImGui::Button("Draw Window")) {
-					Screen::mapAddr = (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800);
+			Screen::mapAddr = (BIT(M_LCDC, 6) ? 0x9C00 : 0x9800);
                 }
-				ImGui::SameLine();
+		ImGui::SameLine();
                 if (ImGui::Button("Draw Background")) {
-					Screen::mapAddr = (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800);
+			Screen::mapAddr = (BIT(M_LCDC, 3) ? 0x9C00 : 0x9800);
                 }
-				ImGui::SameLine();
+		ImGui::SameLine();
                 if (ImGui::Button("Draw 0x9800")) {
-					Screen::mapAddr = 0x9800;
-				}
-				ImGui::SameLine();
+			Screen::mapAddr = 0x9800;
+		}
+		ImGui::SameLine();
                 if (ImGui::Button("Draw 0x9C00")) {
-					Screen::mapAddr = 0x9C00;
-				}
+			Screen::mapAddr = 0x9C00;
+		}
+		ImGui::SameLine();
+                if (ImGui::Button("Draw 0x8000")) {
+			Screen::mapAddr = 0x8000;
+		}
                 Screen::drawBG(Screen::mapAddr);
                 Screen::TexturetoImage(Screen::BGTexture);
                 ImGui::End();

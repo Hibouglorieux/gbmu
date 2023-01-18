@@ -189,10 +189,10 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn, this is the current offset inside the sprite, can be higher than 8 if spriteHeight == 16
 		if (spriteEntry.getFlipY()) // reverse offset if flipped
 			sprite.flipY();
-		// fetch the 8 pixel of the sprite in a tmp buffer
 		if (spriteEntry.getFlipX())
 			sprite.flipX();
 
+		// fetch the 8 pixel of the sprite in a tmp buffer
 		std::array<short, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
 		std::array<short, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 		// copy the sprite on the line

@@ -266,10 +266,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		
 
 	}
-	if (addr == 0xFFA6 && Gameboy::frameNb > DBG::stopAtFrame)
-	{
-		std::cout << "assigning from memref to 0xFFA6: " << (int)newValue << std::endl;
-	}
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
 		newValue = newValue | Mem::readOnlyBits.at(addr);

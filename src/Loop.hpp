@@ -21,6 +21,7 @@ public:
 private:
     static bool showVram;
     static bool showBG;
+    static bool showSprite;
     static bool showPalettes;
     static bool showHexdump;
     static bool showRegisters;

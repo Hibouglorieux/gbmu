@@ -24,6 +24,7 @@ private:
 	static uint16_t src;
 	static uint16_t dst;
 	static uint16_t len;
+	static uint8_t vbank;
 	static bool bIsWritting;
 	static bool bIsInHBlankMode;
 	static bool bJustStarted;

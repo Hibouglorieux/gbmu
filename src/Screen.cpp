@@ -25,6 +25,7 @@ SDL_Renderer* Screen::renderer = nullptr;
 
 SDL_Texture *Screen::texture = nullptr;
 SDL_Texture *Screen::BGTexture = nullptr;
+SDL_Texture *Screen::SpriteTexture = nullptr;
 SDL_Texture *Screen::VRamTexture = nullptr;
 
 void *Screen::pixels = nullptr;
@@ -32,6 +33,9 @@ int Screen::pitch = 0;
 
 void *Screen::BGPixels = nullptr;
 int Screen::BGPitch = 0;
+
+void *Screen::SpritePixels = nullptr;
+int Screen::SpritePitch = 0;
 
 void *Screen::VramPixels = nullptr;
 int Screen::VramPitch = 0;
@@ -49,6 +53,7 @@ void	Screen::destroy()
 	ImGui::DestroyContext();
 	SDL_DestroyTexture(texture);
 	SDL_DestroyTexture(BGTexture);
+	SDL_DestroyTexture(SpriteTexture);
 	SDL_DestroyTexture(VRamTexture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -99,6 +104,9 @@ void	Screen::NewframeTexture()
     if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
         throw "Could not lock BG texture\n";
     }
+    if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
+        throw "Could not lock BG texture\n";
+    }
 }
 
 void Screen::clear(ImVec4 vec4)
@@ -115,6 +123,35 @@ void	Screen::updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
 	for (unsigned char i = 0; i < PIXEL_PER_LINE; i++)
 		Screen::drawPoint(i, currentLine, lineData[i],
 				pixels, pitch, MAIN_SCREEN_SCALE);
+}
+
+void	Screen::drawSprite(void)
+{
+	const int OAM_Addr = 0xFE00;
+	unsigned char spriteHeight = 8; // Always show the sprit in 8x8 mode
+
+	for (int i = 0; i < MAX_SPRITES; i++) {
+		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
+		Sprite sprite = Sprite(*entry, spriteHeight);
+		// in order to get the background map displayed we need to fetch the tile to display
+		// which is its number (fetched in BGMap which is 32 * 32), then we need
+		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
+		if (entry->getFlipY()) // reverse offset if flipped
+			sprite.flipY();
+		if (entry->getFlipX())
+			sprite.flipX();
+
+
+		int x_offset = (i % 32) * 9;
+		int y_offset = (i / 32) * 9;
+		for (int y = 0; y < 8; y++) {
+			// fetch the 8 pixel of the sprite in a tmp buffer
+			std::array<short, 8> line = sprite.getColoredLine(y);
+			for (int x = 0; x < 8; x++) {
+				drawPoint(x + x_offset, y + y_offset, line[x], SpritePixels, SpritePitch, BG_SCREEN_SCALE);
+			}
+		}
+	}
 }
 
 void	Screen::drawBG(int mapAddr)
@@ -242,6 +279,16 @@ bool	Screen::createTexture(bool bIsCGB)
 			32 * BG_SCREEN_SCALE * 9);
 	if (!BGTexture) {
 		std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	SpriteTexture = SDL_CreateTexture(renderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			32 * BG_SCREEN_SCALE * 9,
+			2 * BG_SCREEN_SCALE * 9);
+	if (!SpriteTexture) {
+		std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
 		return false;
 	}
 
