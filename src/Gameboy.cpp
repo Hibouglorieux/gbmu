@@ -167,11 +167,13 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 						, internalLY);
 			}
 		}
+		if (newState == GBSTATE_H_BLANK) {
+			// need to check hblank hdma
+			doHblankHdma();
+		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
 			//std::cout << "request interrupt HBLANK" << std::endl;
 			Cpu::request_interrupt(IT_LCD_STAT);
-			// need to check hblank hdma
-			doHblankHdma();
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
 			//std::cout << "request interrupt OAM" << std::endl;
