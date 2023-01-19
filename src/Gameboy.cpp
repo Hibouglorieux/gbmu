@@ -204,7 +204,7 @@ void Gameboy::loadSaveState(std::string path) {
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
 	size_t romHash = 0;
-	for (int i = 0; i < mem.romBanks.size(); i++)
+	for (size_t i = 0; i < mem.romBanks.size(); i++)
 		romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
 	if (romHash != tmp.romHash)
 		throw "Could not load save state from a different game\n";
@@ -290,7 +290,7 @@ void Gameboy::loadSaveState(std::string path) {
 
 	offset += MEM_SIZE;
 
-	for (int i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
+	for (size_t i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
 		memcpy(Gameboy::getMem().extraRamBanks[i], content.data() + offset, RAM_BANK_SIZE);
 		offset += RAM_BANK_SIZE;
 	}
@@ -322,7 +322,7 @@ void Gameboy::saveState() {
 	s_state tmp;
 
 	tmp.romHash = 0;
-	for (int i = 0; i < mem.romBanks.size(); i++)
+	for (size_t i = 0; i < mem.romBanks.size(); i++)
 		tmp.romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
 
 	std::cout << "Rom hash : " << std::dec << tmp.romHash << "\n";
@@ -429,7 +429,6 @@ void Gameboy::saveState() {
 
 	outfile.write(reinterpret_cast<char*>(mem.getInternalArray()), MEM_SIZE);
 
-	int i = 1;
 	for (unsigned char *elem : mem.extraRamBanks) {
 		outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
 	}
