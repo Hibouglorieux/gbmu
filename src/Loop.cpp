@@ -23,8 +23,19 @@ bool Loop::showHexdump = false;
 bool Loop::showRegisters = false;
 bool Loop::showPalettes = false;
 
-bool Loop::pool() {
-     {
+bool Loop::loop()
+{	
+
+    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	while (!Gameboy::quit)
+	{
+       	std::chrono::microseconds frametime(1'000'000 / DBG::fps);
+		auto beginFrameTime = std::chrono::system_clock::now();
+
+	    Screen::NewframeTexture();
+
+        {
             ImGui::Begin("PPU");
             if (ImGui::Button(showBG ? "Hide BG" : "Show BG")) {
                 showBG = !showBG;
@@ -153,32 +164,6 @@ bool Loop::pool() {
         if (showHexdump) {
             DBG::hexdump();
         }
-        return true;
-}
-
-bool Loop::loop()
-{	
-    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-
-	while (!Gameboy::quit)
-	{
-       	std::chrono::microseconds frametime(1'000'000 / DBG::fps);
-		auto beginFrameTime = std::chrono::system_clock::now();
-	    Screen::NewframeTexture();
-
-
-        if (Gameboy::bIsROM){
-            Loop::pool();
-        } else {
-            {
-                ImGui::Begin("Drag & Drop");
-                ImGui::Text("Drag & Drop a file .gb or .cgb");
-                ImGui::End();
-            }
-        }
-
-
 
 	Gameboy::pollEvent();
 

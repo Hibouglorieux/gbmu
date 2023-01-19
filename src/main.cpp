@@ -17,7 +17,7 @@
 
 int main(int argc, char** argv)
 {
-//	bool loadState = false;
+	bool loadState = false;
 	(void) argc;
 	(void) argv;
 
@@ -25,33 +25,33 @@ int main(int argc, char** argv)
 	std::cerr << std::setfill('0') << std::uppercase;
 	std::cerr << std::hex;
 	std::cout << std::hex;
-//	if (argc == 1 || argc > 3)
-//	{
-//		if (!Gameboy::loadRom(DEFAULT_PATH_TO_FILE))
-//		{
-//			return -1;
-//		}
-//	}
-//	else
-//	{
-//		if (!Gameboy::loadRom(argv[1]))
-//		{
-//			return -1;
-//		}
-//		if (argc == 3)
-//			loadState = true;
-//	}
-//	Gameboy::init();
+	if (argc == 1 || argc > 3)
+	{
+		if (!Gameboy::loadRom(DEFAULT_PATH_TO_FILE))
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		if (!Gameboy::loadRom(argv[1]))
+		{
+			return -1;
+		}
+		if (argc == 3)
+			loadState = true;
+	}
+	Gameboy::init();
 
-//	try {
-//		if (loadState) {
-//			Gameboy::loadSaveState(argv[2]);
-//		}
-//
+	try {
+		if (loadState) {
+			Gameboy::loadSaveState(argv[2]);
+		}
+
 		Gameboy::run();
-//	} catch (const char* e){
-//		std::cerr << e << std::endl;
-//	}
+	} catch (const char* e){
+		std::cerr << e << std::endl;
+	}
 	Gameboy::clear();
 	return (0);
 }

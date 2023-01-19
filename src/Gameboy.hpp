@@ -43,10 +43,8 @@ public:
 	static uint8_t	internalLY;
 	static int	clockLine;
 	static bool bIsCGB;
-	static bool bIsROM;
 
 	static void init();
-    static bool ProcessFile(char * filename);
 	static bool loadRom(std::string pathToFile);
 	static bool run();
 	static Mem& getMem();
