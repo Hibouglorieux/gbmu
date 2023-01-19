@@ -13,6 +13,14 @@
 
 #ifndef HDMA_CLASS_H
 # define HDMA_CLASS_H
+
+/*
+** HDMA
+** It implement HDMA for CGB in normal mode and in H-BLANK mode
+** Use Clock for timing.
+** It handle interruption of HDMA transfert.
+*/
+
 #include <cstdint>
 
 class Hdma {

@@ -10,16 +10,24 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #ifndef CPU_CLASS_H
 # define CPU_CLASS_H
+
+/*
+** Cpu class.
+** This class use all instruction function.
+** It contains all special registers.
+** It implement interruptions.
+** It read in ROM the opcode to execute and move Program Counter.
+** It call the Clock class to update the clock
+*/
 
 #include "Gameboy.hpp"
 #include "Utility.hpp"
 #include "CpuStackTrace.hpp"
 #include <string>
 #include <iostream>
-#include <iomanip> // setw
+#include <iomanip>
 #include <utility>
 #include "define.hpp"
 
@@ -33,7 +41,7 @@ public:
 	static unsigned char	doMinimumStep();
 	static bool isCpuHalted();
 
-	static int executeLine(bool step, bool updateState, bool bRefreshScreen);
+	// static int executeLine(bool step, bool updateState, bool bRefreshScreen);
 	static void loadBootRom();
 	static std::pair<unsigned char, int> executeInstruction();
 	static void	updateLY(int iter);

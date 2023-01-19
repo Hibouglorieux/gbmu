@@ -14,6 +14,12 @@
 #ifndef MBC_CLASS_H
 # define MBC_CLASS_H
 
+/*
+** Memory Bank Controller implementation
+** This is the implementation of the 5 MBC present in different GB/GBC cartridge.
+** It handle Bank switching for RAM and ROM.
+*/
+
 #include <ctime>
 
 class MBC {

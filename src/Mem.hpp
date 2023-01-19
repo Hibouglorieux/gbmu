@@ -13,6 +13,16 @@
 
 #ifndef MEM_CLASS_H
 # define MEM_CLASS_H
+
+/*
+** Memory
+** This module handle the memory
+** We use an array with operator overload for taking some action if the
+** program write in special register.
+** Handle read-only bits
+** Use MBC for handle bank switching
+*/
+
 #include <string>
 #include <map>
 #include <vector>

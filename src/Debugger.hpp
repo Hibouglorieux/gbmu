@@ -1,5 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Debugger.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
+/*   Updated: 2023/01/12 02:25:27 by nathan           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef GBMU_DEBUGGER_H
 #define GBMU_DEBUGGER_H
+
+/*
+** Debugger implementation
+** Used to show some debug information in UserInterface
+** Also used for controlling Gameboy for break/step
+*/
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
@@ -17,7 +35,7 @@ enum class DebuggerState : int {
 	ONCE_LINE
 };
 
-class DBG {
+class Debugger {
 public:
     static DebuggerState state;
     static int fps;

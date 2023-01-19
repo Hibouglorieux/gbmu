@@ -13,21 +13,36 @@
 #ifndef GAMEBOY_CLASS_H
 # define GAMEBOY_CLASS_H
 
+/*
+** Gameboy class, one for control all
+** It load the binary into Mem.
+** It update the different state of the gameboy
+** It handle various handy thing: step-by-step, rendering control,
+** save/load state
+** It handle the hdma hblank
+** It handle execution of the gameboy and call :
+**	- Ppu for draw a line
+**	- Cpu for execution next instruction and handle interruption
+**	- Joypad for input
+**	- Mem for access memory
+**	- Clock for handle timing between line/frame
+**	- ...
+*/
+
 #include "Mem.hpp"
 #include "Clock.hpp"
 #include "Cpu.hpp"
 #include "Ppu.hpp"
-#include "Loop.hpp"
+#include "UserInterface.hpp"
 #include "Screen.hpp"
 #include "Joypad.hpp"
 #include "define.hpp"
 #include "Common.hpp"
-
 #include <fstream>
 
+// Theses are used by all class to access mem and clock
 #define g_clock (Gameboy::getClock())
 #define mem (Gameboy::getMem())
-
 
 class Gameboy {
 public:
@@ -38,39 +53,56 @@ public:
 		oneLine
 	};
 
-	static bool quit;
-	static Clock gbClock;
-	static uint8_t	internalLY;
-	static int	clockLine;
-	static bool bIsCGB;
+	static bool		quit;
+	static Clock		gbClock;
+	static uint8_t		internalLY;
+	static int		clockLine;
+	static float		clockRest;
+	static bool		bIsCGB;
+	static unsigned int	frameNb;
 
-	static void init();
-	static bool loadRom(std::string pathToFile);
-	static bool run();
-	static Mem& getMem();
-	static Clock& getClock();
-	static void setState(int newState, bool bRefreshScreen);
-	static bool execFrame(Step step, bool bRefreshScreen = true);
-	static int getState();
-	static void pollEvent();
-	static void clear();
-	static void saveRam();
-	static void changeLCD(bool bActivateLCD);
-	static unsigned int frameNb;
-	static void saveState();
-	static void loadSaveState(std::string path);
+	static bool		launchUserInterface();
+	static Mem&		getMem();
+	static Clock&		getClock();
 
-	static void doHblankHdma();
-//	static void LYCallback();
+	// Loading
+	static void		init();
+	static bool		loadRom(std::string pathToFile);
+
+	// Save state
+	static void		saveState();
+	static void		saveRam();
+	static void		loadSaveState(std::string path);
+
+	// Status of execution
+	static void		setState(int newState, bool bRefreshScreen);
+	static int		getState();
+
+	// Execution
+	static bool		execFrame(Step step, bool bRefreshScreen = true);
+	static int		executeLine(bool step, bool updateState,
+					bool bRefreshScreen);
+
+	// Events : Screen, Joypad
+	static void		pollEvent();
+	static void		clear();
+
+	// Rendering ctrl
+	static void		changeLCD(bool bActivateLCD);
+
+	// Hdma H-BLANK
+	static void 		doHblankHdma();
+
 private:
-	static int currentState;
-	static bool bLCDWasOff;
-	static bool bShouldRenderFrame;
-	static Mem* gbMem;
-	static std::string path;
+	static int		currentState;
+	static bool		bLCDWasOff;
+	static bool		bShouldRenderFrame;
+	static Mem*		gbMem;
+	static std::string	path;
 
 };
 
+// Save State structure
 typedef struct {
 
 	size_t romHash;

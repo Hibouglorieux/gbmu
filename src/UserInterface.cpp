@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Loop.cpp                                           :+:      :+:    :+:   */
+/*   UserInterface.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,30 +10,123 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Loop.hpp"
+#include "UserInterface.hpp"
 #include "Ppu.hpp"
 #include "Debugger.hpp"
 #include <chrono>
 #include <thread>
 
-bool Loop::showVram = false;
-bool Loop::showBG = false;
-bool Loop::showSprite = false;
-bool Loop::showHexdump = false;
-bool Loop::showRegisters = false;
-bool Loop::showPalettes = false;
+bool UserInterface::showVram = false;
+bool UserInterface::showBG = false;
+bool UserInterface::showSprite = false;
+bool UserInterface::showHexdump = false;
+bool UserInterface::showRegisters = false;
+bool UserInterface::showPalettes = false;
+SDL_Window*	UserInterface::uiWindow = nullptr;
+SDL_Renderer*	UserInterface::uiRenderer = nullptr;
 
-bool Loop::loop()
+void UserInterface::TexturetoImage(SDL_Texture * Texture)
+{
+	int width;
+	int height;
+
+    	SDL_SetRenderTarget(uiRenderer, Texture);
+   	SDL_UnlockTexture(Texture);
+	SDL_QueryTexture(Texture, nullptr, nullptr, &width, &height);
+    	ImGui::Image((void*)(intptr_t)Texture, ImVec2(width, height));
+//	SDL_RenderCopy(uiRenderer, Texture, NULL, NULL);
+    	SDL_SetRenderTarget(uiRenderer, nullptr);
+}
+
+void UserInterface::destroy()
+{
+    	ImGui_ImplSDLRenderer_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+	Screen::destroyTexture();
+	SDL_DestroyRenderer(uiRenderer);
+	SDL_DestroyWindow(uiWindow);
+    	SDL_Quit();
+}
+
+bool UserInterface::create(bool bIsCGB)
+{
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		std::cerr <<"Error SDL_Init! "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	uiWindow = SDL_CreateWindow("GBMU",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			1980,
+			1024,
+			window_flags);
+	if (!uiWindow) {
+		std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;
+		return (false);
+	}
+
+
+	uiRenderer = SDL_CreateRenderer(uiWindow, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
+	if (!uiRenderer)
+	{
+		std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	// TODO LMA move it to a Screen::init
+	if (!Screen::createTexture(bIsCGB, uiRenderer))
+		return false;
+
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplSDL2_InitForSDLRenderer(uiWindow, uiRenderer);
+	ImGui_ImplSDLRenderer_Init(uiRenderer);
+	SDL_RenderClear(uiRenderer);
+	return (true);
+}
+
+void	UserInterface::newFrame()
+{
+	ImGui_ImplSDLRenderer_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+	SDL_RenderClear(uiRenderer);
+	Screen::lockTexture();
+}
+
+void	UserInterface::clear(ImVec4 vec4)
+{
+    ImGui::Render();
+    SDL_SetRenderDrawColor(uiRenderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    SDL_RenderPresent(UserInterface::uiRenderer);
+}
+
+bool UserInterface::loop()
 {	
 
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	while (!Gameboy::quit)
 	{
-       	std::chrono::microseconds frametime(1'000'000 / DBG::fps);
+       	std::chrono::microseconds frametime(1'000'000 / Debugger::fps);
 		auto beginFrameTime = std::chrono::system_clock::now();
 
-	    Screen::NewframeTexture();
+	    UserInterface::newFrame();
 
         {
             ImGui::Begin("PPU");
@@ -62,45 +155,45 @@ bool Loop::loop()
             }
             ImGui::NewLine();
 			ImGui::SetNextItemWidth(180);
-            ImGui::SliderInt("FPS", &DBG::fps, 1, 300);
+            ImGui::SliderInt("FPS", &Debugger::fps, 1, 300);
 			ImGui::SetNextItemWidth(180);
-            ImGui::InputInt("frameNb Break", (int*)&DBG::stopAtFrame);
+            ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::SameLine();
-            if (ImGui::Button(  DBG::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
-                DBG::state = (DBG::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
+            if (ImGui::Button(  Debugger::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
+                Debugger::state = (Debugger::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
             }
 			ImGui::SameLine();
             if (ImGui::Button("Next step")) {
-            	DBG::state = DebuggerState::ONCE;
+            	Debugger::state = DebuggerState::ONCE;
             }
 			ImGui::SameLine();
             if (ImGui::Button("Next frame")) {
-            	DBG::state = DebuggerState::ONCE_FRAME;
+            	Debugger::state = DebuggerState::ONCE_FRAME;
             }
 			ImGui::SameLine();
             if (ImGui::Button("Next line")) {
-            	DBG::state = DebuggerState::ONCE_LINE;
+            	Debugger::state = DebuggerState::ONCE_LINE;
             }
             if (ImGui::Button("Save State")) {
             	Gameboy::saveState();
             }
-            if (DBG::state != DebuggerState::PAUSED) {
+            if (Debugger::state != DebuggerState::PAUSED) {
 				Gameboy::Step step = Gameboy::Step::full;
-				if (DBG::state == DebuggerState::ONCE)
+				if (Debugger::state == DebuggerState::ONCE)
 					step = Gameboy::Step::oneInstruction;
-				if (DBG::state == DebuggerState::ONCE_LINE)
+				if (Debugger::state == DebuggerState::ONCE_LINE)
 					step = Gameboy::Step::oneLine;
             	Gameboy::execFrame(step);
-            	if (DBG::state == DebuggerState::ONCE ||
-            	    DBG::state == DebuggerState::ONCE_FRAME ||
-					DBG::state == DebuggerState::ONCE_LINE) {
-            	    DBG::state = DebuggerState::PAUSED;
+            	if (Debugger::state == DebuggerState::ONCE ||
+            	    Debugger::state == DebuggerState::ONCE_FRAME ||
+					Debugger::state == DebuggerState::ONCE_LINE) {
+            	    Debugger::state = DebuggerState::PAUSED;
             	}
             }
-			if (DBG::stopAtFrame == Gameboy::frameNb)
-				DBG::state = DebuggerState::PAUSED;
-            Screen::TexturetoImage(Screen::texture);
+			if (Debugger::stopAtFrame == Gameboy::frameNb)
+				Debugger::state = DebuggerState::PAUSED;
+            UserInterface::TexturetoImage(Screen::ppuTexture);
             ImGui::End();
         }
 
@@ -108,7 +201,7 @@ bool Loop::loop()
             {
                 ImGui::Begin("Vram");
                 Screen::drawVRam(Gameboy::bIsCGB);
-                Screen::TexturetoImage(Screen::VRamTexture);
+                UserInterface::TexturetoImage(Screen::VRamTexture);
                 ImGui::End();
             }
         }
@@ -116,8 +209,8 @@ bool Loop::loop()
         if (showSprite) {
 		ImGui::Begin("Sprite Map 8x8 only");
 		Screen::drawSprite();
-                Screen::TexturetoImage(Screen::SpriteTexture);
-		DBG::Sprites();
+                UserInterface::TexturetoImage(Screen::SpriteTexture);
+		Debugger::Sprites();
                 ImGui::End();
 	}
         if (showBG) {
@@ -146,7 +239,7 @@ bool Loop::loop()
 			Screen::mapAddr = 0x8000;
 		}
                 Screen::drawBG(Screen::mapAddr);
-                Screen::TexturetoImage(Screen::BGTexture);
+                UserInterface::TexturetoImage(Screen::BGTexture);
                 ImGui::End();
             }
         }
@@ -158,11 +251,11 @@ bool Loop::loop()
 		}
 
         if (showRegisters) {
-            DBG::registers();
+            Debugger::registers();
         }
 
         if (showHexdump) {
-            DBG::hexdump();
+            Debugger::hexdump();
         }
 
 	Gameboy::pollEvent();
@@ -179,7 +272,30 @@ bool Loop::loop()
 	{
 		//std::cout << "no need for sleep because frame took: " << std::dec << (timeTakenForFrame).count() << std::hex << " microseconds" << std::endl;
 	}
-        Screen::clear(clear_color);
+        UserInterface::clear(clear_color);
 	}
 	return (true);
+}
+
+void	UserInterface::handleEvent(SDL_Event *ev)
+{
+	ImGui_ImplSDL2_ProcessEvent(ev);
+	if (ev->type == SDL_WINDOWEVENT) {
+		switch (ev->window.event) {
+			case SDL_WINDOWEVENT_CLOSE:
+				if (ev->window.windowID
+						== SDL_GetWindowID(uiWindow)) {
+					Gameboy::quit = true;
+					Gameboy::saveRam();
+				}
+				break;
+		}
+	}
+	if (ev->type == SDL_KEYDOWN)
+	{
+		if (ev->key.keysym.sym == SDLK_ESCAPE) {
+			Gameboy::quit = true;
+			Gameboy::saveRam();
+		}
+	}
 }

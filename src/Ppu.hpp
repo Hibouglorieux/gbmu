@@ -13,6 +13,13 @@
 #ifndef PPU_CLASS_H
 # define PPU_CLASS_H
 
+/*
+** Pixel Processing Unit
+** Use Sprites for manage OAM search / sprites.
+** Handle all the Gameboy PPU features : Sprites, color palettes,
+** background, window, ...
+*/
+
 #include "Mem.hpp"
 #include <vector>
 #include <array>

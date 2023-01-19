@@ -16,7 +16,7 @@ FILES = main.cpp \
 		FlagOp.cpp \
 		Clock.cpp \
 		Screen.cpp \
-		Loop.cpp \
+		UserInterface.cpp \
 		Ppu.cpp \
 		Joypad.cpp \
 		Gameboy.cpp \

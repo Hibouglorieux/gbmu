@@ -47,11 +47,11 @@ int main(int argc, char** argv)
 		if (loadState) {
 			Gameboy::loadSaveState(argv[2]);
 		}
-
-		Gameboy::run();
-	} catch (const char* e){
+		Gameboy::launchUserInterface();
+	}
+	catch (const char* e) {
 		std::cerr << e << std::endl;
 	}
-	Gameboy::clear();
+	// Gameboy::clear();
 	return (0);
 }

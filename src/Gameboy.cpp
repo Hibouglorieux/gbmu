@@ -3,21 +3,19 @@
 #include "Hdma.hpp"
 #include "Debugger.hpp"
 
-Mem* Gameboy::gbMem = nullptr;
-Clock Gameboy::gbClock = Clock();
-int Gameboy::currentState = 0;
-
-uint8_t Gameboy::internalLY = 0;
-int Gameboy::clockLine = 0;
-
-bool Gameboy::bLCDWasOff = false;
-bool Gameboy::bShouldRenderFrame = true;
-bool Gameboy::quit = false;
-bool Gameboy::bIsCGB = false;
-std::string Gameboy::path = "";
-unsigned int Gameboy::frameNb = 0;
-
-bool bLogFrameNb = false;
+Mem*		Gameboy::gbMem = nullptr;
+Clock		Gameboy::gbClock = Clock();
+int		Gameboy::currentState = 0;
+uint8_t		Gameboy::internalLY = 0;
+int		Gameboy::clockLine = 0;
+bool		Gameboy::bLCDWasOff = false;
+bool		Gameboy::bShouldRenderFrame = true;
+bool		Gameboy::quit = false;
+bool		Gameboy::bIsCGB = false;
+std::string	Gameboy::path = "";
+unsigned int	Gameboy::frameNb = 0;
+float		Gameboy::clockRest = 0;
+bool		bLogFrameNb = false;
 
 Mem& Gameboy::getMem()
 {
@@ -32,7 +30,6 @@ Clock& Gameboy::getClock()
 void	Gameboy::init()
 {
 	Cpu::loadBootRom();
-	Screen::create(bIsCGB);
 	clockLine = 0;
 	internalLY = 0;
 }
@@ -48,16 +45,16 @@ bool Gameboy::loadRom(std::string pathToFile)
 	return gbMem->isValid;
 }
 
-bool Gameboy::run()
+bool Gameboy::launchUserInterface()
 {
-	Loop::loop();
-	return true;
+	UserInterface::create(bIsCGB);
+	return UserInterface::loop();
 }
 
+// TODO LMA clear, this is never called and we have leaks with SDL
 void Gameboy::clear()
 {
 	delete gbMem;
-	Screen::destroy();
 }
 
 void Gameboy::changeLCD(bool bActivateLCD)
@@ -81,11 +78,11 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	// normal render wont be called since we wont enter pxl transfer state
 	if (!bShouldRenderFrame)
 		for (int i = 0; i < 144; i++)
-			Screen::updateMainScreen(Ppu::getDefaultWhiteLine(), i);
+			Screen::updatePpuLine(Ppu::getDefaultWhiteLine(), i);
 
 	std::function<bool()> loopFunc = [&]()
 	{
-		if (Cpu::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
+		if (Gameboy::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
 		{
 			Cpu::updateLY(1);
 			if (M_LY == 0)
@@ -133,12 +130,6 @@ void Gameboy::doHblankHdma()
 		// update g_clock/clock here instead of cpu
 		// because it has to be done once per hblank
 		g_clock += clockHblankForHdma;
-		/*
-		if (Clock::cgbMode)
-			g_clock += 2; // overhead (always 4 clock)
-		else
-			g_clock += 1; // overhead (always 4 clock)
-		*/
 		clockLine += clockHblankForHdma;
 	}
 }
@@ -163,7 +154,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			{
 				// we need to have the ternary because the
 				// frame after the lcd was put on is still white
-				Screen::updateMainScreen( bShouldRenderFrame ? Ppu::doOneLine() : Ppu::getDefaultWhiteLine()
+				Screen::updatePpuLine( bShouldRenderFrame ? Ppu::doOneLine() : Ppu::getDefaultWhiteLine()
 						, internalLY);
 			}
 		}
@@ -185,16 +176,6 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 	}
 	currentState = newState;
 }
-
-// static bool interrupts_master_enable;
-// static bool interrupts_flag;
-// static bool halted;
-// static uint32_t halt_counter;
-
-// static unsigned short PC;
-// static unsigned short SP;
-// static unsigned short registers[4];
-// static Clock cpuClock;
 
 void Gameboy::loadSaveState(std::string path) {
 	s_state tmp;
@@ -472,13 +453,53 @@ void Gameboy::pollEvent()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		ImGui_ImplSDL2_ProcessEvent(&event);
-		Screen::handleEvent(&event);
+		UserInterface::handleEvent(&event);
 		Joypad::handleEvent(&event);
-		if (event.type == SDL_QUIT)
+		if (event.type == SDL_QUIT) {
 			Gameboy::quit = true;
-		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-				event.window.windowID == SDL_GetWindowID(Screen::window))
-			Gameboy::quit = true;
+		}
 	}
+}
+
+int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
+{
+	static const int nbClockLine = 114;
+	std::pair<unsigned char, int>r;
+
+	while (Gameboy::clockLine < nbClockLine)
+	{
+		if (updateState && Gameboy::clockLine < 20)
+		{
+			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
+		}
+		else if (updateState && Gameboy::clockLine < 20 + 43)
+		{
+			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
+		}
+		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
+		{
+			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
+		}
+
+		int clockInc = Cpu::doMinimumStep();
+		g_clock += clockInc;
+		if (Clock::cgbMode)
+		{
+			int entireClock = (clockInc / 2.0) + clockRest;
+			if (entireClock >= 1)
+				Gameboy::clockLine += entireClock;
+			clockRest = ((clockInc / 2.0) + clockRest) - entireClock;
+		}
+		else
+			Gameboy::clockLine += clockInc;
+
+		if (step) {
+			break;
+		}
+	}
+	if (Gameboy::clockLine >= nbClockLine) {
+		Gameboy::clockLine -= nbClockLine;
+		return (true);
+	}
+	return (false);
 }

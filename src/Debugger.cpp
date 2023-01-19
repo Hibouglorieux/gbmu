@@ -2,11 +2,11 @@
 #include "Debugger.hpp"
 #include <SDL2/SDL.h>
 
-DebuggerState DBG::state = DebuggerState::RUNNING;
-int DBG::fps = 60;
-unsigned int DBG::stopAtFrame = 0;
+DebuggerState Debugger::state = DebuggerState::RUNNING;
+int Debugger::fps = 60;
+unsigned int Debugger::stopAtFrame = 0;
 
-void DBG::hexdump() {
+void Debugger::hexdump() {
 	{
 	ImGui::Begin("Memory Hexdump:");
 
@@ -62,7 +62,7 @@ void DBG::hexdump() {
 	}
 }
 
-void DBG::registers() {
+void Debugger::registers() {
     {
         ImGui::Begin("Registers:");
         ImGui::Columns(2, "registers", true);
@@ -152,7 +152,7 @@ void DBG::registers() {
     }
 }
 
-void DBG::Sprites() {
+void Debugger::Sprites() {
 	const int OAM_Addr = 0xFE00;
 
 	for (int i = 0; i < MAX_SPRITES; i++) {

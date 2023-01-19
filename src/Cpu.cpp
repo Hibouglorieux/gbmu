@@ -567,49 +567,48 @@ StackData	Cpu::captureCurrentState(std::string customData)
 	return stackData;
 }
 
-#define NB_CYCLE_LINE 114
 
-int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
-{
-	std::pair<unsigned char, int>r;
-
-	while (Gameboy::clockLine < NB_CYCLE_LINE)
-	{
-		if (updateState && Gameboy::clockLine < 20)
-		{
-			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
-		}
-		else if (updateState && Gameboy::clockLine < 20 + 43)
-		{
-			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
-		}
-		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
-		{
-			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
-		}
-
-		int clockInc = doMinimumStep();
-		g_clock += clockInc;
-		if (Clock::cgbMode)
-		{
-			int entireClock = (clockInc / 2.0) + rest;
-			if (entireClock >= 1)
-				Gameboy::clockLine += entireClock;
-			rest = ((clockInc / 2.0) + rest) - entireClock;
-		}
-		else
-			Gameboy::clockLine += clockInc;
-
-		if (step) {
-			break;
-		}
-	}
-	if (Gameboy::clockLine >= NB_CYCLE_LINE) {
-		Gameboy::clockLine -= NB_CYCLE_LINE;
-		return (true);
-	}
-	return (false);
-}
+//int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
+//{
+//	std::pair<unsigned char, int>r;
+//
+//	while (Gameboy::clockLine < NB_CYCLE_LINE)
+//	{
+//		if (updateState && Gameboy::clockLine < 20)
+//		{
+//			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
+//		}
+//		else if (updateState && Gameboy::clockLine < 20 + 43)
+//		{
+//			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
+//		}
+//		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
+//		{
+//			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
+//		}
+//
+//		int clockInc = doMinimumStep();
+//		g_clock += clockInc;
+//		if (Clock::cgbMode)
+//		{
+//			int entireClock = (clockInc / 2.0) + rest;
+//			if (entireClock >= 1)
+//				Gameboy::clockLine += entireClock;
+//			rest = ((clockInc / 2.0) + rest) - entireClock;
+//		}
+//		else
+//			Gameboy::clockLine += clockInc;
+//
+//		if (step) {
+//			break;
+//		}
+//	}
+//	if (Gameboy::clockLine >= NB_CYCLE_LINE) {
+//		Gameboy::clockLine -= NB_CYCLE_LINE;
+//		return (true);
+//	}
+//	return (false);
+//}
 
 void Cpu::debug(int opcode)
 {
