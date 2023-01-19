@@ -17,6 +17,7 @@ class Loop
 {
 public:
 	static bool loop();
+	static bool pool();
 
 private:
     static bool showVram;
