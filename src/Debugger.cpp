@@ -123,7 +123,7 @@ void Debugger::registers() {
         ImGui::Separator();
 
         ImGui::Text("Interrupts:");
-        ImGui::Checkbox("Interupts Master Enable (IME)",&Cpu::interrupts_master_enable);
+        ImGui::Checkbox("Interupts Master Enable (IME)",&Cpu::IME);
     	unsigned char ie = M_EI;
     	unsigned char iflag = M_IF;
     	ImGui::Text("Interrupt Enable (0xFFFF): 0x%02X\nInterrupt Flag   (0xFF0F): 0x%02X",ie, iflag);

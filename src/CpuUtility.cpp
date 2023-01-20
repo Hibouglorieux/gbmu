@@ -230,11 +230,6 @@ unsigned short Cpu::readShort(int incrementPc)
 	return shortVal;
 }
 
-const unsigned char& Cpu::getData(int i)
-{
-	return mem[i];
-}
-
 void Cpu::logErr(std::string msg)
 {
 	std::cerr << msg << std::endl;

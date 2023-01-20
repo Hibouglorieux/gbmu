@@ -34,6 +34,26 @@ void	Gameboy::init()
 	internalLY = 0;
 }
 
+void	Gameboy::updateLY(int iter)
+{
+	if (!BIT(M_LCDC, 7)) {
+		// special case LCD disabled : don't update LY
+		// And set it to 0
+		mem.supervisorWrite(LY, 0);
+		return;
+	}
+	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
+	if (M_LY == M_LYC) {
+		SET(M_LCDC_STATUS, 2);
+		if (BIT(M_LCDC_STATUS, 6)) {
+			Cpu::requestInterrupt(IT_LCD_STAT);
+		}
+	}
+	else {
+		RES(M_LCDC_STATUS, 2);
+	}
+}
+
 bool Gameboy::loadRom(std::string pathToFile)
 {
 	gbMem = Mem::loadFromFile(pathToFile);
@@ -84,7 +104,7 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	{
 		if (Gameboy::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
 		{
-			Cpu::updateLY(1);
+			updateLY(1);
 			if (M_LY == 0)
 			{
 				if (BIT(M_LCDC, 7))
@@ -143,9 +163,9 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			if (BIT(M_LCDC_STATUS, 4))
 			{
 				//std::cout << "request interrupt VBLANK" << std::endl;
-				Cpu::request_interrupt(IT_LCD_STAT);
+				Cpu::requestInterrupt(IT_LCD_STAT);
 			}
-			Cpu::request_interrupt(IT_VBLANK);
+			Cpu::requestInterrupt(IT_VBLANK);
 		}
 		// should refresh screen
 		if (newState == GBSTATE_H_BLANK)
@@ -164,11 +184,11 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 		}
 		if (newState == GBSTATE_H_BLANK && BIT(M_LCDC_STATUS, 3)) {
 			//std::cout << "request interrupt HBLANK" << std::endl;
-			Cpu::request_interrupt(IT_LCD_STAT);
+			Cpu::requestInterrupt(IT_LCD_STAT);
 		}
 		if (newState == GBSTATE_OAM_SEARCH && BIT(M_LCDC_STATUS, 5)) {
 			//std::cout << "request interrupt OAM" << std::endl;
-			Cpu::request_interrupt(IT_LCD_STAT);
+			Cpu::requestInterrupt(IT_LCD_STAT);
 		}
 		unsigned char lcdcs = M_LCDC_STATUS & ~0x07;
 		lcdcs |= newState;
@@ -191,8 +211,8 @@ void Gameboy::loadSaveState(std::string path) {
 		throw "Could not load save state from a different game\n";
 
 	// Load CPU state
-	Cpu::interrupts_master_enable = tmp.cpu.interrupts_master_enable;
-	Cpu::interrupts_flag = tmp.cpu.interrupts_flag;
+	Cpu::IME = tmp.cpu.IME;
+	Cpu::setIMEFlag = tmp.cpu.setIMEFlag;
 	Cpu::halted = tmp.cpu.halted;
 	Cpu::halt_counter = tmp.cpu.halt_counter;
 	Cpu::PC = tmp.cpu.PC;
@@ -309,8 +329,8 @@ void Gameboy::saveState() {
 	std::cout << "Rom hash : " << std::dec << tmp.romHash << "\n";
 	
 	// Save CPU state
-	tmp.cpu.interrupts_master_enable = Cpu::interrupts_master_enable;
-	tmp.cpu.interrupts_flag = Cpu::interrupts_flag;
+	tmp.cpu.IME = Cpu::IME;
+	tmp.cpu.setIMEFlag = Cpu::setIMEFlag;
 	tmp.cpu.halted = Cpu::halted;
 	tmp.cpu.halt_counter = Cpu::halt_counter;
 	tmp.cpu.PC = Cpu::PC;
@@ -378,8 +398,8 @@ void Gameboy::saveState() {
 	}
 
 
-	// std::cout << "\tIME = " << Cpu::interrupts_master_enable << "\n";
-	// std::cout << "\tIF = " << Cpu::interrupts_flag << "\n";
+	// std::cout << "\tIME = " << Cpu::IME << "\n";
+	// std::cout << "\tIF = " << Cpu::setIMEFlag << "\n";
 	// std::cout << "\tHalted = " << Cpu::halted << "\n";
 	// std::cout << "\tHalt_counter = " << Cpu::halt_counter << "\n";
 	// std::cout << "\tPC = " << Cpu::PC << "\n";

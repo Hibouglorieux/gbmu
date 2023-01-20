@@ -10,34 +10,31 @@
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
-#include <functional>
-#include "Hdma.hpp"
 
-CpuStackTrace Cpu::stackTrace;
+CpuStackTrace	Cpu::stackTrace;
 
-unsigned short Cpu::PC = 0;
-unsigned short Cpu::SP = 0;
-unsigned short Cpu::registers[4] = {};
-float rest;
+/* Interrupts */
+bool		Cpu::IME = false;
+bool		Cpu::setIMEFlag = false;
+bool		Cpu::halted = false;
+uint32_t	Cpu::halt_counter = 0;
 
-bool Cpu::interrupts_master_enable = false;
-bool Cpu::interrupts_flag = false;
-bool Cpu::halted = false;
-uint32_t Cpu::halt_counter = 0;
-
-unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
-unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
-unsigned char& Cpu::B = reinterpret_cast<unsigned char*>(registers)[3];
-unsigned char& Cpu::C = reinterpret_cast<unsigned char*>(registers)[2];
-unsigned char& Cpu::D = reinterpret_cast<unsigned char*>(registers)[5];
-unsigned char& Cpu::E = reinterpret_cast<unsigned char*>(registers)[4];
-unsigned char& Cpu::H = reinterpret_cast<unsigned char*>(registers)[7];
-unsigned char& Cpu::L = reinterpret_cast<unsigned char*>(registers)[6];
-
-unsigned short& Cpu::AF = registers[0];
-unsigned short& Cpu::BC = registers[1];
-unsigned short& Cpu::DE = registers[2];
-unsigned short& Cpu::HL = registers[3];
+/* Registers */
+unsigned short 	Cpu::PC = 0;
+unsigned short 	Cpu::SP = 0;
+unsigned short 	Cpu::registers[4] = {};
+unsigned char&	Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
+unsigned char&	Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
+unsigned char&	Cpu::B = reinterpret_cast<unsigned char*>(registers)[3];
+unsigned char&	Cpu::C = reinterpret_cast<unsigned char*>(registers)[2];
+unsigned char&	Cpu::D = reinterpret_cast<unsigned char*>(registers)[5];
+unsigned char&	Cpu::E = reinterpret_cast<unsigned char*>(registers)[4];
+unsigned char&	Cpu::H = reinterpret_cast<unsigned char*>(registers)[7];
+unsigned char&	Cpu::L = reinterpret_cast<unsigned char*>(registers)[6];
+unsigned short&	Cpu::AF = registers[0];
+unsigned short&	Cpu::BC = registers[1];
+unsigned short&	Cpu::DE = registers[2];
+unsigned short&	Cpu::HL = registers[3];
 
 void Cpu::loadBootRom()
 {
@@ -81,7 +78,7 @@ void Cpu::loadBootRom()
 	//stackTrace.opcodeBreak = 0xCB27;
 }
 
-void	Cpu::request_interrupt(int i)
+void	Cpu::requestInterrupt(int i)
 {
 	unsigned char bit;
 	switch (i)
@@ -112,28 +109,30 @@ void	Cpu::request_interrupt(int i)
 
 bool  Cpu::isCpuHalted(void)
 {
-    if (Cpu::halted)
+	if (Cpu::halted)
 	{
 		// TODO we should exit halt even when IME is not set but the behavior is different
-        if (M_EI & M_IF & 0x1F)
+		if (M_EI & M_IF & 0x1F)
 		{
-            Cpu::halted = false;
+			Cpu::halted = false;
 			Cpu::halt_counter = 0;
 			return false;
 		}
 		else if (Cpu::halt_counter != 0)
 		{
 			Cpu::halt_counter++;
-			if (Cpu::halt_counter > 2050) { //0x20000) {
-            Cpu::halted = false;
-			Cpu::halt_counter = 0;
-			return false;
+			if (Cpu::halt_counter > 2050)
+			{
+				Cpu::halted = false;
+				Cpu::halt_counter = 0;
+				return false;
 			}
-        }
-		else
-            return true;
-    }
-    return false;
+		}
+		else {
+		    return true;
+		}
+	}
+	return false;
 }
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
@@ -142,14 +141,15 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
-    // debug(readByte(false));
-    opcode = readByte();
-    if (Cpu::interrupts_flag && opcode != 0xf3) {
-        Cpu::interrupts_master_enable = true;
-    }
-	Cpu::interrupts_flag = false;
+
+	// debug(readByte(false));
+	opcode = readByte();
+	if (Cpu::setIMEFlag && opcode != 0xf3) {
+	    Cpu::IME = true;
+	}
+	Cpu::setIMEFlag = false;
 	bool bIsPHL = ((opcode & 0x0F) == 0x06) | ((opcode & 0x0F) == 0x0E);
-    switch (opcode)
+	switch (opcode)
 	{
 		case 0x00:
 			instruction = [&](){ return nop();};
@@ -556,7 +556,7 @@ StackData	Cpu::captureCurrentState(std::string customData)
 	stackData.if_reg = M_IF;
 	stackData.ly_reg = M_LY;
 	stackData.lcdc = M_LCDC;
-	stackData.ime = interrupts_master_enable;
+	stackData.ime = IME;
 	if (mem[PC] == 0xCB)
 	{
 		stackData.opcode <<= 8;
@@ -566,49 +566,6 @@ StackData	Cpu::captureCurrentState(std::string customData)
 	stackData.customData = customData;
 	return stackData;
 }
-
-
-//int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
-//{
-//	std::pair<unsigned char, int>r;
-//
-//	while (Gameboy::clockLine < NB_CYCLE_LINE)
-//	{
-//		if (updateState && Gameboy::clockLine < 20)
-//		{
-//			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
-//		}
-//		else if (updateState && Gameboy::clockLine < 20 + 43)
-//		{
-//			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
-//		}
-//		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
-//		{
-//			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
-//		}
-//
-//		int clockInc = doMinimumStep();
-//		g_clock += clockInc;
-//		if (Clock::cgbMode)
-//		{
-//			int entireClock = (clockInc / 2.0) + rest;
-//			if (entireClock >= 1)
-//				Gameboy::clockLine += entireClock;
-//			rest = ((clockInc / 2.0) + rest) - entireClock;
-//		}
-//		else
-//			Gameboy::clockLine += clockInc;
-//
-//		if (step) {
-//			break;
-//		}
-//	}
-//	if (Gameboy::clockLine >= NB_CYCLE_LINE) {
-//		Gameboy::clockLine -= NB_CYCLE_LINE;
-//		return (true);
-//	}
-//	return (false);
-//}
 
 void Cpu::debug(int opcode)
 {
@@ -622,38 +579,14 @@ void Cpu::debug(int opcode)
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
 }
 
-void	Cpu::updateLY(int iter)
-{
-	if (!BIT(M_LCDC, 7))// special case LCD diabled
-	{
-		mem.supervisorWrite(LY, 0);
-		return;
-	}
-
-	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
-
-
-	if (M_LY == M_LYC) {
-		SET(M_LCDC_STATUS, 2);
-		if (BIT(M_LCDC_STATUS, 6)) {
-			// do_interrupts(IT_LCD_STAT, 1);
-			//std::cout << "request interrupt LY==LYC with val: " << (int)M_LY << std::endl;
-			request_interrupt(IT_LCD_STAT);
-		}
-	} else
-		RES(M_LCDC_STATUS, 2);
-
-	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
-}
-
-void do_interrupts(unsigned int addr, unsigned char bit)
+void 		Cpu::doInterrupt(unsigned int addr, unsigned char bit)
 {
 	mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
 	Cpu::PC = addr;
 	RES(M_IF, bit);
-	Cpu::interrupts_master_enable = false;
-	Cpu::interrupts_flag = false;// overkill
+	Cpu::IME = false;
+	Cpu::setIMEFlag = false;// overkill
 }
 
 unsigned char	Cpu::doMinimumStep()
@@ -669,58 +602,55 @@ unsigned char	Cpu::doMinimumStep()
 		}
 		return 1;
 	}
-	if (isCpuHalted())
-	{
+	if (isCpuHalted()) {
 		stackTrace.add(captureCurrentState("IM HALTED"));
-	    /* Increment one cycle */
+	    	/* Increment one cycle */
 		return 1;
 	}
-	else if (handle_interrupts())
-	{
+	else if (handleInterrupt()) {
 		// interrupts takes 5 cycles;
 		return 5;
 	}
-	else
-	{
+	else {
 		stackTrace.add(captureCurrentState());
 		return executeInstruction().second;
 	}
 }
 
-bool Cpu::handle_interrupts()
+bool Cpu::handleInterrupt()
 {
-	if (Cpu::interrupts_master_enable)
+	if (Cpu::IME)
 	{
 		if (M_EI & M_IF & 0x1f)
 		{
 			if (BIT(M_EI, 0) && BIT(M_IF, 0))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT VBLANK"));
-				do_interrupts(IT_VBLANK, 0);
+				doInterrupt(IT_VBLANK, 0);
 				return true;
 			}
 			else if (BIT(M_EI, 1) && BIT(M_IF, 1))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT LCD_STAT"));
-				do_interrupts(IT_LCD_STAT, 1);
+				doInterrupt(IT_LCD_STAT, 1);
 				return true;
 			}
 			else if (BIT(M_EI, 2) && BIT(M_IF, 2))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT TIMER"));
-				do_interrupts(IT_TIMER, 2);
+				doInterrupt(IT_TIMER, 2);
 				return true;
 			}
 			else if (BIT(M_EI, 3) && BIT(M_IF, 3))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT SERIAL"));
-				do_interrupts(IT_SERIAL, 3);
+				doInterrupt(IT_SERIAL, 3);
 				return true;
 			}
 			else if (BIT(M_EI, 4) && BIT(M_IF, 4))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT JOYPAD"));
-				do_interrupts(IT_JOYPAD, 4);
+				doInterrupt(IT_JOYPAD, 4);
 				return true;
 			}
 		}

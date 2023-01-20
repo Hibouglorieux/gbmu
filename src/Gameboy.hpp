@@ -75,6 +75,7 @@ public:
 	static void		loadSaveState(std::string path);
 
 	// Status of execution
+	static void		updateLY(int iter);
 	static void		setState(int newState, bool bRefreshScreen);
 	static int		getState();
 
@@ -118,8 +119,8 @@ typedef struct {
 	} gameboy;
 
 	struct {
-		bool interrupts_master_enable;
-		bool interrupts_flag;
+		bool IME;
+		bool setIMEFlag;
 		bool halted;
 		uint32_t halt_counter;
 

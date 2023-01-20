@@ -34,7 +34,8 @@ IMGUI_PATH = src/imgui/
 LIBS = libimgui.a
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 
-CXXFLAGS = -std=gnu++14 -Wall -Wextra -g3 -Og
+CXXFLAGS = -std=gnu++14 -Wall -Wextra -O3
+#-g3 -Og
 
 all: $(NAME)
 
