@@ -17,6 +17,8 @@ public:
     // NR31
     unsigned char length_timer;
 
+    int current_length_timer;
+
     // NR32
     unsigned char volume;
 
@@ -35,8 +37,11 @@ public:
 
     bool to_trigger;
 
-    void tick(int n);
-    void channel_3_tick();
+    void tick(void);
+
+    const static int samples_per_length = SAMPLING_RATE/64;
+
+    int length_count;
 
     Waveform(int chan);
     ~Waveform();

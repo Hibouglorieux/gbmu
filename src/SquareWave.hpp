@@ -20,6 +20,7 @@ public:
     // NR*1
     int waveDuty;
     int length_timer;
+    int current_length_timer;
 
     // NR*2
     int initialVolume;
@@ -37,6 +38,11 @@ public:
     int waveLength;
     char wave;
 
+    int volumeSweepValue;
+    int wavelengthSweepValue;
+
+    int ticks;
+
     bool to_trigger;
 
     int iterations;
@@ -44,9 +50,13 @@ public:
     SDL_AudioSpec obtainedSpec;
     SDL_AudioSpec desiredSpec;
 
-    void tick(int n);
+    void tick();
     void channel_2_tick();
     void channel_1_tick();
+
+    const static int samples_per_length = SAMPLING_RATE/64;
+
+    int length_count;
 
     SquareWave(int chan);
     ~SquareWave();

@@ -1,24 +1,13 @@
 #include "Waveform.hpp"
 
-void Waveform::tick(int n) {
-    // TODO ?? Implement more than 1 tick (not necessary I think)
-    (void)n;
-
-    switch (channel)
-    {
-    case 3:
-        channel_3_tick();
-        break;
-    default:
-        throw "Trying to tick wrong Waveform channel";
-    }
-}
-
-void Waveform::channel_3_tick() {
+void Waveform::tick() {
+    // if (trigger)
+    //     return;
 
     DACenable = BIT(mem[NR30], 7);
     length_timer = mem[NR31];
-    volume = (mem[NR32] & 0b01100000);
+    current_length_timer = length_timer;
+    volume = (mem[NR32] & 0b01100000) >> 5;
     switch (volume)
     {
     case 0:
@@ -32,6 +21,7 @@ void Waveform::channel_3_tick() {
         break;
     
     default:
+        std::cout << "Volume : " << std::dec << (int)volume <<"\n";
         throw "Wrong volume specified for Waveform channel\n";
     }
     wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
@@ -51,7 +41,7 @@ void Waveform::channel_3_tick() {
 
 
 Waveform::Waveform(int chan)
-: channel(chan), step(0), trigger(false), to_trigger(false), iterations(0)
+: channel(chan), step(0), volume(0), trigger(false), to_trigger(false), iterations(0), length_count(0)
 {
     std::cout << "Waveform channel " << chan << " was created\n";
     if (chan != 3)

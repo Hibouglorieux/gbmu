@@ -306,7 +306,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		std::cout << "Triggering channel 3\n";
 	}
 	else if (addr == NR44) {
-		// APU::channel4.to_trigger = true;
+		APU::channel4.to_trigger = true;
 		std::cout << "Triggering channel 4\n";
 	}
     /* recursive call

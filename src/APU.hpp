@@ -9,6 +9,7 @@
 
 #include "SquareWave.hpp"
 #include "Waveform.hpp"
+#include "Noise.hpp"
 
 class APU
 {
@@ -32,6 +33,7 @@ public:
     static SquareWave channel1;
     static SquareWave channel2;
     static Waveform channel3;
+    static Noise channel4;
 
     static SDL_AudioSpec obtainedSpec;
     static SDL_AudioSpec desiredSpec;

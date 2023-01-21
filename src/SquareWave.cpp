@@ -1,8 +1,6 @@
 #include "SquareWave.hpp"
 
-void SquareWave::tick(int n) {
-    // TODO ?? Implement more than 1 tick (not necessary I think)
-    (void)n;
+void SquareWave::tick() {
 
     switch (channel)
     {
@@ -18,18 +16,25 @@ void SquareWave::tick(int n) {
 }
 
 void SquareWave::channel_2_tick() {
+    // if (trigger)
+    //     return;
 
+    lengthEnable = BIT(mem[NR24], 6);
+    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
     waveDuty = (mem[NR21] & 0b11000000) >> 6;
     length_timer = (mem[NR21] & 0b00111111);
     initialVolume = (mem[NR22] & 0b11110000) >> 4;
     envelopeDirection = BIT(mem[NR22], 3);
     volumeSweepPace = (mem[NR22] & 0b00000111);
-    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
-    lengthEnable = BIT(mem[NR24], 6);
+    // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
+
     
     if (to_trigger && !trigger) {
-        std::cout << "Channel2 triggered\n";
+        std::cout << "Channel2 triggered : " << lengthEnable << "\n";
 
+        volumeSweepValue = 0;
+        wavelengthSweepValue = 0;
+        current_length_timer = length_timer;
         to_trigger = false;
         trigger = true;
     }
@@ -58,7 +63,8 @@ void SquareWave::channel_2_tick() {
 
 
 void SquareWave::channel_1_tick() {
-    bool toTrigger = false;
+    // if (trigger)
+    //     return ;
 
     waveSweepDirection = BIT(mem[NR10], 3);
     waveSweepPace = (mem[NR10] & 0b01110000);
@@ -70,10 +76,13 @@ void SquareWave::channel_1_tick() {
     volumeSweepPace = (mem[NR12] & 0b00000111);
     waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
     lengthEnable = BIT(mem[NR14], 6);
+    volumeSweepValue = 0;
     
     if (to_trigger && !trigger) {
         std::cout << "Channel1 triggered\n";
 
+        wavelengthSweepValue = 0;
+        current_length_timer = length_timer;
         to_trigger = false;
         trigger = true;
     }
@@ -102,11 +111,12 @@ void SquareWave::channel_1_tick() {
 }
 
 SquareWave::SquareWave(int chan)
-: channel(chan), step(0), trigger(false), to_trigger(false), iterations(0)
+: channel(chan), step(0), initialVolume(0), trigger(false), to_trigger(false), iterations(0), length_count(0)
 {
     std::cout << "SquareWave channel " << chan << " was created\n";
     if (chan != 1 && chan != 2)
         throw "Wrong channel was specified for SquareWave channel";
+    ticks = 0;
 }
 
 SquareWave::~SquareWave()

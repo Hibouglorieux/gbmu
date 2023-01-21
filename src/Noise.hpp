@@ -8,11 +8,13 @@
 
 class Noise
 {
-private:
+public:
     int channel;
 
     // NR41
     int length_timer;
+
+    int current_length_timer;
 
     // NR42
     int initial_volume;
@@ -32,10 +34,16 @@ private:
     SDL_AudioSpec desiredSpec;
 
 
-public:
     bool to_trigger;
+    int iterations;
 
-    void channel_4_tick();
+    int sample;
+
+    void tick();
+
+    const static int samples_per_length = SAMPLING_RATE/256;
+
+    int length_count;
 
     Noise(int chan);
     ~Noise();
