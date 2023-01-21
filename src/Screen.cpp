@@ -1,69 +1,38 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Screen.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lmariott <lmariott@42.fr>                  +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/07 20:46:17 by lmariott          #+#    #+#             */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <iostream>
 #include "Screen.hpp"
 #include "Cpu.hpp"
 #include "Ppu.hpp"
 #include "Debugger.hpp"
-
+#include <fstream>
 
 #define MAIN_SCREEN_SCALE 4
 #define VRAM_SCREEN_SCALE 2
 #define BG_SCREEN_SCALE 2
 
-SDL_Window* Screen::window = nullptr;
-SDL_Renderer* Screen::renderer = nullptr;
+SDL_Texture	*Screen::ppuTexture = nullptr;
+void		*Screen::ppuPixels = nullptr;
+int 		Screen::ppuPitch = 0;
 
-SDL_Texture *Screen::texture = nullptr;
-SDL_Texture *Screen::BGTexture = nullptr;
-SDL_Texture *Screen::VRamTexture = nullptr;
+SDL_Texture 	*Screen::BGTexture = nullptr;
+void 		*Screen::BGPixels = nullptr;
+int 		Screen::BGPitch = 0;
 
-void *Screen::pixels = nullptr;
-int Screen::pitch = 0;
+SDL_Texture 	*Screen::SpriteTexture = nullptr;
+void 		*Screen::SpritePixels = nullptr;
+int 		Screen::SpritePitch = 0;
 
-void *Screen::BGPixels = nullptr;
-int Screen::BGPitch = 0;
+SDL_Texture 	*Screen::VRamTexture = nullptr;
+void 		*Screen::VramPixels = nullptr;
+int 		Screen::VramPitch = 0;
 
-void *Screen::VramPixels = nullptr;
-int Screen::VramPitch = 0;
+int 		Screen::mapAddr = 0x9c00;
 
-bool Screen::bDisplayWindow = false;
-SDL_Window*	Screen::get()
+void		Screen::destroyTexture()
 {
-	return (window);
-}
-
-void	Screen::destroy()
-{
-    ImGui_ImplSDLRenderer_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
-	SDL_DestroyTexture(texture);
+	SDL_DestroyTexture(ppuTexture);
 	SDL_DestroyTexture(BGTexture);
+	SDL_DestroyTexture(SpriteTexture);
 	SDL_DestroyTexture(VRamTexture);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void Screen::TexturetoImage(SDL_Texture * Texture) {
-    SDL_SetRenderTarget(renderer, Texture);
-   	SDL_UnlockTexture(Texture);
-	int width;
-	int height;
-	SDL_QueryTexture(Texture, nullptr, nullptr, &width, &height);
-    ImGui::Image((void*)(intptr_t)Texture, ImVec2(width, height));
-//	SDL_RenderCopy(renderer, Texture, NULL, NULL);
-    SDL_SetRenderTarget(renderer, nullptr);
 }
 
 int		Screen::convertColorFromCGB(int colo, bool bConvertForImGUI)
@@ -71,27 +40,20 @@ int		Screen::convertColorFromCGB(int colo, bool bConvertForImGUI)
 	unsigned char r = (colo & 0x1F);
 	unsigned char g = ((colo & (0x1F << 5)) >> 5);
 	unsigned char b = ((colo & (0x1F << 10)) >> 10);
+
 	r *= 8;
 	g *= 8;
 	b *= 8;
-	//r = 255 - r;
-	//g = 255 - g;
-	//b = 255 - b;
 	if (bConvertForImGUI)
 		return (r << IM_COL32_R_SHIFT) | (g << IM_COL32_G_SHIFT) | (b << IM_COL32_B_SHIFT) | (0xFF << 24);
 	else
 		return (r << 24) | (g << 16) | (b << 8);
 }
 
-void	Screen::NewframeTexture()
+void	Screen::lockTexture()
 {
-    ImGui_ImplSDLRenderer_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-    SDL_RenderClear(Screen::renderer);
-
-    if (SDL_LockTexture(texture, nullptr, &pixels, &pitch)) {
-        throw "Could not lock texture\n";
+    if (SDL_LockTexture(ppuTexture, nullptr, &ppuPixels, &ppuPitch)) {
+        throw "Could not lock ppuTexture\n";
     }
     if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
         throw "Could not lock Vram texture\n";
@@ -99,28 +61,47 @@ void	Screen::NewframeTexture()
     if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
         throw "Could not lock BG texture\n";
     }
+    if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
+        throw "Could not lock BG texture\n";
+    }
 }
 
-void Screen::clear(ImVec4 vec4)
-{
-    ImGui::Render();
-    SDL_SetRenderDrawColor(Screen::renderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-   	SDL_RenderPresent(Screen::renderer);
-}
-
-void	Screen::updateMainScreen(const std::array<short, PIXEL_PER_LINE>& lineData,
+void	Screen::updatePpuLine(const std::array<short, PIXEL_PER_LINE>& lineData,
 		unsigned char currentLine)
 {
 	for (unsigned char i = 0; i < PIXEL_PER_LINE; i++)
 		Screen::drawPoint(i, currentLine, lineData[i],
-				pixels, pitch, MAIN_SCREEN_SCALE);
+				ppuPixels, ppuPitch, MAIN_SCREEN_SCALE);
 }
 
-void	Screen::drawBG()
+void	Screen::drawSprite(void)
 {
-    int bit = (!bDisplayWindow)? 3 : 6;
-	unsigned int BGMap  = BIT(M_LCDC, bit) ? 0x9C00 : 0x9800;
+	const int OAM_Addr = 0xFE00;
+	unsigned char spriteHeight = 8; // Always show the sprit in 8x8 mode
+
+	for (int i = 0; i < MAX_SPRITES; i++) {
+		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
+		Sprite sprite = Sprite(*entry, spriteHeight);
+		if (entry->getFlipY()) // reverse offset if flipped
+			sprite.flipY();
+		if (entry->getFlipX())
+			sprite.flipX();
+
+		int x_offset = (i % 32) * 9;
+		int y_offset = (i / 32) * 9;
+		for (int y = 0; y < 8; y++) {
+			// fetch the 8 pixel of the sprite in a tmp buffer
+			std::array<short, 8> line = sprite.getColoredLine(y);
+			for (int x = 0; x < 8; x++) {
+				drawPoint(x + x_offset, y + y_offset, line[x], SpritePixels, SpritePitch, BG_SCREEN_SCALE);
+			}
+		}
+	}
+}
+
+void	Screen::drawBG(int mapAddr)
+{
+	unsigned int BGMap  = mapAddr;
     unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
 
 	for (unsigned short i = 0; i < 32 * 32; i++) {
@@ -224,19 +205,19 @@ void	Screen::drawVRam(bool bIsCGB)
 
 }
 
-bool	Screen::createTexture(bool bIsCGB)
+bool	Screen::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 {
-	texture = SDL_CreateTexture(renderer,
+	ppuTexture = SDL_CreateTexture(uiRenderer,
 			SDL_PIXELFORMAT_RGBA8888,
 			SDL_TEXTUREACCESS_STREAMING,
 			160 * MAIN_SCREEN_SCALE,
 			144 * MAIN_SCREEN_SCALE);
-	if (!texture) {
+	if (!ppuTexture) {
 		std::cerr << "Erreur SDL_CreateTexture Ppu : "<< SDL_GetError() << std::endl;
 		return false;
 	}
 
-	BGTexture = SDL_CreateTexture(renderer,
+	BGTexture = SDL_CreateTexture(uiRenderer,
 			SDL_PIXELFORMAT_RGBA8888,
 			SDL_TEXTUREACCESS_STREAMING,
 			32 * BG_SCREEN_SCALE * 9,
@@ -246,7 +227,17 @@ bool	Screen::createTexture(bool bIsCGB)
 		return false;
 	}
 
-	VRamTexture = SDL_CreateTexture(renderer,
+	SpriteTexture = SDL_CreateTexture(uiRenderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			32 * BG_SCREEN_SCALE * 9,
+			2 * BG_SCREEN_SCALE * 9);
+	if (!SpriteTexture) {
+		std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	VRamTexture = SDL_CreateTexture(uiRenderer,
 			SDL_PIXELFORMAT_RGBA8888,
 			SDL_TEXTUREACCESS_STREAMING,
 			16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
@@ -277,74 +268,4 @@ bool	Screen::drawPoint(unsigned short x, unsigned short y, const unsigned short&
 		}
 	}
 	return (true);
-}
-
-bool	Screen::create(bool bIsCGB)
-{
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
-	{
-		std::cerr <<"Error SDL_Init! "<< SDL_GetError() << std::endl;
-		return false;
-	}
-
-	auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	window = SDL_CreateWindow("GBMU",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			1980,
-			1024,
-			window_flags);
-	if (!window) {
-		std::cerr <<"Error SDL_CreateWindow! "<< SDL_GetError() << std::endl;
-		return (false);
-	}
-
-
-	renderer = SDL_CreateRenderer(window, -1,  SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC
-	if (!renderer)
-	{
-		std::cerr <<"Error SDL_CreateRenderer : "<< SDL_GetError() << std::endl;
-		return false;
-	}
-
-	if (!Screen::createTexture(bIsCGB))
-		return false;
-
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsLight();
-
-	// Setup Platform/Renderer backends
-	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-	ImGui_ImplSDLRenderer_Init(renderer);
-	SDL_RenderClear(renderer);
-	return (true);
-}
-
-#include <fstream>
-
-void	Screen::handleEvent(SDL_Event *ev)
-{
-	if (ev->type == SDL_WINDOWEVENT) {
-		switch (ev->window.event) {
-			case SDL_WINDOWEVENT_CLOSE:
-				Gameboy::quit = true;
-				Gameboy::saveRam();
-				break;
-		}
-	}
-	if (ev->type == SDL_KEYDOWN)
-	{
-		if (ev->key.keysym.sym == SDLK_ESCAPE) {
-			Gameboy::quit = true;
-			Gameboy::saveRam();
-		}
-	}
 }

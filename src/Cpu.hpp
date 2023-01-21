@@ -6,64 +6,72 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 19:19:36 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/05 22:50:59 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #ifndef CPU_CLASS_H
 # define CPU_CLASS_H
 
+/*
+** Cpu class.
+** This class contains all instruction function.
+** It contains all special registers.
+** It implement interruptions.
+** It read in ROM the opcode to execute and move Program Counter.
+** It call the Clock class to update the clock
+** It use CpuStackTrace and Hdma
+** The entry point for execution is doMinimumStep which do a minimum step
+** it's called by Gameboy
+*/
+
 #include "Gameboy.hpp"
 #include "Utility.hpp"
 #include "CpuStackTrace.hpp"
+#include "Hdma.hpp"
 #include <string>
 #include <iostream>
-#include <iomanip> // setw
+#include <iomanip>
 #include <utility>
-#include "define.hpp"
+#include <functional>
 
+#include "define.hpp"
 
 class Cpu {
 public:
+	int	executeLine(bool step, bool updateState, bool bRefreshScreen);
 
-	static CpuStackTrace stackTrace;
-	static StackData captureCurrentState(std::string customData = "");
+	/* StackTrace */
+	static CpuStackTrace	stackTrace;
+	static StackData	captureCurrentState(std::string customData = "");
 
+	/* Entry point for execution : execute one step */
 	static unsigned char	doMinimumStep();
-	static bool isCpuHalted();
 
-	static int executeLine(bool step, bool updateState, bool bRefreshScreen);
-	static void loadBootRom();
+	/* Initialize CPU register (boot) */
+	static void 		loadBootRom();
+
+	/* Read opcode and execute instruction (big switch) */
 	static std::pair<unsigned char, int> executeInstruction();
-	static void	updateLY(int iter);
 
-	static unsigned char readByte(int incrementPc = true);
-	static unsigned short readShort(int incrementPc = true);
+	/* Access arithmetics flags (A register) */
+	static bool 		getZeroFlag();
+	static bool 		getSubtractFlag();
+	static bool 		getHalfCarryFlag();
+	static bool 		getCarryFlag();
 
-	static void setZeroFlag(bool value);
-	static void setSubtractFlag(bool value);
-	static void setHalfCarryFlag(bool value);
-	static void setCarryFlag(bool value);
-	static void setFlags(bool zero, bool sub, bool halfCarry, bool carry);
-	static bool getZeroFlag();
-	static bool getSubtractFlag();
-	static bool getHalfCarryFlag();
-	static bool getCarryFlag();
+	/* Interrupt management */
+	static void		requestInterrupt(int i);
+	static void		doInterrupt(unsigned int addr,
+					unsigned char bit);
+	static bool		isCpuHalted();
+	static bool		IME;
+	static bool		setIMEFlag;
+	static bool		halted;
+	static uint32_t		halt_counter;
+	static bool 		handleInterrupt();
 
-	static void	request_interrupt(int i);
-
-
-	static const unsigned char& getData(int i);
-//	static void setData(int i);
-
-	static bool interrupts_master_enable;
-	static bool interrupts_flag;
-	static bool halted;
-	static uint32_t halt_counter;
-	static bool handle_interrupts();
-
-
+	/* Internal special registers */
 	static unsigned short PC;
 	static unsigned short SP;
 	static unsigned short registers[4];
@@ -80,26 +88,38 @@ public:
 	static unsigned short& BC;
 	static unsigned short& DE;
 	static unsigned short& HL;
-	static void printRegisters();
-	static Clock cpuClock;
 
-	static void debug(int opcode);
+	static void		printRegisters();
+	static void		debug(int opcode);
+	static unsigned char	readByte(int incrementPc = true);
+	static unsigned short	readShort(int incrementPc = true);
 private:
+	/* Flag management utility, used in instructions */
+	static void 		setZeroFlag(bool value);
+	static void 		setSubtractFlag(bool value);
+	static void 		setHalfCarryFlag(bool value);
+	static void 		setCarryFlag(bool value);
+	static void 		setFlags(bool zero, bool sub, bool halfCarry, bool carry);
+	static bool		getHalfCarry8Bit(unsigned char a,
+			unsigned char b, unsigned char c = 0);
+	static bool		getHalfCarry16Bit(unsigned short a,
+			unsigned short b);
+	static bool		getHalfBorrow8Bit(unsigned char a,
+			unsigned char b, unsigned char c = 0);
+	static bool		getHalfBorrow16Bit(unsigned short a,
+			unsigned short b);
+	static bool		overFlow(unsigned char a,
+			unsigned char b, unsigned char c = 0);
+	static bool 		underFlow(unsigned char a,
+			unsigned char b, unsigned char c = 0);
 
-
+	/* Utility for registers, used in instructions */
 	static unsigned char& getTargetRegister(unsigned short opcode);
-	static unsigned char& getSourceRegister(unsigned short opcode);
+	static unsigned char getSourceRegister(unsigned short opcode);
+	static unsigned char& getSourceRegisterRef(unsigned short opcode);
 	static unsigned char getTargetBit(unsigned short opcode);
 
-	static bool getHalfCarry8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
-	static bool getHalfCarry16Bit(unsigned short a, unsigned short b);
-	static bool getHalfBorrow8Bit(unsigned char a, unsigned char b, unsigned char c = 0);
-	static bool getHalfBorrow16Bit(unsigned short a, unsigned short b);
-	static bool overFlow(unsigned char a, unsigned char b, unsigned char c = 0);
-	static bool underFlow(unsigned char a, unsigned char b, unsigned char c = 0);
-
-	static void logErr(std::string msg);
-
+	/* Instructions functions declarations */
 	static unsigned char nop();
 	static unsigned char stop();
 	static unsigned char daa();
@@ -125,16 +145,25 @@ private:
 	static unsigned char ra(unsigned short opcode);
 	static unsigned char jr_s8();
 	static unsigned char jr_s8_flag(unsigned short opcode);
-	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char& loadSource);
-	static unsigned char load_hl_r(unsigned char& loadSource);
-	static unsigned char add_a_r8(unsigned char& reg);
-	static unsigned char adc_a_r8(unsigned char& reg);
-	static unsigned char sub_r8(unsigned char& reg);
-	static unsigned char sbc_r8(unsigned char& reg);
-	static unsigned char and_r8(unsigned char& reg);
-	static unsigned char xor_r8(unsigned char& reg);
-	static unsigned char or_r8(unsigned char& reg);
-	static unsigned char cp_r8(unsigned char& reg);
+	static unsigned char load_r_r(unsigned char& loadTarget, unsigned char loadSource);
+	static unsigned char load_hl_r(unsigned char loadSource);
+	static unsigned char load_r_hl(unsigned char& loadTarget);
+	static unsigned char add_a_r8(unsigned char reg);
+	static unsigned char adc_a_r8(unsigned char reg);
+	static unsigned char sub_r8(unsigned char reg);
+	static unsigned char sbc_r8(unsigned char reg);
+	static unsigned char and_r8(unsigned char reg);
+	static unsigned char xor_r8(unsigned char reg);
+	static unsigned char or_r8(unsigned char reg);
+	static unsigned char cp_r8(unsigned char reg);
+	static unsigned char add_a_phl();
+	static unsigned char adc_a_phl();
+	static unsigned char sub_phl();
+	static unsigned char sbc_phl();
+	static unsigned char and_phl();
+	static unsigned char xor_phl();
+	static unsigned char or_phl();
+	static unsigned char cp_phl();
 	static unsigned char ret_flag(unsigned short opcode);
 	static unsigned char pop(unsigned short opcode);
 	static unsigned char jp_flag_a16(unsigned short opcode);
@@ -177,11 +206,25 @@ private:
 	static unsigned char res_n_r8(unsigned char targetBit, unsigned char& targetRegister);
 	static unsigned char set_n_r8(unsigned char targetBit, unsigned char& targetRegister);
 
+	static unsigned char rlc_phl();
+	static unsigned char rrc_phl();
+	static unsigned char rl_phl();
+	static unsigned char rr_phl();
+	static unsigned char sla_phl();
+	static unsigned char sra_phl();
+	static unsigned char swap_phl();
+	static unsigned char srl_phl();
+	static unsigned char bit_n_phl(unsigned char targetBit);
+	static unsigned char res_n_phl(unsigned char targetBit);
+	static unsigned char set_n_phl(unsigned char targetBit);
 
-	static void internalPush(unsigned short valueToPush);
-	static unsigned short internalPop();
+	/* Utility push/pop used in some instructions */
+	static void		internalPush(unsigned short valueToPush);
+	static unsigned short	internalPop();
+
+	static void logErr(std::string msg);
+
 };
 
-void do_interrupts(unsigned int addr, unsigned char bit);
 
 #endif

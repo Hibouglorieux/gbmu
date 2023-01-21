@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 18:48:53 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/05 23:28:18 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,7 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 	exit(-1);
 }
 
-unsigned char&	Cpu::getSourceRegister(unsigned short opcode)
+unsigned char	Cpu::getSourceRegister(unsigned short opcode)
 {
 	switch (opcode & 0x07)
 	{
@@ -125,10 +125,32 @@ unsigned char&	Cpu::getSourceRegister(unsigned short opcode)
 			return H;
 		case 0x05:
 			return L;
-		case 0x06:
-			return PHL;
 		default:
 			logErr("called getSourceRegister with wrong opcode");
+	}
+	exit(-1);
+}
+
+unsigned char&	Cpu::getSourceRegisterRef(unsigned short opcode)
+{
+	switch (opcode & 0x07)
+	{
+		case 0x07:
+			return A;
+		case 0x00:
+			return B;
+		case 0x01:
+			return C;
+		case 0x02:
+			return D;
+		case 0x03:
+			return E;
+		case 0x04:
+			return H;
+		case 0x05:
+			return L;
+		default:
+			logErr("called getSourceRegisterRef with wrong opcode");
 	}
 	exit(-1);
 }
@@ -206,11 +228,6 @@ unsigned short Cpu::readShort(int incrementPc)
 	unsigned short shortVal = readByte(incrementPc);
 	shortVal += ((unsigned short)readByte(incrementPc) << 8);
 	return shortVal;
-}
-
-const unsigned char& Cpu::getData(int i)
-{
-	return mem[i];
 }
 
 void Cpu::logErr(std::string msg)

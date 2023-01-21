@@ -13,30 +13,30 @@
 #include "APU.hpp"
 #include <functional>
 
-CpuStackTrace Cpu::stackTrace;
+CpuStackTrace	Cpu::stackTrace;
 
-unsigned short Cpu::PC = 0;
-unsigned short Cpu::SP = 0;
-unsigned short Cpu::registers[4] = {};
+/* Interrupts */
+bool		Cpu::IME = false;
+bool		Cpu::setIMEFlag = false;
+bool		Cpu::halted = false;
+uint32_t	Cpu::halt_counter = 0;
 
-bool Cpu::interrupts_master_enable = false;
-bool Cpu::interrupts_flag = false;
-bool Cpu::halted = false;
-uint32_t Cpu::halt_counter = 0;
-
-unsigned char& Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
-unsigned char& Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
-unsigned char& Cpu::B = reinterpret_cast<unsigned char*>(registers)[3];
-unsigned char& Cpu::C = reinterpret_cast<unsigned char*>(registers)[2];
-unsigned char& Cpu::D = reinterpret_cast<unsigned char*>(registers)[5];
-unsigned char& Cpu::E = reinterpret_cast<unsigned char*>(registers)[4];
-unsigned char& Cpu::H = reinterpret_cast<unsigned char*>(registers)[7];
-unsigned char& Cpu::L = reinterpret_cast<unsigned char*>(registers)[6];
-
-unsigned short& Cpu::AF = registers[0];
-unsigned short& Cpu::BC = registers[1];
-unsigned short& Cpu::DE = registers[2];
-unsigned short& Cpu::HL = registers[3];
+/* Registers */
+unsigned short 	Cpu::PC = 0;
+unsigned short 	Cpu::SP = 0;
+unsigned short 	Cpu::registers[4] = {};
+unsigned char&	Cpu::A = reinterpret_cast<unsigned char*>(registers)[1];
+unsigned char&	Cpu::F = reinterpret_cast<unsigned char*>(registers)[0];
+unsigned char&	Cpu::B = reinterpret_cast<unsigned char*>(registers)[3];
+unsigned char&	Cpu::C = reinterpret_cast<unsigned char*>(registers)[2];
+unsigned char&	Cpu::D = reinterpret_cast<unsigned char*>(registers)[5];
+unsigned char&	Cpu::E = reinterpret_cast<unsigned char*>(registers)[4];
+unsigned char&	Cpu::H = reinterpret_cast<unsigned char*>(registers)[7];
+unsigned char&	Cpu::L = reinterpret_cast<unsigned char*>(registers)[6];
+unsigned short&	Cpu::AF = registers[0];
+unsigned short&	Cpu::BC = registers[1];
+unsigned short&	Cpu::DE = registers[2];
+unsigned short&	Cpu::HL = registers[3];
 
 void Cpu::loadBootRom()
 {
@@ -80,7 +80,7 @@ void Cpu::loadBootRom()
 	//stackTrace.opcodeBreak = 0xCB27;
 }
 
-void	Cpu::request_interrupt(int i)
+void	Cpu::requestInterrupt(int i)
 {
 	unsigned char bit;
 	switch (i)
@@ -111,43 +111,47 @@ void	Cpu::request_interrupt(int i)
 
 bool  Cpu::isCpuHalted(void)
 {
-    if (Cpu::halted)
+	if (Cpu::halted)
 	{
 		// TODO we should exit halt even when IME is not set but the behavior is different
-        if (M_EI & M_IF & 0x1F)
+		if (M_EI & M_IF & 0x1F)
 		{
-            Cpu::halted = false;
+			Cpu::halted = false;
 			Cpu::halt_counter = 0;
 			return false;
 		}
 		else if (Cpu::halt_counter != 0)
 		{
 			Cpu::halt_counter++;
-			if (Cpu::halt_counter > 0x20000)
+			if (Cpu::halt_counter > 2050)
 			{
 				Cpu::halted = false;
 				Cpu::halt_counter = 0;
 				return false;
 			}
-        }
-		else
-            return true;
-    }
-    return false;
+		}
+		else {
+		    return true;
+		}
+	}
+	return false;
 }
 
 std::pair<unsigned char, int> Cpu::executeInstruction()
 {
+	// std::cout << "Execute instruction : " << std::hex << Cpu::PC << "\n";
 	unsigned char opcode = 0;
 	int clock = 0;
 	std::function<unsigned char()> instruction = [](){stackTrace.print(); return 0;};
-    // debug(readByte(false));
-    opcode = readByte();
-    if (Cpu::interrupts_flag && opcode != 0xf3) {
-        Cpu::interrupts_master_enable = true;
-    }
-	Cpu::interrupts_flag = false;
-    switch (opcode)
+
+	// debug(readByte(false));
+	opcode = readByte();
+	if (Cpu::setIMEFlag && opcode != 0xf3) {
+	    Cpu::IME = true;
+	}
+	Cpu::setIMEFlag = false;
+	bool bIsPHL = ((opcode & 0x0F) == 0x06) | ((opcode & 0x0F) == 0x0E);
+	switch (opcode)
 	{
 		case 0x00:
 			instruction = [&](){ return nop();};
@@ -265,37 +269,77 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 		case 0x38:
 			instruction = [&](){ return jr_s8_flag(opcode);};
 			break;
-		case 0x40 ... 0x6F:
-		case 0x78 ... 0x7F:
+		case 0x40 ... 0x45:
+		case 0x47 ... 0x4D:
+		case 0x4F ... 0x55:
+		case 0x57 ... 0x5D:
+		case 0x5F ... 0x65:
+		case 0x67 ... 0x6D:
+		case 0x6F:
+		case 0x78 ... 0x7D:
+		case 0x7F:
 			instruction = [&](){ return load_r_r(getTargetRegister(opcode), getSourceRegister(opcode));};
+			break;
+		case 0x46:
+		case 0x56:
+		case 0x66:
+		case 0x4E:
+		case 0x5E:
+		case 0x6E:
+		case 0x7E:
+			instruction = [&](){ return load_r_hl(getTargetRegister(opcode));};
 			break;
 		case 0x70 ... 0x75:
 		case 0x77:
 			instruction = [&](){ return load_hl_r(getSourceRegister(opcode));};
 			break;
 		case 0x80 ... 0x87:
-			instruction = [&](){ return add_a_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return add_a_phl();};
+			else
+				instruction = [&](){ return add_a_r8(getSourceRegister(opcode));};
 			break;
 		case 0x88 ... 0x8F:
-			instruction = [&](){ return adc_a_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return adc_a_phl();};
+			else
+				instruction = [&](){ return adc_a_r8(getSourceRegister(opcode));};
 			break;
 		case 0x90 ... 0x97:
-			instruction = [&](){ return sub_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return sub_phl();};
+			else
+				instruction = [&](){ return sub_r8(getSourceRegister(opcode));};
 			break;
 		case 0x98 ... 0x9F:
-			instruction = [&](){ return sbc_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return sbc_phl();};
+			else
+				instruction = [&](){ return sbc_r8(getSourceRegister(opcode));};
 			break;
 		case 0xA0 ... 0xA7:
-			instruction = [&](){ return and_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return and_phl();};
+			else
+				instruction = [&](){ return and_r8(getSourceRegister(opcode));};
 			break;
 		case 0xA8 ... 0xAF:
-			instruction = [&](){ return xor_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return xor_phl();};
+			else
+				instruction = [&](){ return xor_r8(getSourceRegister(opcode));};
 			break;
 		case 0xB0 ... 0xB7:
-			instruction = [&](){ return or_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return or_phl();};
+			else
+				instruction = [&](){ return or_r8(getSourceRegister(opcode));};
 			break;
 		case 0xB8 ... 0xBF:
-			instruction = [&](){ return cp_r8(getSourceRegister(opcode));};
+			if (bIsPHL)
+				instruction = [&](){ return cp_phl();};
+			else
+				instruction = [&](){ return cp_r8(getSourceRegister(opcode));};
 			break;
 		case 0xC0:
 		case 0xC8:
@@ -408,41 +452,74 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 			{
 				opcode = readByte();
 
-				unsigned char& targetRegister = getSourceRegister(opcode);
+				bIsPHL = ((opcode & 0x0F) == 0x06) | ((opcode & 0x0F) == 0x0E);
 				unsigned char targetBit = getTargetBit(opcode);
 				switch (opcode) {
 					case 0x00 ... 0x07:
-						instruction = [&](){ return rlc_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rlc_phl();};
+						else
+							instruction = [&](){ return rlc_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x08 ... 0x0F:
-						instruction = [&](){ return rrc_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rrc_phl();};
+						else
+							instruction = [&](){ return rrc_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x10 ... 0x17:
-						instruction = [&](){ return rl_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rl_phl();};
+						else
+							instruction = [&](){ return rl_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x18 ... 0x1F:
-						instruction = [&](){ return rr_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return rr_phl();};
+						else
+							instruction = [&](){ return rr_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x20 ... 0x27:
-						instruction = [&](){ return sla_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return sla_phl();};
+						else
+							instruction = [&](){ return sla_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x28 ... 0x2F:
-						instruction = [&](){ return sra_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return sra_phl();};
+						else
+							instruction = [&](){ return sra_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x30 ... 0x37:
-						instruction = [&](){ return swap_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return swap_phl();};
+						else
+							instruction = [&](){ return swap_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x38 ... 0x3F:
-						instruction = [&](){ return srl_r8(targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return srl_phl();};
+						else
+							instruction = [&](){ return srl_r8(getSourceRegisterRef(opcode));};
 						break;
 					case 0x40 ... 0x7F:
-						instruction = [&](){ return bit_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return bit_n_phl(targetBit);};
+						else
+							instruction = [&](){ return bit_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					case 0x80 ... 0xBF:
-						instruction = [&](){ return res_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return res_n_phl(targetBit);};
+						else
+							instruction = [&](){ return res_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					case 0xC0 ... 0xFF:
-						instruction = [&](){ return set_n_r8(targetBit, targetRegister);};
+						if (bIsPHL)
+							instruction = [&](){ return set_n_phl(targetBit);};
+						else
+							instruction = [&](){ return set_n_r8(targetBit, getSourceRegisterRef(opcode));};
 						break;
 					default:
 						stackTrace.print();
@@ -481,12 +558,13 @@ StackData	Cpu::captureCurrentState(std::string customData)
 	stackData.if_reg = M_IF;
 	stackData.ly_reg = M_LY;
 	stackData.lcdc = M_LCDC;
-	stackData.ime = interrupts_master_enable;
+	stackData.ime = IME;
 	if (mem[PC] == 0xCB)
 	{
 		stackData.opcode <<= 8;
 		stackData.opcode|= mem[PC + 1];
 	}
+	//customData = string_format("SCX: %2X    mem[0xC49D]: %2X\nmem[0xC497]: %2X    mem[HL]: %2X\n", (int)mem[0xFF43], (int)mem[0xC49D], (int)mem[0xC497], (int)mem[HL]) + customData;
 	stackData.customData = customData;
 	return stackData;
 }
@@ -514,7 +592,7 @@ int	Cpu::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 		int clockInc = doMinimumStep();
 		g_clock += clockInc;
-		// APU::tick();
+		APU::tick(clockInc);
 		Gameboy::clockLine += clockInc;
 
 		if (step) {
@@ -540,94 +618,80 @@ void Cpu::debug(int opcode)
 	std::cout << (getZeroFlag() ? "Z" : "-") << (getSubtractFlag() ? "N" : "-") << (getHalfCarryFlag() ? "H" : "-") << (getCarryFlag() ? "C" : "-") << "\n\n";
 }
 
-void	Cpu::updateLY(int iter)
-{
-	if (!BIT(M_LCDC, 7))// special case LCD diabled
-	{
-		mem.supervisorWrite(LY, 0);
-		return;
-	}
-
-	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
-
-
-	if (M_LY == M_LYC) {
-		SET(M_LCDC_STATUS, 2);
-		if (BIT(M_LCDC_STATUS, 6)) {
-			// do_interrupts(IT_LCD_STAT, 1);
-			//std::cout << "request interrupt LY==LYC with val: " << (int)M_LY << std::endl;
-			request_interrupt(IT_LCD_STAT);
-		}
-	} else
-		RES(M_LCDC_STATUS, 2);
-
-	// std::cout << "LY = " << std::dec << (int)M_LY << "\n";
-}
-
-void do_interrupts(unsigned int addr, unsigned char bit)
+void 		Cpu::doInterrupt(unsigned int addr, unsigned char bit)
 {
 	mem[--Cpu::SP] = Cpu::PC >> 8; //internalpush
 	mem[--Cpu::SP] = Cpu::PC & 0xFF;
 	Cpu::PC = addr;
 	RES(M_IF, bit);
-	Cpu::interrupts_master_enable = false;
-	Cpu::interrupts_flag = false;// overkill
+	Cpu::IME = false;
+	Cpu::setIMEFlag = false;// overkill
 }
 
 unsigned char	Cpu::doMinimumStep()
 {
-	if (isCpuHalted())
+	// the cpu is halted during hdma
+	int cycleForHdma = Hdma::update();
+	if (cycleForHdma)
 	{
-		stackTrace.add(captureCurrentState("IM HALTED"));
-	    /* Increment one cycle */
+		if (cycleForHdma == -1) // special case startup
+		{
+			if (Clock::cgbMode) {
+				g_clock += 1;
+				APU::tick(1);
+			}
+		}
 		return 1;
 	}
-	else if (handle_interrupts())
-	{
+	if (isCpuHalted()) {
+		stackTrace.add(captureCurrentState("IM HALTED"));
+	    	/* Increment one cycle */
+		return 1;
+	}
+	else if (handleInterrupt()) {
 		// interrupts takes 5 cycles;
 		return 5;
 	}
-	else
-	{
+	else {
 		stackTrace.add(captureCurrentState());
 		return executeInstruction().second;
 	}
 }
 
-bool Cpu::handle_interrupts()
+bool Cpu::handleInterrupt()
 {
-	if (Cpu::interrupts_master_enable)
+	if (Cpu::IME)
 	{
 		if (M_EI & M_IF & 0x1f)
 		{
 			if (BIT(M_EI, 0) && BIT(M_IF, 0))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT VBLANK"));
-				do_interrupts(IT_VBLANK, 0);
+				doInterrupt(IT_VBLANK, 0);
 				return true;
 			}
 			else if (BIT(M_EI, 1) && BIT(M_IF, 1))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT LCD_STAT"));
-				do_interrupts(IT_LCD_STAT, 1);
+				doInterrupt(IT_LCD_STAT, 1);
 				return true;
 			}
 			else if (BIT(M_EI, 2) && BIT(M_IF, 2))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT TIMER"));
-				do_interrupts(IT_TIMER, 2);
+				doInterrupt(IT_TIMER, 2);
 				return true;
 			}
 			else if (BIT(M_EI, 3) && BIT(M_IF, 3))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT SERIAL"));
-				do_interrupts(IT_SERIAL, 3);
+				doInterrupt(IT_SERIAL, 3);
 				return true;
 			}
 			else if (BIT(M_EI, 4) && BIT(M_IF, 4))
 			{
 				stackTrace.add(captureCurrentState("INTERRUPT JOYPAD"));
-				do_interrupts(IT_JOYPAD, 4);
+				doInterrupt(IT_JOYPAD, 4);
 				return true;
 			}
 		}

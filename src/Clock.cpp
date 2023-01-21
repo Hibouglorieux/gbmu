@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/26 18:09:23 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 18:28:33 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,6 @@ Clock::Clock()
 	/* Init TIMA at 0 */
 	//mem[0xFF05] = 0;//XXX nallani: this is wrong because mem is not yet loaded
 	clock = 0;
-
-	// TODO LMA whats this ?
-	// clock = 32916 / 2;
 } 
 
 Clock::~Clock()
@@ -38,11 +35,13 @@ int&	Clock::operator+=(int addValue)
 {
 	static int clocks_array[4] = {1024, 16, 64, 256};
 	int timaFreqDivider = 0;
+	// TODO cgb double speed Mode impl
+	uint8_t clockMul = (cgbMode ? 2 : 4);
 
-	clock += addValue * 4;
+	clock += addValue * clockMul;
 
 	/* Handle DIV */
-	divClock += addValue * 4;
+	divClock += addValue * clockMul;
 	M_DIV += divClock / 256;
 	divClock %= 256;
 
@@ -50,7 +49,7 @@ int&	Clock::operator+=(int addValue)
 	if ((M_TAC & (1 << 2)) != 0) {
 		/* Calculate TIMA frequency divider TODO CGB Mode is not handled */
 		timaFreqDivider = clocks_array[M_TAC & 3];
-		timaClock += addValue * 4;
+		timaClock += addValue * clockMul;
 		if (reloadTMA) {
 			/* Reset TIMA to TMA and add the rest */
 			M_TIMA = (uint8_t)((int)M_TMA + (256 - ((int)mem[0xFF05] + timaClock / timaFreqDivider)));

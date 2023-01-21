@@ -2,12 +2,13 @@
 #include "Debugger.hpp"
 #include <SDL2/SDL.h>
 
-DebuggerState DBG::state = DebuggerState::RUNNING;
-int DBG::fps = 60;
+DebuggerState Debugger::state = DebuggerState::RUNNING;
+int Debugger::fps = 60;
+unsigned int Debugger::stopAtFrame = 0;
 
-void DBG::hexdump() {
+void Debugger::hexdump() {
 	{
-		ImGui::Begin("Memory Hexdump:");
+	ImGui::Begin("Memory Hexdump:");
 
 //        ImGui::Text("Number of Rom: %d\nCurrent Rombank for 1st slot: %d\nCurrent Rombank for 2nd slot:", mem.mbc->getRomBank(0));
 //        ImGui::SameLine();
@@ -61,7 +62,7 @@ void DBG::hexdump() {
 	}
 }
 
-void DBG::registers() {
+void Debugger::registers() {
     {
         ImGui::Begin("Registers:");
         ImGui::Columns(2, "registers", true);
@@ -101,6 +102,7 @@ void DBG::registers() {
         ImGui::Text("       opcode = [0x%02X] %02X %02X", (int)mem[Cpu::PC], (int)mem[Cpu::PC + 1], (int)mem[Cpu::PC + 2]);
         ImGui::NextColumn();
         ImGui::Text("SP = [0x%04X]", Cpu::SP);
+        ImGui::Text("frameNumber : %u", Gameboy::frameNb);
         ImGui::NewLine();
 
         ImGui::NextColumn();
@@ -121,7 +123,7 @@ void DBG::registers() {
         ImGui::Separator();
 
         ImGui::Text("Interrupts:");
-        ImGui::Checkbox("Interupts Master Enable (IME)",&Cpu::interrupts_master_enable);
+        ImGui::Checkbox("Interupts Master Enable (IME)",&Cpu::IME);
     	unsigned char ie = M_EI;
     	unsigned char iflag = M_IF;
     	ImGui::Text("Interrupt Enable (0xFFFF): 0x%02X\nInterrupt Flag   (0xFF0F): 0x%02X",ie, iflag);
@@ -148,4 +150,21 @@ void DBG::registers() {
     	ImGui::Separator();
         ImGui::End();
     }
+}
+
+void Debugger::Sprites() {
+	const int OAM_Addr = 0xFE00;
+
+	for (int i = 0; i < MAX_SPRITES; i++) {
+		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
+		ImGui::Text("Sprite Index:%02d", i);
+		ImGui::Text("tileIndex:%02x ", entry->tileIndex);
+            	ImGui::SameLine();
+		ImGui::Text("posY:%02x ", entry->posY);
+            	ImGui::SameLine();
+		ImGui::Text("posX:%02x ", entry->posX);
+            	ImGui::SameLine();
+		ImGui::Text("attributes:%02x", entry->attributes);
+		ImGui::NewLine();
+	}
 }

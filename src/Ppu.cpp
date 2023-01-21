@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 23:57:11 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/06 20:05:20 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,16 @@
 
 unsigned char Ppu::windowCounter = 0;
 
+std::array<short, PIXEL_PER_LINE> Ppu::getDefaultWhiteLine()
+{
+	std::array<short, PIXEL_PER_LINE> line;
+	line.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
+	return line;
+}
+
 std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 {
-	std::array<short, PIXEL_PER_LINE> renderedLine;
-	renderedLine.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
+	std::array<short, PIXEL_PER_LINE> renderedLine = getDefaultWhiteLine();
 	auto pixelLine = getOamLine();
 
 	auto backgroundLine = getBackgroundLine();
@@ -183,10 +189,10 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn, this is the current offset inside the sprite, can be higher than 8 if spriteHeight == 16
 		if (spriteEntry.getFlipY()) // reverse offset if flipped
 			sprite.flipY();
-		// fetch the 8 pixel of the sprite in a tmp buffer
 		if (spriteEntry.getFlipX())
 			sprite.flipX();
 
+		// fetch the 8 pixel of the sprite in a tmp buffer
 		std::array<short, 8> coloredSpriteLine = sprite.getColoredLine(yOffset);
 		std::array<short, 8> colorCodeSpriteLine = sprite.getLineColorCode(yOffset);
 		// copy the sprite on the line

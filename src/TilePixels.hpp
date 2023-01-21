@@ -13,6 +13,10 @@
 #ifndef TILEPIXELS_HPP
 #define TILEPIXELS_HPP
 
+/*
+** Translate Tiles information into pixel
+*/
+
 #include <array>
 #include <algorithm>
 #include "Gameboy.hpp"
@@ -55,9 +59,9 @@ struct TilePixels {
 	bool isAboveOAM() const;
 
 	TilePixels();
-    //TilePixels(std::array<std::array<int, 8>, 8> val);
-    TilePixels(unsigned short tileAddress, unsigned short mapAddress);
-    TilePixels(unsigned short tileAddress, unsigned short mapAddress, int vRamBankSelector);
+	//TilePixels(std::array<std::array<int, 8>, 8> val);
+	TilePixels(unsigned short tileAddress, unsigned short mapAddress);
+	TilePixels(unsigned short tileAddress, unsigned short mapAddress, int vRamBankSelector);
 	unsigned short mapAddr;
 	bool bIsValid;
 };

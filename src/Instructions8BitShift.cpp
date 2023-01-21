@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:47 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/11 16:38:21 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/05 23:04:12 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ unsigned char Cpu::rlc_r8(unsigned char& targetRegister)
 	setHalfCarryFlag(false);
 	setCarryFlag(bitSevenValue);
 	targetRegister = (targetRegister << 1) | bitSevenValue;
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::rrc_r8(unsigned char& targetRegister)
@@ -153,7 +153,7 @@ unsigned char Cpu::rrc_r8(unsigned char& targetRegister)
 	setFlags(targetRegister == 0, 0, 0, bitZeroValue);
 
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::rl_r8(unsigned char& targetRegister)
@@ -185,7 +185,7 @@ unsigned char Cpu::rl_r8(unsigned char& targetRegister)
 	targetRegister = (targetRegister << 1) | oldCarryFlag;
 	setFlags(targetRegister == 0, 0, 0, lostBit);
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::rr_r8(unsigned char& targetRegister)
@@ -216,7 +216,7 @@ unsigned char Cpu::rr_r8(unsigned char& targetRegister)
 	targetRegister = (targetRegister >> 1) | (((unsigned char)oldCarryFlag) << 7);
 	setFlags(targetRegister == 0, 0, 0, lostBit);
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::sla_r8(unsigned char& targetRegister)
@@ -246,7 +246,7 @@ unsigned char Cpu::sla_r8(unsigned char& targetRegister)
 	targetRegister <<= 1;
 	setFlags(targetRegister == 0, 0, 0, lostBit);
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::sra_r8(unsigned char& targetRegister)
@@ -279,7 +279,7 @@ unsigned char Cpu::sra_r8(unsigned char& targetRegister)
 
 	targetRegister = (targetRegister >> 1) + (targetRegister & (1 << 7));
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::swap_r8(unsigned char& targetRegister)
@@ -309,7 +309,7 @@ unsigned char Cpu::swap_r8(unsigned char& targetRegister)
 	setCarryFlag(false);
 	setZeroFlag(targetRegister == 0);
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::srl_r8(unsigned char& targetRegister)
@@ -338,7 +338,7 @@ unsigned char Cpu::srl_r8(unsigned char& targetRegister)
 	setCarryFlag(targetRegister & 1);
 
 	targetRegister >>= 1;
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::bit_n_r8(unsigned char targetBit, unsigned char& targetRegister)
@@ -365,7 +365,7 @@ unsigned char Cpu::bit_n_r8(unsigned char targetBit, unsigned char& targetRegist
 	setSubtractFlag(false);
 	setHalfCarryFlag(true);
 
-	return (&targetRegister == &PHL) ? 3 : 2;
+	return 2;
 }
 
 unsigned char Cpu::res_n_r8(unsigned char targetBit, unsigned char& targetRegister)
@@ -388,7 +388,7 @@ unsigned char Cpu::res_n_r8(unsigned char targetBit, unsigned char& targetRegist
 
 	targetRegister = (targetRegister & ~(1 << targetBit));
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
 }
 
 unsigned char Cpu::set_n_r8(unsigned char targetBit, unsigned char& targetRegister)
@@ -411,5 +411,144 @@ unsigned char Cpu::set_n_r8(unsigned char targetBit, unsigned char& targetRegist
 
 	targetRegister = (targetRegister | (1 << targetBit));
 
-	return (&targetRegister == &PHL) ? 4 : 2;
+	return 2;
+}
+
+unsigned char Cpu::rlc_phl()
+{
+	bool bitSevenValue = mem[HL] >> 7;
+
+	setZeroFlag(mem[HL] << 1 == 0);
+	setSubtractFlag(false);
+	setHalfCarryFlag(false);
+	setCarryFlag(bitSevenValue);
+	mem[HL] = (mem[HL] << 1) | bitSevenValue;
+	return 4;
+}
+
+unsigned char Cpu::rrc_phl()
+{
+	// Opcode: [0xCB08, 0xCB09, 0xCB0A, 0xCB0B, 0xCB0C, 0xCB0D, 0xCB0E, 0xCB0F]
+	// Symbol: RRC
+	// Operands: [(B), (C), (D), (E), (H), (L), (HL), (A)]
+	// Number of Bytes: 2
+	// Number of Cycles: 2
+	// Flags: Z 0 0 r0
+	// Description
+	// Rotate the contents of register r to the right. That is, the contents of bit 7 are copied to bit 6, and
+	// the previous contents of bit 6 (before the copy operation) are copied to bit 5.
+	// The same operation is repeated in sequence for the rest of the register.
+	// The contents of bit 0 are placed in both the CY flag and bit 7 of register r.
+
+	// FOR 0xCB0E :
+	// Number of bytes: 2
+	// Number of Cycles : 4
+	// Rotate the contents of memory specified by register pair HL to the right.
+	// That is, the contents of bit 7 are copied to bit 6, and the previous contents of bit 6 (before the copy operation) are copied to bit 5.
+	// The same operation is repeated in sequence for the rest of the memory location.
+	// The contents of bit 0 are placed in both the CY flag and bit 7 of (HL).
+
+	bool bitZeroValue = mem[HL] & 1;
+
+	mem[HL] = (mem[HL] >> 1) | ((unsigned char) bitZeroValue << 7);
+
+	setFlags(mem[HL] == 0, 0, 0, bitZeroValue);
+
+
+	return 4;
+}
+
+unsigned char Cpu::rl_phl()
+{
+	bool oldCarryFlag = getCarryFlag();
+	unsigned char lostBit = mem[HL] & (1 << 7);
+
+
+	mem[HL] = (mem[HL] << 1) | oldCarryFlag;
+	setFlags(mem[HL] == 0, 0, 0, lostBit);
+
+	return 4;
+}
+
+unsigned char Cpu::rr_phl()
+{
+	bool oldCarryFlag = getCarryFlag();
+	bool lostBit = mem[HL] & 1;
+
+	mem[HL] = (mem[HL] >> 1) | (((unsigned char)oldCarryFlag) << 7);
+	setFlags(mem[HL] == 0, 0, 0, lostBit);
+
+	return 4;
+}
+
+unsigned char Cpu::sla_phl()
+{
+	bool lostBit = mem[HL] & (1 << 7);
+
+	mem[HL] <<= 1;
+	setFlags(mem[HL] == 0, 0, 0, lostBit);
+
+	return 4;
+}
+
+unsigned char Cpu::sra_phl()
+{
+	setZeroFlag(mem[HL] >> 1 == 0);
+	setSubtractFlag(false);
+	setHalfCarryFlag(false);
+	setCarryFlag(mem[HL] & 1);
+
+	mem[HL] = (mem[HL] >> 1) + (mem[HL] & (1 << 7));
+
+	return 4;
+}
+
+unsigned char Cpu::swap_phl()
+{
+	unsigned char low = (mem[HL] & 0x0F) << 4;
+	unsigned char high = (mem[HL] & 0xF0) >> 4;
+
+	mem[HL] = low | high;
+
+	setSubtractFlag(false);
+	setHalfCarryFlag(false);
+	setCarryFlag(false);
+	setZeroFlag(mem[HL] == 0);
+
+	return 4;
+}
+
+unsigned char Cpu::srl_phl()
+{
+	setZeroFlag((mem[HL] >> 1) == 0);
+	setSubtractFlag(false);
+	setHalfCarryFlag(false);
+	setCarryFlag(mem[HL] & 1);
+
+	mem[HL] >>= 1;
+	return 4;
+}
+
+unsigned char Cpu::bit_n_phl(unsigned char targetBit)
+{
+	bool complement = (mem[HL] & (1 << targetBit));
+	complement = !complement;
+	setZeroFlag(complement);
+	setSubtractFlag(false);
+	setHalfCarryFlag(true);
+
+	return 3;
+}
+
+unsigned char Cpu::res_n_phl(unsigned char targetBit)
+{
+	mem[HL] = (mem[HL] & ~(1 << targetBit));
+	return 4;
+}
+
+unsigned char Cpu::set_n_phl(unsigned char targetBit)
+{
+	mem[HL] = (mem[HL] | (1 << targetBit));
+
+	return 4;
 }

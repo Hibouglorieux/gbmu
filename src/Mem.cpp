@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 19:59:26 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/08 21:03:39 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "Cpu.hpp"
 #include "Utility.hpp"
 #include "APU.hpp"
+#include "Hdma.hpp"
+#include "Debugger.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -32,6 +34,7 @@ const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF68, 0b0100'0000}, // BCPS
  {0xFF6A, 0b0100'0000}, // OCPS
  {0xFF70, 0b1111'1000}, // SVBK, only 3 first bits used
+ {0xFF26, 0b0000'1111}, // Sound on/off : required by some game which reading it
 				
 };
 
@@ -138,7 +141,7 @@ Mem::Mem(const std::string& pathToRom)
 			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
 			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
 			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << "\n";
+			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
 		memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
@@ -233,6 +236,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 				} else
 					throw "Could not dynamically cast MBC3";
 			}
+			internalArray[addr] = 0;
 			return internalArray[addr];
 		}
 		else
@@ -250,6 +254,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	if (addr == 0xFF1A) {
+		mem.supervisorWrite(0xFF26, mem[0xff26] & ~(1 << 2));
+	}
 	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
 	{
 		memRef.mbc->writeInRom(addr, newValue);
@@ -286,14 +293,22 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
 
-	if (addr == NR14)
-		APU::checkTrigger(1);
-	else if (addr == NR24)
-		APU::checkTrigger(2);
-	else if (addr == NR34)
-		APU::checkTrigger(3);
-	else if (addr == NR44)
-		APU::checkTrigger(4);
+	if (addr == NR14) {
+		APU::channel1.to_trigger = true;
+		std::cout << "Triggering channel 1\n";
+	}
+	else if (addr == NR24 && BIT(newValue, 7)) {
+		APU::channel2.to_trigger = true;
+		std::cout << "Triggering channel 2\n";
+	}
+	else if (addr == NR34) {
+		APU::channel3.to_trigger = true;
+		std::cout << "Triggering channel 3\n";
+	}
+	else if (addr == NR44) {
+		// APU::channel4.to_trigger = true;
+		std::cout << "Triggering channel 4\n";
+	}
     /* recursive call
 //	if (addr == LCDC) {
 //		if ((value & 0x80) == 0) {
@@ -329,12 +344,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	}
 	
     if (addr == 0xFF46) {
-//		std::cout << "DMA transfert requested at address: " << +newValue << "00" << std::endl;
 		if (newValue <= 0xF1) {
 			memcpy(&mem[0xFE00], &mem[(newValue << 8)], 0xa0);// TODO change with banks
-//			std::cout << "DMA transfert done" << std::endl;
-		} //TODO CGB DMA FF51->FF55
+			// DMA transfert to OAM : This take 160 cycle and CPU can access only HRAM while TODO
+		}
 	}
+	if (addr == 0xFF40)
+		Gameboy::changeLCD(BIT(newValue, 7));// special case for LCD disable/enable
 	try // try block because this is only for CGB registers
 	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
@@ -342,14 +358,24 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		{
 			// TODO WIP
 			// NOTE : most of the registers are in readOnlyBits
+			// TODO need to create HDMA class and do it clock by clock in order
+			// to be able to stop it
 			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
 			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
 			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
-			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;
+			//unsigned short len = ((newValue & 0x7F) + 1) * 0x10;// this breaks crystal 
+			Hdma::writeInHdma(dstAddr, srcAddr, newValue);
+			/*
+			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
+			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
+			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
+			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;// this breaks crystal 
+			std::cout << "writing to HMDA5: " << +newValue << std::endl;
 			std::cout << "CGB HDMA requested ! with source: " << srcAddr << " and destination: " << dstAddr << " with a len of: " << len << std::endl;
 			memcpy(&mem[dstAddr], &mem[srcAddr], len);
 			value = 0xFF;// lets say it finished instantly
 			std::cout << "HDMA done and was a " << (newValue & (1 << 7) ? "basic DMA": "HBLANK DMA (heavy one)")<< std::endl;
+			*/
 		}
 		if (addr == 0xFF4F) // VBK
 		{

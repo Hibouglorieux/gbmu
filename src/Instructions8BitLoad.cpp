@@ -6,11 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/28 18:53:05 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/08 21:07:30 by nathan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Debugger.hpp"
 
 unsigned char Cpu::load_a8_a()
 {
@@ -73,7 +74,10 @@ unsigned char Cpu::load_a_a8()
 	std::cout << "read at address: " << (0xFF00 | (unsigned short)mem[PC])
 		<< " value: " << (int)mem[(0xFF00 |(unsigned short)mem[PC])]  << std::endl;
 		*/
-    A = mem[0xFF00 | readByte()];
+	unsigned char lowAddr = readByte();
+	//if (Gameboy::frameNb > DBG::stopAtFrame)
+		//printf("reading at address %X, which has value: %X\n", (0xFF00 | lowAddr), (int)mem[0xFF00|lowAddr]);
+    A = mem[0xFF00 | lowAddr];
     return 3;
 }
 
@@ -96,7 +100,7 @@ unsigned char Cpu::load_a_c()
     return 2;
 }
 
-unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char& loadSource)
+unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char loadSource)
 {
     // Opcode: [0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x57, 0x58, 0x59,
     //          0x5a, 0x5b, 0x5c, 0x5d, 0x5f, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6f, 0x78, 0x79, 0x7a, 0x7b,
@@ -111,12 +115,17 @@ unsigned char Cpu::load_r_r(unsigned char& loadTarget, unsigned char& loadSource
     // Flags: - - - -
     // Description
     // Load the contents of register X into register Y.
-    // TODO think about verifying if register is HL
     loadTarget = loadSource;
-    return (&loadSource == &PHL) ? 2 : 1;
+    return 1;
 }
 
-unsigned char Cpu::load_hl_r(unsigned char& loadSource)
+unsigned char Cpu::load_r_hl(unsigned char& loadTarget)
+{
+	loadTarget = mem[HL];
+	return 2;
+}
+
+unsigned char Cpu::load_hl_r(unsigned char loadSource)
 {
     // Opcode: [0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x77]
     // Symbol: LD
@@ -127,7 +136,7 @@ unsigned char Cpu::load_hl_r(unsigned char& loadSource)
     // Description
     // Load the contents of register X into register Y.
     // TODO think about verifying if register is HL
-    PHL = loadSource;
+    mem[HL] = loadSource;
     return 2;
 }
 
@@ -142,7 +151,7 @@ unsigned char Cpu::load_hl_d8()
     // Description
     // Load the 8-bit immediate operand d8 into register r.
 
-    PHL = readByte();
+    mem[HL] = readByte();
 	return 3;
 }
 
@@ -225,4 +234,3 @@ unsigned char Cpu::load_r16_a(unsigned short opcode)
     }
     return 2;
 }
-

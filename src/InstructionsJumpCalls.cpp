@@ -228,7 +228,7 @@ unsigned char Cpu::reti()
     // (THe value of SP is 2 larger than before instruction execution.)
     // The next instruction is fetched from the address specified by the content of PC (as usual).
 
-    Cpu::interrupts_master_enable = true;
+    Cpu::IME = true;
     return ret(); // returns 4
 }
 

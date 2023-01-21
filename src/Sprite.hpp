@@ -13,6 +13,12 @@
 
 #ifndef SPRITE_CLASS_H
 # define SPRITE_CLASS_H
+
+/*
+** Sprites implementation
+** It search in OAM entry and manage the sprite drawing for Ppu.
+*/
+
 #include <vector>
 #include "Gameboy.hpp"
 #include "define.hpp"
@@ -38,9 +44,8 @@ struct OAM_entry {
 class Sprite {
 
 public:
-    Sprite(OAM_entry newOAM, unsigned char newSpriteHeight);
+	Sprite(OAM_entry newOAM, unsigned char newSpriteHeight);
 	~Sprite(void);
-    //Sprite(std::vector<std::array<int, 8>> data);
 
 	unsigned char getSpriteHeight() const {return spriteHeight;}
 	unsigned long getPaletteValue() const;
@@ -51,9 +56,6 @@ public:
 private:
 	unsigned char	spriteHeight;
 	std::vector<std::array<short, 8>>	data;
-
-
-	//static GamaeboyMode gbMode// need to know if CGB or DMG
 
 	OAM_entry OAM_Data;
 };
