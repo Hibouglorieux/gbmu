@@ -24,21 +24,29 @@
 #include <SDL2/SDL.h>
 #include "imgui/imgui.h"
 #include <array>
+#include <fstream>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 class UserInterface
 {
 public:
 	static bool 		loop();
-	static bool		create(bool bIsCGB);
+	static void 		showGameboyWindow();
+	static void 		showSubWindows();
+	static bool		create();
 	static void		destroy();
 	static SDL_Window*	uiWindow;
 	static SDL_Renderer*	uiRenderer;
     	static void		TexturetoImage(SDL_Texture *);
+    	static void		fileExplorer();
 	static void		newFrame();
 	static void		clear(ImVec4 vec4);
 	static void		handleEvent(SDL_Event *ev);
 
 private:
+	static std::string	romFolderPath;
 	static bool		showVram;
 	static bool		showBG;
 	static bool		showSprite;

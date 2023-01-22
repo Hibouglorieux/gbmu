@@ -134,20 +134,29 @@ Mem::Mem(const std::string& pathToRom)
 	std::ifstream tmp(pathToRom + ".save");
 	if (tmp.good()) {
 		std::cout << "Save was detected" << std::endl;
-		std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
+		// std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
+    		std::ifstream infile(pathToRom + ".save", std::ios::binary);
+    		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(infile)),
+    		                                       std::istreambuf_iterator<char>());
+		file.seekg(0, std::ifstream::end);
+		int fileLen = file.tellg();
+    		infile.close();
 
-		if (mbc->hasTimer) {
-			// Fetching timer save
-			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
-			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
-			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
-		}
+		// TODO do more check with size for extraRam
+		if (fileLen >= MEM_SIZE) {
+			if (mbc->hasTimer) {
+				// Fetching timer save
+				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
+				if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
+				memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
+				std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
+			}
 
-		memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
+			memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
 
-		for (int i = 0; i < extraRamBanksNb; i++) {
-			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
+			for (int i = 0; i < extraRamBanksNb; i++) {
+				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
+			}
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;

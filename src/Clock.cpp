@@ -30,6 +30,14 @@ Clock::Clock()
 Clock::~Clock()
 {}
 
+void Clock::reset()
+{
+	cgbMode = false;
+	reloadTMA = false;
+	timaClock = 0;
+	divClock = 0;
+}
+
 // NOTE : addValue is in cycle in this context
 int&	Clock::operator+=(int addValue)
 {

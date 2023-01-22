@@ -24,6 +24,16 @@ bool Hdma::bJustStarted = false;
 
 #define HDMA_HEADER_CYCLE 1
 
+void Hdma::reset()
+{
+	src = 0;
+	dst = 0;
+	len = 0;
+	vbank = 0;
+	bIsWritting = false;
+	bIsInHBlankMode = false;
+	bJustStarted = false;
+}
 void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 {
 	// std::cout << "received write in Hdma with dstAddr: " << dstAddr

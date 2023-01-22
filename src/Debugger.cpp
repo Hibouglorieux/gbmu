@@ -1,10 +1,80 @@
 
 #include "Debugger.hpp"
 #include <SDL2/SDL.h>
+#include "Screen.hpp"
 
-DebuggerState Debugger::state = DebuggerState::RUNNING;
+SDL_Texture 	*Debugger::BGTexture = nullptr;
+void 		*Debugger::BGPixels = nullptr;
+int 		Debugger::BGPitch = 0;
+
+SDL_Texture 	*Debugger::SpriteTexture = nullptr;
+void 		*Debugger::SpritePixels = nullptr;
+int 		Debugger::SpritePitch = 0;
+
+SDL_Texture 	*Debugger::VRamTexture = nullptr;
+void 		*Debugger::VramPixels = nullptr;
+int 		Debugger::VramPitch = 0;
+
+
+//DebuggerState Debugger::state = DebuggerState::RUNNING;
+DebuggerState Debugger::state = DebuggerState::PAUSED;
 int Debugger::fps = 60;
 unsigned int Debugger::stopAtFrame = 0;
+int 		Debugger::mapAddr = 0x9c00;
+
+void		Debugger::destroyTexture()
+{
+	SDL_DestroyTexture(BGTexture);
+	SDL_DestroyTexture(SpriteTexture);
+	SDL_DestroyTexture(VRamTexture);
+}
+
+bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
+{
+	BGTexture = SDL_CreateTexture(uiRenderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			32 * BG_SCREEN_SCALE * 9,
+			32 * BG_SCREEN_SCALE * 9);
+	if (!BGTexture) {
+		std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	SpriteTexture = SDL_CreateTexture(uiRenderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			32 * BG_SCREEN_SCALE * 9,
+			2 * BG_SCREEN_SCALE * 9);
+	if (!SpriteTexture) {
+		std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+
+	VRamTexture = SDL_CreateTexture(uiRenderer,
+			SDL_PIXELFORMAT_RGBA8888,
+			SDL_TEXTUREACCESS_STREAMING,
+			16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
+			24 * 9 * VRAM_SCREEN_SCALE);
+	if (!VRamTexture) {
+		std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
+		return false;
+	}
+	return true;
+}
+
+void	Debugger::lockTexture()
+{
+    if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
+        throw "Could not lock Vram texture\n";
+    }
+    if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
+        throw "Could not lock BG texture\n";
+    }
+    if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
+        throw "Could not lock BG texture\n";
+    }
+}
 
 void Debugger::hexdump() {
 	{
@@ -167,4 +237,135 @@ void Debugger::Sprites() {
 		ImGui::Text("attributes:%02x", entry->attributes);
 		ImGui::NewLine();
 	}
+}
+
+void	Debugger::drawSprite(void)
+{
+	const int OAM_Addr = 0xFE00;
+	unsigned char spriteHeight = 8; // Always show the sprit in 8x8 mode
+
+	for (int i = 0; i < MAX_SPRITES; i++) {
+		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
+		Sprite sprite = Sprite(*entry, spriteHeight);
+		if (entry->getFlipY()) // reverse offset if flipped
+			sprite.flipY();
+		if (entry->getFlipX())
+			sprite.flipX();
+
+		int x_offset = (i % 32) * 9;
+		int y_offset = (i / 32) * 9;
+		for (int y = 0; y < 8; y++) {
+			// fetch the 8 pixel of the sprite in a tmp buffer
+			std::array<short, 8> line = sprite.getColoredLine(y);
+			for (int x = 0; x < 8; x++) {
+				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)SpritePixels, SpritePitch, BG_SCREEN_SCALE);
+			}
+		}
+	}
+}
+
+void	Debugger::drawBG(int mapAddr)
+{
+	unsigned int BGMap  = mapAddr;
+    unsigned int BGDataAddress = BIT(M_LCDC, 4) ? 0x8000 : 0x8800;
+
+	for (unsigned short i = 0; i < 32 * 32; i++) {
+		// in order to get the background map displayed we need to fetch the tile to display
+		// which is its number (fetched in BGMap which is 32 * 32), then we need
+		// to find that data in the VRam, (BGDataAddrress[tileNumber * (size in byte per tile)])
+		int tileIndex = mem[BGMap + i];
+		int addr = BGDataAddress;
+		if (BGDataAddress == 0x8800)
+		{
+			tileIndex = char(tileIndex);
+			addr = 0x9000;
+		}
+		struct TilePixels tile = TilePixels(addr + (tileIndex * (8 * 2)), BGMap + i);
+		int x_offset = (i % 32) * 9;
+		int y_offset = (i / 32) * 9;
+		for (int y = 0; y < 8; y++) {
+			auto line = tile.getColorLine(y);
+			for (int x = 0; x < 8; x++) {
+				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)BGPixels, BGPitch, BG_SCREEN_SCALE);
+			}
+		}
+	}
+}
+
+void	Debugger::drawPalettes()
+{
+	ImGui::Columns(10, "palettes", true);
+	auto white = ImGui::ColorConvertU32ToFloat4(0xFFFFFFFF);
+	auto black = ImGui::ColorConvertU32ToFloat4(0xFF000000);
+	const std::array<unsigned char, 64>& BGPalette = mem.getBGPalettes();
+	const std::array<unsigned char, 64>& OBJPalette = mem.getOBJPalettes();
+	for (int paletteNb = 0; paletteNb < 8; paletteNb++)
+	{
+		ImGui::Text("%d:", paletteNb);
+		ImGui::NextColumn();
+		for (int paletteSelector = 0; paletteSelector < 2; paletteSelector++)
+		{
+			const std::array<unsigned char, 64>& palette = (paletteSelector == 1 ? OBJPalette : BGPalette);
+			for (int colorNb = 0; colorNb < 4; colorNb++)
+			{
+				const unsigned char& low = palette[paletteNb * 2 * 4 + colorNb * 2];
+				const unsigned char& high = palette[paletteNb * 2 * 4 + colorNb * 2 + 1];
+				const unsigned short color = (high << 8) | low;
+				const int colorImGUI = Screen::convertColorFromCGB(color, true);
+				ImVec2 min = ImGui::GetItemRectMin();
+				ImVec2 max = ImGui::GetContentRegionMax();
+				max.x += min.x;
+				max.y = min.y + 16;
+
+				ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(),
+						max, colorImGUI);
+				ImGui::TextColored(white, "%04X", color);
+				ImGui::SameLine();
+				ImGui::TextColored(black, "%04X", color);
+				ImGui::NextColumn();
+			}
+			if (paletteSelector == 0)
+				ImGui::NextColumn();
+		}
+		ImGui::Separator();
+	}
+}
+
+void	Debugger::drawVRam(bool bIsCGB)
+{
+    unsigned int vRamAddress = 0x8000;
+
+	if (!bIsCGB)
+		for (unsigned char xx = 0; xx < 16; xx++) {
+			for (unsigned char yy = 0; yy < 24; yy++) {
+				struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0); // XXX nallani how to get palette there?
+				const unsigned char x_offset = xx * 9;
+				const unsigned char y_offset = yy * 9;
+				for (int y = 0; y < 8; y++) {
+					auto line = tile.getColorLine(y);
+					for (int x = 0; x < 8; x++) {
+						Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+					}
+				}
+			}
+		}
+	else
+	{
+		for (unsigned char Vram = 0; Vram < 2; Vram++)
+			for (unsigned char xx = 0; xx < 16; xx++) {
+				for (unsigned char yy = 0; yy < 24; yy++) {
+					struct TilePixels tile = TilePixels(vRamAddress + (xx * 8 * 2 + yy * 16 * 8 * 2), 0, Vram == 0 ? FORCE_DMG_TILEPIXELS : FORCE_CGB_TILEPIXELS); // XXX nallani how to get palette there?
+					const unsigned char x_offset = xx * 9;
+					const unsigned char y_offset = yy * 9;
+					for (int y = 0; y < 8; y++) {
+						auto line = tile.getColorLine(y);
+						for (unsigned char x = 0; x < 8; x++) {
+							Screen::drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], (int*)VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+							//std::cout << "drew at x: " << x + x_offset + Vram * (16 * 9 + 2) << " y: " << y + y_offset << std::endl;
+						}
+					}
+				}
+			}
+	}
+
 }

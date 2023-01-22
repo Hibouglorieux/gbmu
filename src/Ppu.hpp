@@ -43,6 +43,7 @@ struct BackgroundData {
 class Ppu {
 public:
 
+	static void reset();
 	static std::array<short, PIXEL_PER_LINE> doOneLine();
 	static std::array<SpriteData, PIXEL_PER_LINE> getOamLine();
 	static std::array<BackgroundData, PIXEL_PER_LINE> getBackgroundLine(); // TODO add virtual clocks

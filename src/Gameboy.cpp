@@ -13,6 +13,8 @@ bool		Gameboy::bLCDWasOff = false;
 bool		Gameboy::bShouldRenderFrame = true;
 bool		Gameboy::quit = false;
 bool		Gameboy::bIsCGB = false;
+bool		Gameboy::bIsInit = false;
+bool		Gameboy::bIsPathValid = false;
 std::string	Gameboy::path = "";
 unsigned int	Gameboy::frameNb = 0;
 float		Gameboy::clockRest = 0;
@@ -30,10 +32,23 @@ Clock& Gameboy::getClock()
 
 void	Gameboy::init()
 {
-	Cpu::loadBootRom();
 	APU::init();
+	//gbMem = nullptr;
+	gbClock.reset();
+	currentState = 0;
+	internalLY = 0;
+	clockLine = 0;
+	bLCDWasOff = false;
+	bShouldRenderFrame = true;
+	quit = false;
+	bIsCGB = false;
+	frameNb = 0;
+	clockRest = 0;
+	bLogFrameNb = false;
 	clockLine = 0;
 	internalLY = 0;
+	Hdma::reset();
+	Ppu::reset();
 }
 
 void	Gameboy::updateLY(int iter)
@@ -56,27 +71,36 @@ void	Gameboy::updateLY(int iter)
 	}
 }
 
-bool Gameboy::loadRom(std::string pathToFile)
+bool Gameboy::loadRom()
 {
-	gbMem = Mem::loadFromFile(pathToFile);
-	Gameboy::path = pathToFile;
+	init();
+	gbMem = Mem::loadFromFile(path);
 	if (!gbMem)
 		return false;
 	bIsCGB = gbMem->isCGB();
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
+	Cpu::loadBootRom();
+	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
+	Debugger::createTexture(bIsCGB, UserInterface::uiRenderer);
+	Debugger::lockTexture();
 	return gbMem->isValid;
 }
 
 bool Gameboy::launchUserInterface()
 {
-	UserInterface::create(bIsCGB);
+	UserInterface::create();
 	return UserInterface::loop();
 }
 
-// TODO LMA clear, this is never called and we have leaks with SDL
+// TODO LMA we have leaks with SDL
 void Gameboy::clear()
 {
-	delete gbMem;
+	if (bIsInit) {
+		delete gbMem;
+		Screen::destroyTexture();
+		Debugger::destroyTexture();
+		bIsInit = false;
+	}
 }
 
 void Gameboy::changeLCD(bool bActivateLCD)
@@ -90,6 +114,9 @@ void Gameboy::changeLCD(bool bActivateLCD)
 
 bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 {
+	if (!bIsInit) {
+		return (false);
+	}
 	bShouldRenderFrame = !bLCDWasOff;
 	bLCDWasOff = !BIT(M_LCDC, 7);
 
@@ -450,7 +477,9 @@ void Gameboy::saveState() {
 	outfile.close();
 }
 
-void Gameboy::saveRam() {	
+void Gameboy::saveRam() {
+	if (!bIsPathValid || !bIsInit)
+		return ;
 	std::ofstream outfile(path + ".save", std::ios::binary);
 
 	if (mem.mbc->hasTimer) {
@@ -478,7 +507,9 @@ void Gameboy::pollEvent()
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		UserInterface::handleEvent(&event);
-		Joypad::handleEvent(&event);
+		if (Gameboy::bIsInit) {
+			Joypad::handleEvent(&event);
+		}
 		if (event.type == SDL_QUIT) {
 			Gameboy::quit = true;
 		}

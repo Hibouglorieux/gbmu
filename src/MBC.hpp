@@ -71,6 +71,8 @@ public:
 	void setLowBitsRomBankNumber(unsigned char val) {lowBitsRomBankNumber = val;}
 	void setHighBitsRomBankNumberOrRam(unsigned char val) {highBitsRomBankNumberOrRam = val;}
 private:
+	// TODO LMA This cause warning for uninitialized value
+	// with gcc -fanalizer
 	bool bAdvancedBankingMode;
 	bool bEnableRam;
 	unsigned char lowBitsRomBankNumber;
