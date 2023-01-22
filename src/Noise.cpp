@@ -6,11 +6,6 @@ void Noise::tick() {
     //     return ;
 
     length_timer = (mem[NR41] & 0b111111);
-    current_length_timer = length_timer;
-
-    initial_volume = (mem[NR42] & 0b11110000) >> 4;
-    envelopeDirection = BIT(mem[NR42], 3);
-    sweepPace = mem[NR42] & 0b111;
 
     clockShift = (mem[NR43] & 0b11110000) >> 4;
     LFSRwidth = BIT(mem[NR43], 3);
@@ -18,17 +13,19 @@ void Noise::tick() {
 
     length_enable = BIT(mem[NR44], 6);
 
-    length_count = 0;
-
-
-    if (to_trigger && !trigger) {
-        std::cout << "Channel 4 triggered\n";
-
-        to_trigger = false;
-        trigger = true;
-    }
-
     // TODO implement sweep/envelope
+}
+
+void Noise::triggerChannel() {
+    std::cout << "Channel 4 triggered\n";
+
+    to_trigger = false;
+    trigger = true;
+    length_count = 0;
+    current_length_timer = length_timer;
+    initial_volume = (mem[NR42] & 0b11110000) >> 4;
+    envelopeDirection = BIT(mem[NR42], 3);
+    sweepPace = mem[NR42] & 0b111;
 }
 
 Noise::Noise(int chan)

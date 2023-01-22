@@ -35,7 +35,7 @@ public:
     int lengthEnable;
     // int waveHigh;
 
-    int waveLength;
+    float waveLength;
     char wave;
 
     int volumeSweepValue;
@@ -54,9 +54,13 @@ public:
     void channel_2_tick();
     void channel_1_tick();
 
+    void changeWavelength(float val);
+    void triggerChannel();
+
     const static int samples_per_length = SAMPLING_RATE/64;
 
     int length_count;
+    int volume;
 
     SquareWave(int chan);
     ~SquareWave();

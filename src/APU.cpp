@@ -14,10 +14,10 @@ void addDecibel(unsigned short &ref, int val) {
     int tmp = ref;
 
     tmp += val;
-    if (tmp > MAX_VOLUME)
-        tmp = MAX_VOLUME;
-    else if (tmp < 0)
-        tmp = 0;
+    // if (tmp > MAX_VOLUME)
+    //     tmp = MAX_VOLUME;
+    // else if (tmp < 0)
+    //     tmp = 0;
     ref = (unsigned short)tmp;
 }
 
@@ -137,151 +137,181 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
     for (int i = 0; i < length/2; i++) {
         ptr[i] = 0;
 
-        if (channel1.trigger && BIT(mem[0xFF26], 0))
+        // if (channel1.trigger && BIT(mem[0xFF26], 0) && channel1.waveLength <= 0x7FF)
+        // {
+        //     // Channel 1
+        //     int freq = 1048576/(2048 - (int)(channel1.waveLength));
+        //     int samples_per_step = SAMPLING_RATE / freq;
+
+        //     float val = (float)(MAX_VOLUME * channel1.initialVolume)/0xF;
+
+        //     addDecibel(ptr[i], BIT(channel1.wave, channel1.step) * (int)val);
+        //     channel1.iterations++;
+        //     channel1.length_count++;
+
+        //     if (channel1.iterations >= samples_per_step) {
+        //         channel1.step = (channel1.step + 1) % 8;
+        //         channel1.iterations = 0;
+        //     }
+
+        //     if (channel1.length_count >= SquareWave::samples_per_length) {
+        //         // Each 64 Hz
+        
+        //         if (channel1.waveSweepPace && !(ticks % channel1.waveSweepPace)) {
+
+        //             std::cout << "wavelength 1 : " << channel1.waveLength << " avec " << (channel1.waveLength / pow(2, channel1.waveSweepSlope)) << "\n"; 
+        //             if (channel1.waveSweepDirection)
+        //                 // channel1.changeWavelength(channel1.waveLength);
+        //                 channel1.changeWavelength(channel1.waveLength + (channel1.waveLength / pow(2, channel1.waveSweepSlope)));
+        //             else
+        //                 // channel1.changeWavelength(channel1.waveLength);
+        //                 channel1.changeWavelength(channel1.waveLength - (channel1.waveLength / pow(2, channel1.waveSweepSlope)));
+        //             std::cout << "wavelength 2 : " << channel1.waveLength << "\n";
+        //         }
+
+        //         if (channel1.volumeSweepPace && !(ticks % channel1.volumeSweepPace)) {
+        //             std::cout << "volume 1 : " << channel1.initialVolume << "\n";
+        //             if (channel1.envelopeDirection) {
+        //                 // channel1.volumeSweepValue++;
+        //                 channel1.initialVolume++;
+        //                 if (channel1.initialVolume > 15)
+        //                     channel1.initialVolume = 15;
+                        
+        //             }
+        //             else {
+        //                 // channel1.volumeSweepValue--;
+
+        //                 channel1.initialVolume--;
+        //                 if (channel1.initialVolume < 0)
+        //                     channel1.initialVolume = 0;
+
+        //             }
+        //             std::cout << "volume 1 : " << channel1.initialVolume << "\n";
+        //         }
+
+
+
+        //         if (channel1.lengthEnable) {
+        //             channel1.current_length_timer--;
+                    
+        //             if (!channel1.current_length_timer)
+        //                 channel1.trigger = false;
+        //         }
+        //         channel1.length_count = 0;
+        //         ticks++;
+        //     }
+        // }
+
+        if (channel2.trigger && BIT(mem[0xFF26], 1))
         {
-            // Channel 1
-            int freq = 1048576/(2048 - channel1.waveLength);
+            // Channel 2
+            int freq = 1048576/(2048 - channel2.waveLength);
             int samples_per_step = SAMPLING_RATE / freq;
 
-            float val = (MAX_VOLUME * channel1.initialVolume)/0xF + (channel1.volumeSweepValue * 2);
-            if (channel1.trigger) {
+            float val = (float)(MAX_VOLUME * channel2.initialVolume)/0xF + (float)(channel2.volumeSweepValue * 0xFF);
 
-                addDecibel(ptr[i], BIT(channel1.wave, channel1.step) * (int)val);
-                channel1.iterations++;
-                channel1.length_count++;
+            addDecibel(ptr[i], BIT(channel2.wave, channel2.step) * (int)val);
+            channel2.iterations++;
+            channel2.length_count++;
 
-                if (channel1.iterations >= samples_per_step) {
-                    channel1.step = (channel1.step + 1) % 8;
-                    channel1.iterations = 0;
+            if (channel2.iterations >= samples_per_step) {
+                channel2.step = (channel2.step + 1) % 8;
+                channel2.iterations = 0;
+            }
+
+            if (channel2.length_count >= SquareWave::samples_per_length) {
+                // Each 64 Hz
+
+                if (channel2.volumeSweepPace && !(ticks % channel2.volumeSweepPace)) {
+                    if (channel2.envelopeDirection) {
+                        channel2.initialVolume++;
+                        if (channel2.initialVolume > 0xF)
+                            channel2.initialVolume = 0xF;
+
+                    }
+                    else {
+                        channel2.initialVolume--;
+                        if (channel2.initialVolume < 0)
+                            channel2.initialVolume = 0;
+                    }
                 }
 
-                if (channel1.length_count >= SquareWave::samples_per_length) {
-                    // Each 64 Hz
-            
-                    if (channel1.waveSweepPace && !(ticks % channel1.waveSweepPace)) {
-                        channel1.waveLength = 1;
-                        if (channel1.waveSweepDirection)
-                            channel1.waveLength += channel1.wavelengthSweepValue / pow(2, channel1.waveSweepSlope);
-                        else
-                            channel1.waveLength -= channel1.wavelengthSweepValue / pow(2, channel1.waveSweepSlope);
-                    }
-
-                    if (channel1.volumeSweepPace && !(ticks % channel1.volumeSweepPace)) {
-                        if (channel1.envelopeDirection)
-                            channel1.volumeSweepValue++;
-                        else
-                            channel1.volumeSweepValue--;
-                    }
-
-
-
-                    if (channel1.lengthEnable) {
-                        channel1.length_count = 0;
-                        channel1.current_length_timer--;
-                        
-                        if (!channel1.current_length_timer)
-                            channel1.trigger = false;
-                    }
-                    ticks++;
+                if (channel2.lengthEnable) {
+                    channel2.current_length_timer--;
+                    
+                    if (!channel2.current_length_timer)
+                        channel2.trigger = false;
                 }
+                channel2.length_count = 0;
+                ticks++;
             }
         }
 
-        // if (channel2.trigger && BIT(mem[0xFF26], 1))
-        // {
-        //     // Channel 2
-        //     int freq = 1048576/(2048 - channel2.waveLength);
-        //     int samples_per_step = SAMPLING_RATE / freq;
-
-        //     float val = (MAX_VOLUME * channel2.initialVolume)/0xF;
-        //     if (channel2.trigger) {
-        //         unsigned short add = 0;
-
-        //         std::cout << "USING CHANNEL 2 volume : " << channel2.initialVolume << "\n";
-
-        //         addDecibel(add, BIT(channel2.wave, channel2.step) * (int)val);
-
-        //         if (channel2.volumeSweepPace)
-        //             addDecibel(add, channel2.volumeSweepValue);
-        //         channel2.iterations++;
-        //         channel2.length_count++;
-
-        //         if (channel2.iterations >= samples_per_step) {
-        //             channel2.step = (channel2.step + 1) % 8;
-        //             channel2.iterations = 0;
-        //         }
-
-        //         if (channel2.lengthEnable) {
-        //             std::cout << "Stopping channel 2 : " << std::dec << channel2.length_count << " et " << channel2.current_length_timer <<"\n";
-                    // if (channel2.length_count >= SquareWave::samples_per_length) {
-                    //     channel2.length_count = 0;
-                    //     channel2.volumeSweepValue -= channel2.volumeSweepPace;
-                    //     channel2.current_length_timer--;
-                    // }
-
-        //             if (!channel2.current_length_timer) {
-        //                 channel2.trigger = false;
-        //             }
-        //         }
-
-        //         addDecibel(ptr[i], add);
-        //     }
-        // }
-
         
 
-        // if (channel3.trigger && channel3.DACenable && BIT(mem[0xFF26], 2))
-        // {
-        //     // Channel 3
-        //     int freq = 2097152/(2048 - channel3.wavelength);
-        //     int samples_per_step = SAMPLING_RATE / freq;
-        //     float volumeFactor = (channel3.volume * MAX_VOLUME)/4;
+        if (channel3.trigger && channel3.DACenable)// && BIT(mem[0xFF26], 2))
+        {
+            // Channel 3
+            int freq = 2097152/(2048 - channel3.wavelength);
+            int samples_per_step = SAMPLING_RATE / freq;
+            float volumeFactor = (channel3.volume * MAX_VOLUME)/(4 * 0xFF);
 
-        //     addDecibel(ptr[i], channel3.waveform[channel3.step] * (int)volumeFactor);
+            static char tmp = 0;
+            if (!(tmp % 2))
+                addDecibel(ptr[i], (channel3.waveform[channel3.step] & 0x0F) * (int)volumeFactor);
+            else
+                addDecibel(ptr[i], (channel3.waveform[channel3.step] & 0xF0) * (int)volumeFactor);
+            tmp++;
             
-        //     channel3.iterations++;
-        //     channel3.length_count++;
+            channel3.iterations++;
+            channel3.length_count++;
 
-        //     if (channel3.iterations >= samples_per_step) {
-        //         channel3.iterations = 0;
-        //         channel3.step = (channel3.step + 1) % 16;
-        //     }
+            if (channel3.iterations >= samples_per_step) {
+                channel3.iterations = 0;
+                channel3.step = (channel3.step + 1) % 16;
+            }
 
-        //     if (channel3.length_count >= Waveform::samples_per_length) {
-        //         channel3.length_count = 0;
-        //         channel3.current_length_timer--;
-        //         if (!channel3.current_length_timer)
-        //             channel3.trigger = false;
-        //     }
+            if (channel3.length_count >= Waveform::samples_per_length) {
+                channel3.length_count = 0;
+
+                if (channel3.length_enable) {
+                    channel3.current_length_timer--;
+
+                    if (!channel3.current_length_timer)
+                        channel3.trigger = false;
+                }
+
+                ticks++;
+            }
 
             
-        // }
+        }
 
-        // if (channel4.trigger && BIT(mem[0xFF26], 3))
-        // {
-        //     // Channel 4
-        //     int freq = 262144 / (channel4.clockDivider * pow(2, channel4.clockShift));
+        if (channel4.trigger && BIT(mem[0xFF26], 3))
+        {
+            // Channel 4
+            int freq = 262144 / (channel4.clockDivider * pow(2, channel4.clockShift));
 
-        //     int samples_per_step = SAMPLING_RATE / freq;
-        //     float volumeFactor = (channel4.initial_volume * MAX_VOLUME)/0xF;
+            int samples_per_step = SAMPLING_RATE / freq;
+            float volumeFactor = (channel4.initial_volume * MAX_VOLUME)/0xFFFF;
 
-        //     ptr[i] += channel4.sample * (int)volumeFactor;
+            addDecibel(ptr[i], channel4.sample * (int)volumeFactor);
 
-        //     channel4.iterations++;
-        //     channel4.length_count++;
+            channel4.iterations++;
+            channel4.length_count++;
 
-        //     if (channel4.iterations >= samples_per_step) {
-        //         channel4.iterations = 0;
-        //         channel4.sample = rand();
-        //     }
+            if (channel4.iterations >= samples_per_step) {
+                channel4.iterations = 0;
+                channel4.sample = rand();
+            }
 
-        //     if (channel4.length_count >= Noise::samples_per_length) {
-        //         channel4.length_count = 0;
-        //         channel4.current_length_timer--;
-        //         if (!channel4.current_length_timer)
-        //             channel4.trigger = false;
-        //     }
-        // }
+            if (channel4.length_count >= Noise::samples_per_length) {
+                channel4.length_count = 0;
+                channel4.current_length_timer--;
+                if (!channel4.current_length_timer)
+                    channel4.trigger = false;
+            }
+        }
 
         // std::cout << std::dec << (int)ptr[i] << "\n";
     }

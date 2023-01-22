@@ -40,6 +40,7 @@ public:
     int sample;
 
     void tick();
+    void triggerChannel();
 
     const static int samples_per_length = SAMPLING_RATE/256;
 

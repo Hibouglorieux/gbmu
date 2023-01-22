@@ -43,6 +43,8 @@ public:
 
     int length_count;
 
+    void triggerChannel();
+
     Waveform(int chan);
     ~Waveform();
 };

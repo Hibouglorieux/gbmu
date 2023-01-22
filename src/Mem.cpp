@@ -293,21 +293,17 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
 
-	if (addr == NR14) {
-		APU::channel1.to_trigger = true;
-		std::cout << "Triggering channel 1\n";
+	if (addr == NR14 && BIT(newValue, 7)) {
+		APU::channel1.triggerChannel();
 	}
 	else if (addr == NR24 && BIT(newValue, 7)) {
-		APU::channel2.to_trigger = true;
-		std::cout << "Triggering channel 2\n";
+		APU::channel2.triggerChannel();
 	}
-	else if (addr == NR34) {
-		APU::channel3.to_trigger = true;
-		std::cout << "Triggering channel 3\n";
+	else if (addr == NR34 && BIT(newValue, 7)) {
+		APU::channel3.triggerChannel();
 	}
-	else if (addr == NR44) {
-		APU::channel4.to_trigger = true;
-		std::cout << "Triggering channel 4\n";
+	else if (addr == NR44 && BIT(newValue, 7)) {
+		APU::channel4.triggerChannel();
 	}
     /* recursive call
 //	if (addr == LCDC) {

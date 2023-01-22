@@ -6,7 +6,6 @@ void Waveform::tick() {
 
     DACenable = BIT(mem[NR30], 7);
     length_timer = mem[NR31];
-    current_length_timer = length_timer;
     volume = (mem[NR32] & 0b01100000) >> 5;
     switch (volume)
     {
@@ -26,17 +25,16 @@ void Waveform::tick() {
     }
     wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
     length_enable = BIT(mem[NR34], 6);
-
     memcpy(waveform, &mem[0xFF30], 16);
 
-    if (to_trigger && !trigger) {
-        std::cout << "Channel 3 triggered\n";
-
-        to_trigger = false;
-        trigger = true;
-    }
-
     // TODO implement sweep/envelope
+}
+
+void Waveform::triggerChannel() {
+    std::cout << "Channel 3 triggered\n";
+    to_trigger = false;
+    trigger = true;
+    current_length_timer = length_timer;
 }
 
 
