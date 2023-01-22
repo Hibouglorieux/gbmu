@@ -4,9 +4,25 @@ void Waveform::tick() {
     // if (trigger)
     //     return;
 
+    length_enable = BIT(mem[NR34], 6);
+    wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
     DACenable = BIT(mem[NR30], 7);
-    length_timer = mem[NR31];
     volume = (mem[NR32] & 0b01100000) >> 5;
+
+    // TODO implement sweep/envelope
+}
+
+void Waveform::triggerChannel() {
+    std::cout << "Channel 3 triggered\n";
+    to_trigger = false;
+    trigger = true;
+    current_length_timer = length_timer;
+    length_enable = BIT(mem[NR34], 6);
+    memcpy(waveform, &mem[0xFF30], 16);
+    wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
+    length_timer = mem[NR31];
+
+
     switch (volume)
     {
     case 0:
@@ -23,18 +39,10 @@ void Waveform::tick() {
         std::cout << "Volume : " << std::dec << (int)volume <<"\n";
         throw "Wrong volume specified for Waveform channel\n";
     }
-    wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
-    length_enable = BIT(mem[NR34], 6);
-    memcpy(waveform, &mem[0xFF30], 16);
 
-    // TODO implement sweep/envelope
-}
-
-void Waveform::triggerChannel() {
-    std::cout << "Channel 3 triggered\n";
-    to_trigger = false;
-    trigger = true;
-    current_length_timer = length_timer;
+    std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
+    std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
+    std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
 }
 
 

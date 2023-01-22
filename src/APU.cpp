@@ -144,7 +144,6 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 channel1.queue.pop();
 
                 channel1.volume = channel1.initialVolume;
-                channel1.volumeSweepValue = 0;
                 channel1.wavelengthSweepValue = 0;
                 channel1.current_length_timer = channel1.length_timer;
                 channel1.to_trigger = false;
@@ -164,7 +163,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
             if (channel1.trigger) {
 
                 // Channel 1
-                int freq = abs(1048576/(2048 - (int)(channel1.waveLength == 2048 ? 2047 : channel1.waveLength)));
+                int freq = abs(1048576/(2048 - (int)((int)channel1.waveLength == 2048 ? 2047 : channel1.waveLength)));
                 int samples_per_step = (SAMPLING_RATE / freq);
 
                 float val = (float)(MAX_VOLUME * channel1.initialVolume)/0xF;
@@ -197,16 +196,14 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                     if (channel1.volumeSweepPace && allo < channel1.volumeSweepPace) {
                         std::cout << "volume 1-1 : " << channel1.initialVolume << "\n";
                         if (channel1.envelopeDirection) {
-                            // channel1.volumeSweepValue++;
                             channel1.initialVolume++;
                             if (channel1.initialVolume > 15)
                                 channel1.initialVolume = 15;
                             
                         }
                         else {
-                            // channel1.volumeSweepValue--;
 
-                            channel1.initialVolume--;
+                            channel1.initialVolume -= 2;
                             if (channel1.initialVolume <= 0)
                                 channel1.trigger = false;
 
@@ -222,7 +219,6 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         }
                     }
                     channel1.length_count = 0;
-                    channel1.ticks++;
 
                     allo = (allo == 6 ? 0 : allo + 1);
                 }
@@ -236,7 +232,6 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 channel2.queue.pop();
 
                 channel2.volume = channel2.initialVolume;
-                channel2.volumeSweepValue = 0;
                 channel2.wavelengthSweepValue = 0;
                 channel2.current_length_timer = channel2.length_timer;
                 channel2.to_trigger = false;
@@ -258,7 +253,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 int freq = abs(1048576/(2048 - (channel2.waveLength == 2048 ? 2047 : channel2.waveLength)));
                 int samples_per_step = (SAMPLING_RATE / freq);
 
-                float val = (float)(MAX_VOLUME * channel2.initialVolume)/0xF + (float)(channel2.volumeSweepValue * 0xFF);
+                float val = (float)(MAX_VOLUME * channel2.initialVolume)/0xF;
 
                 addDecibel(ptr[i], BIT(channel2.wave, channel2.step) * (int)val);
                 channel2.iterations++;
@@ -271,8 +266,9 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                 if (channel2.length_count >= SquareWave::samples_per_length) {
                     // Each 64 Hz
+                    static int allooo = 0;
 
-                    if (channel2.volumeSweepPace && !(channel2.ticks % channel2.volumeSweepPace)) {
+                    if (channel2.volumeSweepPace && allooo < channel2.volumeSweepPace) {
                         if (channel2.envelopeDirection) {
                             channel2.initialVolume++;
                             if (channel2.initialVolume > 0xF)
@@ -280,7 +276,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                         }
                         else {
-                            channel2.initialVolume--;
+                            channel2.initialVolume -= 2;
                             if (channel2.initialVolume <= 0)
                                 channel2.trigger = false;
                         }
@@ -293,49 +289,47 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                             channel2.trigger = false;
                     }
                     channel2.length_count = 0;
-                    channel2.ticks++;
+                    allooo = (allooo == 6 ? 0 : allooo + 1);
                 }
             }
         }
 
         
 
-        if (channel3.trigger && channel3.DACenable)// && BIT(mem[0xFF26], 2))
-        {
-            // Channel 3
-            int freq = abs(2097152/(2048 - (channel3.wavelength == 2048 ? 2047 : channel3.wavelength)));
-            int samples_per_step = (SAMPLING_RATE / freq);
-            float volumeFactor = (channel3.volume * MAX_VOLUME)/(4 * 0xFF);
+        // if (channel3.trigger && channel3.DACenable && BIT(mem[0xFF26], 2))
+        // {
+        //     // Channel 3
+        //     int freq = abs(2097152/(2048 - (channel3.wavelength == 2048 ? 2047 : channel3.wavelength)));
+        //     int samples_per_step = (SAMPLING_RATE / freq);
+        //     float volumeFactor = (channel3.volume * MAX_VOLUME)/(4 * 0xFF);
 
-            static char tmp = 0;
-            if (!(tmp % 2))
-                addDecibel(ptr[i], (channel3.waveform[channel3.step] & 0x0F) * (int)volumeFactor);
-            else
-                addDecibel(ptr[i], (channel3.waveform[channel3.step] & 0xF0) * (int)volumeFactor);
-            tmp++;
+        //     static char tmp = 0;
+        //     if (!(tmp % 2))
+        //         addDecibel(ptr[i], (channel3.waveform[channel3.step/2] & 0x0F) * (int)volumeFactor);
+        //     else
+        //         addDecibel(ptr[i], (channel3.waveform[channel3.step/2] & 0xF0) * (int)volumeFactor);
+        //     tmp++;
             
-            channel3.iterations++;
-            channel3.length_count++;
+        //     channel3.iterations++;
+        //     channel3.length_count++;
 
-            if (channel3.iterations >= samples_per_step) {
-                channel3.iterations = 0;
-                channel3.step = (channel3.step + 1) % 16;
-            }
+        //     if (channel3.iterations >= samples_per_step) {
+        //         channel3.iterations = 0;
+        //         channel3.step = (channel3.step + 1) % 32;
+        //     }
 
-            if (channel3.length_count >= Waveform::samples_per_length) {
-                channel3.length_count = 0;
+        //     if (channel3.length_count >= Waveform::samples_per_length) {
+        //         channel3.length_count = 0;
 
-                if (channel3.length_enable) {
-                    channel3.current_length_timer--;
+        //         if (channel3.length_enable) {
+        //             channel3.current_length_timer--;
 
-                    if (!channel3.current_length_timer)
-                        channel3.trigger = false;
-                }
+        //             if (!channel3.current_length_timer)
+        //                 channel3.trigger = false;
+        //         }
 
-            }
-
-            
-        }
+        //     }
+        // }
 
         if (channel4.trigger && BIT(mem[0xFF26], 3))
         {
@@ -355,7 +349,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 channel4.sample = rand() % 101;
             }
 
-            if (channel4.length_count >= SquareWave::samples_per_length) {
+            if (channel4.length_count >= Noise::samples_per_length) {
                 // Each 64 Hz
                 static int alloo = 0;
 
@@ -368,7 +362,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                     }
                     else {
-                        channel4.initial_volume --;
+                        channel4.initial_volume--;
                         if (channel4.initial_volume <= 0)
                             channel4.trigger = false;
                     }
