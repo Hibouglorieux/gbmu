@@ -80,7 +80,6 @@ bool Gameboy::loadRom()
 	Cpu::loadBootRom();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
 	Debugger::createTexture(bIsCGB, UserInterface::uiRenderer);
-	Debugger::lockTexture();
 	return gbMem->isValid;
 }
 

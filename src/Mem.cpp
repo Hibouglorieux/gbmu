@@ -114,7 +114,7 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
-//    bzero(internalArray, MEM_SIZE);
+	bzero(internalArray, MEM_SIZE);
 
     for (int i = 0; i < romBanksNb; i++) {
         file.read((char *) romBanks[i], ROM_BANK_SIZE);
