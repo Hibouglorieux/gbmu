@@ -60,6 +60,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 		std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
 		return false;
 	}
+	lockTexture();
 	return true;
 }
 
