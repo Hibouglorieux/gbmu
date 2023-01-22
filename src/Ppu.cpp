@@ -16,6 +16,11 @@
 
 unsigned char Ppu::windowCounter = 0;
 
+void Ppu::reset()
+{
+	windowCounter = 0;
+}
+
 std::array<short, PIXEL_PER_LINE> Ppu::getDefaultWhiteLine()
 {
 	std::array<short, PIXEL_PER_LINE> line;

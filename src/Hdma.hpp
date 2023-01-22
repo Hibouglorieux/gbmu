@@ -26,6 +26,7 @@
 class Hdma {
 public:
 	static void writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue);
+	static void reset();
 	static int update();
 	static int updateHBlank();
 private:

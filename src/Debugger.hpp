@@ -19,6 +19,11 @@
 ** Also used for controlling Gameboy for break/step
 */
 
+#define MAIN_SCREEN_SCALE 4
+#define VRAM_SCREEN_SCALE 2
+#define BG_SCREEN_SCALE 2
+
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "imgui/imgui_impl_sdlrenderer.h"
@@ -42,7 +47,30 @@ public:
     static void registers();
     static void Sprites();
     static void hexdump();
+
+	static void		lockTexture();
+	static void		destroyTexture();
+	static bool		createTexture(bool, SDL_Renderer *);
+	static void		drawBG(int mapAddr);
+	static void		drawSprite(void);
+	static void		drawVRam(bool bIsCGB);
+	static void		drawPalettes();
+
+	static int		mapAddr;
 	static unsigned int stopAtFrame;
+
+	static SDL_Texture*	BGTexture;
+	static void*		BGPixels;
+	static int		BGPitch;
+
+	static SDL_Texture*	SpriteTexture;
+	static void*		SpritePixels;
+	static int		SpritePitch;
+
+	static SDL_Texture*	VRamTexture;
+	static void*		VramPixels;
+	static int		VramPitch;
+
 };
 
 

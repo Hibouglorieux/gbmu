@@ -28,40 +28,27 @@ class Screen
 public:
 	static void		destroyTexture();
 
-	static bool inline	drawPoint(unsigned short x, unsigned short y,
+	static bool 		drawPoint(unsigned short x, unsigned short y,
 					const unsigned short& color, void *pixels,
 					int pitch, int pixelScale);
     	static void		lockTexture();
 
+	static int 	 	convertColorFromCGB(int colo,
+					bool bConvertForImGUI = false);
 	static void		updatePpuLine(const std::array<short,
 					PIXEL_PER_LINE>& lineData,
 					unsigned char currentLine);
-	static void		drawBG(int mapAddr);
-	static void		drawSprite(void);
-	static void		drawVRam(bool bIsCGB);
-	static void		drawPalettes();
 	static bool		createTexture(bool bIsCGB, SDL_Renderer* uiRenderer);
+
+
+//	static int inline 	convertColorFromCGB(int colo,
+//					bool bConvertForImGUI = false);
 
 	static SDL_Texture*	ppuTexture;
 	static void*		ppuPixels;
 	static int		ppuPitch;
+	static bool		bIsInit;
 
-	static SDL_Texture*	BGTexture;
-	static void*		BGPixels;
-	static int		BGPitch;
-
-	static SDL_Texture*	SpriteTexture;
-	static void*		SpritePixels;
-	static int		SpritePitch;
-
-	static SDL_Texture*	VRamTexture;
-	static void*		VramPixels;
-	static int		VramPitch;
-
-	static int inline 	convertColorFromCGB(int colo,
-					bool bConvertForImGUI = false);
-
-	static int		mapAddr;
 private:
 };
 

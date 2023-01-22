@@ -63,6 +63,7 @@ public:
 	static void	setTimaClock(int val) {timaClock = val;}
 	static void	setDivClock(int val) {divClock = val;}
 	void 		setClock(int val) {clock = val;}
+	void 		reset();
 
 private:
 	static bool	reloadTMA;

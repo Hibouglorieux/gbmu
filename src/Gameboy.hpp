@@ -61,13 +61,16 @@ public:
 	static bool		bIsCGB;
 	static unsigned int	frameNb;
 
+	static bool		bIsInit;
+	static bool		bIsPathValid;
+
 	static bool		launchUserInterface();
 	static Mem&		getMem();
 	static Clock&		getClock();
 
 	// Loading
 	static void		init();
-	static bool		loadRom(std::string pathToFile);
+	static bool		loadRom();
 
 	// Save state
 	static void		saveState();
@@ -93,13 +96,13 @@ public:
 
 	// Hdma H-BLANK
 	static void 		doHblankHdma();
+	static std::string	path;
 
 private:
 	static int		currentState;
 	static bool		bLCDWasOff;
 	static bool		bShouldRenderFrame;
 	static Mem*		gbMem;
-	static std::string	path;
 
 };
 

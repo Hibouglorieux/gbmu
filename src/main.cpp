@@ -13,11 +13,11 @@
 #include "Gameboy.hpp"
 #include <iostream>
 
-#define DEFAULT_PATH_TO_FILE "./roms/42roms/Legend of Zelda, The - Oracle of Ages.gbc"
+// #define DEFAULT_PATH_TO_FILE "./roms/42roms/Legend of Zelda, The - Oracle of Ages.gbc"
+
 
 int main(int argc, char** argv)
 {
-	bool loadState = false;
 	(void) argc;
 	(void) argv;
 
@@ -25,28 +25,13 @@ int main(int argc, char** argv)
 	std::cerr << std::setfill('0') << std::uppercase;
 	std::cerr << std::hex;
 	std::cout << std::hex;
-	if (argc == 1 || argc > 3)
+	if (argc >= 2)
 	{
-		if (!Gameboy::loadRom(DEFAULT_PATH_TO_FILE))
-		{
-			return -1;
-		}
+		Gameboy::path = argv[1];
+		Gameboy::bIsPathValid = true;
 	}
-	else
-	{
-		if (!Gameboy::loadRom(argv[1]))
-		{
-			return -1;
-		}
-		if (argc == 3)
-			loadState = true;
-	}
-	Gameboy::init();
 
 	try {
-		if (loadState) {
-			Gameboy::loadSaveState(argv[2]);
-		}
 		Gameboy::launchUserInterface();
 	}
 	catch (const char* e) {

@@ -75,6 +75,10 @@ void Cpu::loadBootRom()
 
 	stackTrace.PCBreak = 0x021D;
 	stackTrace.breakActive = false;
+	IME = false;
+	setIMEFlag = false;
+	halted = false;
+	halt_counter = 0;
 	//stackTrace.opcodeBreak = 0xCB27;
 }
 
