@@ -294,15 +294,19 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		Joypad::refresh();
 
 	if (addr == NR14 && BIT(newValue, 7)) {
+		value = newValue;
 		APU::channel1.triggerChannel();
 	}
 	else if (addr == NR24 && BIT(newValue, 7)) {
+		value = newValue;
 		APU::channel2.triggerChannel();
 	}
 	else if (addr == NR34 && BIT(newValue, 7)) {
+		value = newValue;
 		APU::channel3.triggerChannel();
 	}
 	else if (addr == NR44 && BIT(newValue, 7)) {
+		value = newValue;
 		APU::channel4.triggerChannel();
 	}
     /* recursive call

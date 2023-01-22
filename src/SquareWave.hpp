@@ -4,6 +4,21 @@
 #include "Mem.hpp"
 #include "Gameboy.hpp"
 #include "define.hpp"
+#include <queue>
+
+typedef struct {
+    int length_timer;
+    int volumeSweepPace;
+    int initialVolume;
+    int envelopeDirection;
+    int waveLength;
+    int waveDuty;
+    int length_enable;
+    int waveSweepDirection;
+    int waveSweepPace;
+    int waveSweepSlope;
+    
+} entry;
 
 class SquareWave
 {
@@ -56,11 +71,14 @@ public:
 
     void changeWavelength(float val);
     void triggerChannel();
+    void popEntry(entry val);
 
     const static int samples_per_length = SAMPLING_RATE/64;
 
     int length_count;
     int volume;
+
+    std::queue<entry> queue;
 
     SquareWave(int chan);
     ~SquareWave();

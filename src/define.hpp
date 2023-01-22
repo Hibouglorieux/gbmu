@@ -186,5 +186,5 @@
 #define NR44 0xFF23 // FF23 — NR44: Channel 4 control
 
 #define BUFFER_SIZE 1024
-#define SAMPLING_RATE 22050
+#define SAMPLING_RATE 44100
 #define MAX_VOLUME 0x0fff

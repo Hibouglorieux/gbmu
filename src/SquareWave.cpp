@@ -19,8 +19,6 @@ void SquareWave::channel_2_tick() {
     // if (trigger)
     //     return;
 
-    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
-    waveDuty = (mem[NR21] & 0b11000000) >> 6;
     lengthEnable = BIT(mem[NR24], 6);
     // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
 
@@ -46,44 +44,66 @@ void SquareWave::channel_2_tick() {
     // TODO implement sweep/envelope
 }
 
+void SquareWave::popEntry(entry val) {
+    length_timer = val.length_timer;
+    volumeSweepPace = val.volumeSweepPace;
+    initialVolume = val.initialVolume;
+    envelopeDirection = val.envelopeDirection;
+    waveLength = val.waveLength;
+    waveDuty = val.waveDuty;
+    lengthEnable = val.length_enable;
+    
+    if (channel == 1) {
+        waveSweepDirection = val.waveSweepDirection;
+        waveSweepPace = val.waveSweepPace;
+        waveSweepSlope = val.waveSweepSlope;
+    }
+}
+
 void SquareWave::triggerChannel() {
+    // if (trigger) return;
+    std::cout << "Channel " << channel << " triggered : \n";
 
+    entry tmp;
     if (channel == 2) {
-        length_timer = (mem[NR21] & 0b00111111);
-        volumeSweepPace = (mem[NR22] & 0b00000111);
-        initialVolume = (mem[NR22] & 0b11110000) >> 4;
-        envelopeDirection = BIT(mem[NR22], 3);
-        waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
-        waveDuty = (mem[NR21] & 0b11000000) >> 6;
-        
 
+        tmp.length_timer = (mem[NR21] & 0b00111111);
+        tmp.volumeSweepPace = (mem[NR22] & 0b00000111);
+        tmp.initialVolume = (mem[NR22] & 0b11110000) >> 4;
+        tmp.envelopeDirection = BIT(mem[NR22], 3);
+        tmp.waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
+        tmp.waveDuty = (mem[NR21] & 0b11000000) >> 6;
+        tmp.length_enable = BIT(mem[NR24], 6);
+        
+        std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)mem[NR24] << "\n";
     }
     else {
-        length_timer = (mem[NR11] & 0b00111111);
-        volumeSweepPace = (mem[NR12] & 0b00000111);
-        initialVolume = (mem[NR12] & 0b11110000) >> 4;
-        envelopeDirection = BIT(mem[NR12], 3);
-        waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
-        waveDuty = (mem[NR11] & 0b11000000) >> 6;
+        tmp.length_timer = (mem[NR11] & 0b00111111);
+        tmp.volumeSweepPace = (mem[NR12] & 0b00000111);
+        tmp.initialVolume = (mem[NR12] & 0b11110000) >> 4;
+        tmp.envelopeDirection = BIT(mem[NR12], 3);
+        tmp.waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
+        tmp.waveDuty = (mem[NR11] & 0b11000000) >> 6;
+        tmp.length_enable = BIT(mem[NR14], 6);
 
-        waveSweepDirection = BIT(mem[NR10], 3);
-        waveSweepPace = (mem[NR10] & 0b01110000);
-        waveSweepSlope = (mem[NR10] & 0b00000111);
+        tmp.waveSweepDirection = BIT(mem[NR10], 3);
+        tmp.waveSweepPace = (mem[NR10] & 0b01110000) >> 4;
+        tmp.waveSweepSlope = (mem[NR10] & 0b00000111);
+        
+        std::cout << std::hex << (int)mem[NR10] << " - " << (int)mem[NR11] << " - " << (int)mem[NR12] << " - " << (int)mem[NR13] << " - " << (int)mem[NR14] << "\n";
 
-        std::cout << "Channel " << channel << " triggered : " << waveLength << "\n";
-        std::cout << "\tlength enable : " << lengthEnable << "\n";
-        std::cout << "\tlength timer : " << length_timer << "\n";
-        std::cout << "\tvolume : " << initialVolume << "\n";
-        std::cout << "\tvolume sweep pace : " << volumeSweepPace << "\n";
-        // std::cout << "\tvolume sweep direction : " << envelopeDirection << "\n";
     }
-    
-    volume = initialVolume;
-    volumeSweepValue = 0;
-    wavelengthSweepValue = 0;
-    current_length_timer = length_timer;
-    to_trigger = false;
-    trigger = true;
+
+    queue.push(tmp);
+    // std::cout << "\tlength enable : " << tmp.length_enable << "\n";
+    // std::cout << "\tlength timer : " << tmp.length_timer << "\n";
+    // std::cout << "\tvolume : " << tmp.initialVolume << "\n";
+    // std::cout << "\tvolume sweep direction : " << tmp.envelopeDirection << "\n";
+    // std::cout << "\tvolume sweep pace : " << tmp.volumeSweepPace << "\n";
+    // std::cout << "\twave length : " << tmp.waveLength << "\n";
+    // std::cout << "\twave sweep direction : " << tmp.waveSweepDirection << "\n";
+    // std::cout << "\twave sweep pace : " << tmp.waveSweepPace << "\n";
+    // std::cout << "\twave sweep slope : " << tmp.waveSweepSlope << "\n";
 }
 
 
@@ -91,12 +111,7 @@ void SquareWave::channel_1_tick() {
     // if (trigger)
     //     return ;
 
-    
-    // length_timer = (mem[NR11] & 0b00111111);
-    // initialVolume = (mem[NR12] & 0b11110000) >> 4;
-    // envelopeDirection = BIT(mem[NR12], 3);
-    // volumeSweepPace = (mem[NR12] & 0b00000111);
-    lengthEnable = BIT(mem[NR14], 6);
+    // lengthEnable = BIT(mem[NR14], 6);
 
 
     switch (waveDuty)
@@ -117,8 +132,6 @@ void SquareWave::channel_1_tick() {
     default:
         throw "Wrong waveDuty specified for SquareWave";
     }
-
-    // TODO implement sweep/envelope
 }
 
 void SquareWave::changeWavelength(float val) {
