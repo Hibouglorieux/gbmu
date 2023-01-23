@@ -377,4 +377,13 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 			Gameboy::saveRam();
 		}
 	}
+	if (ev->type == SDL_DROPFILE)
+	{      // In case if dropped file
+		printf("Dropped event occur : ev.drop.file = {%s}\n", ev->drop.file);
+		Gameboy::clear();
+		Gameboy::path = ev->drop.file;
+		Gameboy::bIsPathValid = true;
+		// SDL_free(dropped_filedir);    // Free dropped_filedir memory TODO LMA leaks ???
+	}
+
 }
