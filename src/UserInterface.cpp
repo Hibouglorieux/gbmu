@@ -311,7 +311,9 @@ bool UserInterface::loop()
 				}
 			}
 			if (!Gameboy::bIsPathValid) {
-				ImGui::Begin(UserInterface::romFolderPath.c_str());
+	            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+	            ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
+                ImGui::Begin(UserInterface::romFolderPath.c_str());
 				Gameboy::bIsInit = false;
 				Gameboy::bIsPathValid = false;
 				UserInterface::fileExplorer();
@@ -378,6 +380,7 @@ void	UserInterface::fileExplorer()
 				 || !strcmp(&entry->d_name[strlen(entry->d_name) - 3], ".gb")
 				 || S_ISDIR(info.st_mode)))
 		{
+
 			if (ImGui::Button(entry->d_name)) {
 				if (S_ISDIR(info.st_mode))
 				{
