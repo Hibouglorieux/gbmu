@@ -44,6 +44,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	if (!file.is_open())
 	{
 		std::cerr << "file not found" << std::endl;
+		UserInterface::throwError("file not found", false);
 		return nullptr;
 	}
 
@@ -53,7 +54,9 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	if (fileLen < 32'768)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
-			throw("");
+			UserInterface::throwError("Error with rom at wrong format", false);
+			return nullptr;
+			// throw("");
 	}
 	file.seekg(0x143, std::ifstream::beg);
 	char CGBCode;
@@ -85,6 +88,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (!file.is_open())
 	{
 		std::cerr << "file not found" << std::endl;
+		UserInterface::throwError("file not found", false);
 		isValid = false;
 		return;
 	}
@@ -97,8 +101,10 @@ Mem::Mem(const std::string& pathToRom)
 	int romBanksNb = getRomBanksNb(romSizeCode);
 	if (fileLen != romBanksNb * 1024 * 16)
 	{
-		std::cerr << "Wrong size read in header: " << romBanksNb * 1024 * 16;
-		throw("");
+    		file.close();
+		UserInterface::throwError("Wrong size read in header", false);
+		isValid = false;
+		return ;
 	}
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
@@ -463,7 +469,7 @@ int		Mem::getRomBanksNb(char romSizeCode)
 			return value;
 		default:
 			std::cerr << "wrong romSizeCodeReceived" << std::endl;
-			throw("");
+			return 0xFF;
 	}
 }
 

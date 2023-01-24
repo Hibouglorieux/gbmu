@@ -16,8 +16,8 @@ void 		*Debugger::VramPixels = nullptr;
 int 		Debugger::VramPitch = 0;
 
 
-//DebuggerState Debugger::state = DebuggerState::RUNNING;
-DebuggerState Debugger::state = DebuggerState::PAUSED;
+DebuggerState Debugger::state = DebuggerState::RUNNING;
+// DebuggerState Debugger::state = DebuggerState::PAUSED;
 int Debugger::fps = 60;
 unsigned int Debugger::stopAtFrame = 0;
 int 		Debugger::mapAddr = 0x9c00;
@@ -37,7 +37,8 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			32 * BG_SCREEN_SCALE * 9,
 			32 * BG_SCREEN_SCALE * 9);
 	if (!BGTexture) {
-		std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+		// std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
+        	UserInterface::throwError( "Erreur SDL_CreateTexture BG", true);
 		return false;
 	}
 
@@ -47,7 +48,8 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			32 * BG_SCREEN_SCALE * 9,
 			2 * BG_SCREEN_SCALE * 9);
 	if (!SpriteTexture) {
-		std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
+		//std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
+        	UserInterface::throwError( "Erreur SDL_CreateTexture Sprite", true);
 		return false;
 	}
 
@@ -57,7 +59,8 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			16 * 9 * VRAM_SCREEN_SCALE * (bIsCGB ? 2 : 1) + (bIsCGB ? VRAM_SCREEN_SCALE * 2 : 0),
 			24 * 9 * VRAM_SCREEN_SCALE);
 	if (!VRamTexture) {
-		std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
+		// std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
+        	UserInterface::throwError( "Erreur SDL_CreateTexture VRAM", true);
 		return false;
 	}
 	lockTexture();
@@ -67,13 +70,13 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 void	Debugger::lockTexture()
 {
     if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
-        throw "Could not lock Vram texture\n";
+        UserInterface::throwError( "Could not lock Vram texture", true);
     }
     if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
-        throw "Could not lock BG texture\n";
+        UserInterface::throwError( "Could not lock BG texture", true);
     }
     if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
-        throw "Could not lock BG texture\n";
+        UserInterface::throwError( "Could not lock BG texture", true);
     }
 }
 
