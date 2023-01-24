@@ -29,20 +29,25 @@ FILES = main.cpp \
 		Common.cpp
 
 
+APPIMAGE = gbmu-x86_64.AppImage
 
 IMGUI_PATH = src/imgui/
 LIBS = libimgui.a
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 
-CXXFLAGS = -std=gnu++14 -Wall -Wextra -O3
+CXXFLAGS = -std=gnu++14 -Wall -Wextra -g3
 #-g3 -Og
 
-all: $(NAME)
+all: $(APPIMAGE) $(NAME)
 
 $(NAME): $(OBJ)
 	make -C $(IMGUI_PATH)
-	$(CXX) $^ -o $@ `sdl2-config --cflags --libs` $(LIBS)
+	$(CXX) $^ -o $@ `sdl2-config --cflags --static-libs` $(LIBS)
 
+$(APPIMAGE): $(NAME)
+	./tools/linuxdeploy-x86_64.AppImage -e gbmu -i resources/gbmu.png --create-desktop-file --appdir AppDir
+	./tools/appimagetool-x86_64.AppImage AppDir
+	rm -rf AppDir
 
 
 obj/%.o:src/%.cpp src/*.hpp src/define.hpp src/*.tpp
@@ -56,6 +61,7 @@ clean :
 fclean : clean
 	@#make -C $(IMGUI_PATH) fclean
 	rm -rf $(NAME)
+	rm -rf $(APPIMAGE)
 
 re : fclean all
 

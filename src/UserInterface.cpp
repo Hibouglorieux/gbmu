@@ -47,7 +47,9 @@ void UserInterface::destroy()
 	// Debugger::destroyTexture();
 	SDL_DestroyRenderer(uiRenderer);
 	SDL_DestroyWindow(uiWindow);
+	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 	SDL_Quit();
+	SDL_TLSCleanup();
 }
 
 bool UserInterface::create()
@@ -317,8 +319,11 @@ bool UserInterface::loop()
 		}
 //		else
 //			printf("frametime - timeTakenForFrame = %d (timeTakenForFrame=%d) (frametime=%d)\n", (uint32_t)(frametime.count() - timeTakenForFrame.count()), (uint32_t)timeTakenForFrame.count(), (uint32_t)frametime.count());
+		
 		UserInterface::clear(clear_color);
 	}
+	Gameboy::clear();
+	destroy();
 	return (true);
 }
 
@@ -379,11 +384,11 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 	}
 	if (ev->type == SDL_DROPFILE)
 	{      // In case if dropped file
-		printf("Dropped event occur : ev.drop.file = {%s}\n", ev->drop.file);
+		printf("Drop event occur : ev.drop.file = {%s}\n", ev->drop.file);
 		Gameboy::clear();
 		Gameboy::path = ev->drop.file;
 		Gameboy::bIsPathValid = true;
-		// SDL_free(dropped_filedir);    // Free dropped_filedir memory TODO LMA leaks ???
+		SDL_free(ev->drop.file);
 	}
 
 }
