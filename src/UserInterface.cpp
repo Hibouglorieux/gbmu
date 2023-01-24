@@ -22,9 +22,12 @@ bool UserInterface::showSprite = false;
 bool UserInterface::showHexdump = false;
 bool UserInterface::showRegisters = false;
 bool UserInterface::showPalettes = false;
+bool UserInterface::bIsError = false;
+bool UserInterface::bIsFatalError = false;
 SDL_Window*	UserInterface::uiWindow = nullptr;
 SDL_Renderer*	UserInterface::uiRenderer = nullptr;
 std::string	UserInterface::romFolderPath = "";
+std::string	UserInterface::errMsg = "";
 
 void UserInterface::TexturetoImage(SDL_Texture * Texture)
 {
@@ -152,9 +155,11 @@ void UserInterface::showGameboyWindow()
 	if (ImGui::Button(showRegisters ? "Hide registers" : "Show registers")) {
 		showRegisters = !showRegisters;
 	}
-	ImGui::SameLine();
-	if (ImGui::Button(showPalettes ? "Hide palettes" : "Show palettes")) {
-		showPalettes = !showPalettes;
+	if (Gameboy::bIsCGB) {
+		ImGui::SameLine();
+		if (ImGui::Button(showPalettes ? "Hide palettes" : "Show palettes")) {
+			showPalettes = !showPalettes;
+		}
 	}
 	if (ImGui::Button("Reset")) {
 		Gameboy::clear();
@@ -262,9 +267,14 @@ void UserInterface::showSubWindows()
 	}
 	if (showPalettes)
 	{
-		ImGui::Begin("Palettes");
-		Debugger::drawPalettes();
-		ImGui::End();
+		if (Gameboy::bIsCGB) {
+			ImGui::Begin("Palettes");
+			Debugger::drawPalettes();
+			ImGui::End();
+		}
+		else {
+			showPalettes = false;
+		}
 	}
 
 	if (showRegisters)
@@ -290,21 +300,27 @@ bool UserInterface::loop()
 
 		UserInterface::newFrame();
 
-		if (!Gameboy::bIsInit) {
-			if (Gameboy::bIsPathValid) {
-				Gameboy::bIsInit = Gameboy::loadRom();
+		if (bIsError) {
+			errorWindow();
+		}
+		else
+		{
+			if (!Gameboy::bIsInit) {
+				if (Gameboy::bIsPathValid) {
+					Gameboy::bIsInit = Gameboy::loadRom();
+				}
 			}
-		}
-		if (!Gameboy::bIsPathValid) {
-			ImGui::Begin(UserInterface::romFolderPath.c_str());
-			Gameboy::bIsInit = false;
-			Gameboy::bIsPathValid = false;
-			UserInterface::fileExplorer();
-			ImGui::End();
-		}
-		if (Gameboy::bIsInit) {
-			UserInterface::showGameboyWindow();
-			UserInterface::showSubWindows();
+			if (!Gameboy::bIsPathValid) {
+				ImGui::Begin(UserInterface::romFolderPath.c_str());
+				Gameboy::bIsInit = false;
+				Gameboy::bIsPathValid = false;
+				UserInterface::fileExplorer();
+				ImGui::End();
+			}
+			if (Gameboy::bIsInit) {
+				UserInterface::showGameboyWindow();
+				UserInterface::showSubWindows();
+			}
 		}
 
 		Gameboy::pollEvent();
@@ -325,6 +341,25 @@ bool UserInterface::loop()
 	Gameboy::clear();
 	destroy();
 	return (true);
+}
+void	UserInterface::throwError(const char *msg, bool fatal)
+{
+	bIsError = true;
+	bIsFatalError = fatal;
+	errMsg = msg;
+}
+
+void	UserInterface::errorWindow()
+{
+	ImGui::Begin("ERROR");
+	ImGui::Text(errMsg.c_str());
+	if (ImGui::Button("OK")) {
+		if (bIsFatalError) {
+			Gameboy::quit = true;
+		}
+		UserInterface::bIsError = false;
+	}
+	ImGui::End();
 }
 
 void	UserInterface::fileExplorer()
@@ -350,7 +385,6 @@ void	UserInterface::fileExplorer()
 				}
 				else
 				{
-					// TODO check
 					Gameboy::path = path;
 					Gameboy::bIsPathValid = true;
 				}
@@ -383,8 +417,7 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 		}
 	}
 	if (ev->type == SDL_DROPFILE)
-	{      // In case if dropped file
-		printf("Drop event occur : ev.drop.file = {%s}\n", ev->drop.file);
+	{
 		Gameboy::clear();
 		Gameboy::path = ev->drop.file;
 		Gameboy::bIsPathValid = true;

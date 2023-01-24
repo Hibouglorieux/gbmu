@@ -45,6 +45,12 @@ public:
 	static void		clear(ImVec4 vec4);
 	static void		handleEvent(SDL_Event *ev);
 
+	static void		errorWindow();
+	static void		throwError(const char *, bool);
+	static bool		bIsError;
+	static bool		bIsFatalError;
+	static std::string	errMsg;
+
 private:
 	static std::string	romFolderPath;
 	static bool		showVram;

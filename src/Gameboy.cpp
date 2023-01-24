@@ -73,8 +73,11 @@ bool Gameboy::loadRom()
 {
 	init();
 	gbMem = Mem::loadFromFile(path);
-	if (!gbMem)
+	if (!gbMem || !gbMem->isValid)
+	{
+		bIsPathValid = false;
 		return false;
+	}
 	bIsCGB = gbMem->isCGB();
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
 	Cpu::loadBootRom();
@@ -227,14 +230,18 @@ void Gameboy::loadSaveState(std::string path) {
 	s_state tmp;
 	std::cout << "Loading game state\n";
 	
+	// TODO LMA PROTECT
 	std::vector<unsigned char> content = Mem::readFile(path);
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
 	size_t romHash = 0;
 	for (size_t i = 0; i < mem.romBanks.size(); i++)
 		romHash += ft_hash(mem.romBanks.data()[i], ROM_BANK_SIZE);
-	if (romHash != tmp.romHash)
-		throw "Could not load save state from a different game\n";
+	if (romHash != tmp.romHash) {
+		bIsInit = false;
+		UserInterface::throwError("Could not load save state from a different game", false);
+		return ;
+	}
 
 	// Load CPU state
 	Cpu::IME = tmp.cpu.IME;
@@ -265,41 +272,43 @@ void Gameboy::loadSaveState(std::string path) {
 	// Load MBC state
 	switch (Gameboy::getMem().mbc->getType())
 	{
-	case 0:
-		break;
-	case 1: {
-		MBC1 *ptr = dynamic_cast<MBC1*>(Gameboy::getMem().mbc);
-		ptr->setAdvancedBankingMode(tmp.mbc.bank.mbc1.bAdvancedBankingMode);
-		ptr->setEnableRam(tmp.mbc.bank.mbc1.bEnableRam);
-		ptr->setHighBitsRomBankNumberOrRam(tmp.mbc.bank.mbc1.highBitsRomBankNumberOrRam);
-		ptr->setLowBitsRomBankNumber(tmp.mbc.bank.mbc1.lowBitsRomBankNumber);
-	} break;
-	case 2: {
-		MBC2 *ptr = dynamic_cast<MBC2*>(Gameboy::getMem().mbc);
-		ptr->setEnableRam(tmp.mbc.bank.mbc2.bEnableRam);
-		ptr->setRomBankNb(tmp.mbc.bank.mbc2.romBankNb);
-	} break;
-	case 3: {
-		MBC3 *ptr = dynamic_cast<MBC3*>(Gameboy::getMem().mbc);
-		ptr->setEnableRam(tmp.mbc.bank.mbc3.bEnableRam);
-		ptr->setStart(tmp.mbc.bank.mbc3.start);
-		ptr->setRTC(tmp.mbc.bank.mbc3.rtc_register);
-		ptr->setRTCBind(tmp.mbc.bank.mbc3.rtcBindNb);
-		ptr->setRomBankNb(tmp.mbc.bank.mbc3.romBankNb);
-		ptr->setRamBankNb(tmp.mbc.bank.mbc3.ramBankNb);
-		ptr->setLastVal(tmp.mbc.bank.mbc3.lastVal);
-		ptr->setLatch(tmp.mbc.bank.mbc3.latched);
-	} break;
-	case 5: {
-		MBC5 *ptr = dynamic_cast<MBC5*>(Gameboy::getMem().mbc);
-		ptr->setEnableRam(tmp.mbc.bank.mbc5.bEnableRam);
-		ptr->setLeastSignificantRomByte(tmp.mbc.bank.mbc5.leastSignificantRomByte);
-		ptr->setBit9(tmp.mbc.bank.mbc5.bit9);		
-		ptr->setRamBankNb(tmp.mbc.bank.mbc5.ramBankNb);
-	} break;
-	
-	default:
-		throw "Incorrect MBC type for save state loading";
+		case 0:
+			break;
+		case 1: {
+			MBC1 *ptr = dynamic_cast<MBC1*>(Gameboy::getMem().mbc);
+			ptr->setAdvancedBankingMode(tmp.mbc.bank.mbc1.bAdvancedBankingMode);
+			ptr->setEnableRam(tmp.mbc.bank.mbc1.bEnableRam);
+			ptr->setHighBitsRomBankNumberOrRam(tmp.mbc.bank.mbc1.highBitsRomBankNumberOrRam);
+			ptr->setLowBitsRomBankNumber(tmp.mbc.bank.mbc1.lowBitsRomBankNumber);
+		} break;
+		case 2: {
+			MBC2 *ptr = dynamic_cast<MBC2*>(Gameboy::getMem().mbc);
+			ptr->setEnableRam(tmp.mbc.bank.mbc2.bEnableRam);
+			ptr->setRomBankNb(tmp.mbc.bank.mbc2.romBankNb);
+		} break;
+		case 3: {
+			MBC3 *ptr = dynamic_cast<MBC3*>(Gameboy::getMem().mbc);
+			ptr->setEnableRam(tmp.mbc.bank.mbc3.bEnableRam);
+			ptr->setStart(tmp.mbc.bank.mbc3.start);
+			ptr->setRTC(tmp.mbc.bank.mbc3.rtc_register);
+			ptr->setRTCBind(tmp.mbc.bank.mbc3.rtcBindNb);
+			ptr->setRomBankNb(tmp.mbc.bank.mbc3.romBankNb);
+			ptr->setRamBankNb(tmp.mbc.bank.mbc3.ramBankNb);
+			ptr->setLastVal(tmp.mbc.bank.mbc3.lastVal);
+			ptr->setLatch(tmp.mbc.bank.mbc3.latched);
+		} break;
+		case 5: {
+			MBC5 *ptr = dynamic_cast<MBC5*>(Gameboy::getMem().mbc);
+			ptr->setEnableRam(tmp.mbc.bank.mbc5.bEnableRam);
+			ptr->setLeastSignificantRomByte(tmp.mbc.bank.mbc5.leastSignificantRomByte);
+			ptr->setBit9(tmp.mbc.bank.mbc5.bit9);		
+			ptr->setRamBankNb(tmp.mbc.bank.mbc5.ramBankNb);
+		} break;
+		
+		default:
+			bIsInit = false;
+			UserInterface::throwError("Incorrect MBC type for save state loading", false);
+			return ;
 	}
 
 	size_t offset = sizeof(s_state);
@@ -307,7 +316,11 @@ void Gameboy::loadSaveState(std::string path) {
 	if (mem.mbc->hasTimer) {
 		// Fetching timer save
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading save state)";
+		if (!ptr) {
+			bIsInit = false;
+			UserInterface::throwError("Could not dynamically cast MBC3 pointer (loading save state)", false);
+			return ;
+		}
 		memcpy(&ptr->start, content.data() + offset, sizeof(time_t));
 	}
 
@@ -449,8 +462,11 @@ void Gameboy::saveState() {
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr)
-			throw "Could not dynamically cast MBC3 (saveRam function)";
+		if (!ptr) {
+			bIsInit = false;
+			UserInterface::throwError("Could not dynamically cast MBC3 pointer (saveRam)", false);
+			return ;
+		}
 		outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
@@ -479,8 +495,11 @@ void Gameboy::saveRam() {
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr)
-			throw "Could not dynamically cast MBC3 (saveRam function)";
+		if (!ptr) {
+			bIsInit = false;
+			UserInterface::throwError("Could not dynamically cast MBC3 pointer (saveRam)", false);
+			return ;
+		}
 		outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
@@ -502,7 +521,7 @@ void Gameboy::pollEvent()
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		UserInterface::handleEvent(&event);
-		if (Gameboy::bIsInit) {
+		if (!UserInterface::bIsError && Gameboy::bIsInit) {
 			Joypad::handleEvent(&event);
 		}
 		if (event.type == SDL_QUIT) {
