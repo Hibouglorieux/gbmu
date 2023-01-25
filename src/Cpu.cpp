@@ -560,6 +560,7 @@ StackData	Cpu::captureCurrentState(std::string customData)
 	stackData.if_reg = M_IF;
 	stackData.ly_reg = M_LY;
 	stackData.lcdc = M_LCDC;
+	stackData.lcdc_stat = M_LCDC_STATUS;
 	stackData.ime = IME;
 	if (mem[PC] == 0xCB)
 	{

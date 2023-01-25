@@ -30,6 +30,7 @@ struct StackData {
 	unsigned char ie_reg;
 	unsigned char ly_reg;
 	unsigned char lcdc;
+	unsigned char lcdc_stat;
 	bool ime;
 	std::string		customData;
 };

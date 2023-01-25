@@ -8,7 +8,6 @@ Clock		Gameboy::gbClock = Clock();
 int		Gameboy::currentState = 0;
 uint8_t		Gameboy::internalLY = 0;
 int		Gameboy::clockLine = 0;
-bool		Gameboy::bLCDWasOff = false;
 bool		Gameboy::bShouldRenderFrame = true;
 bool		Gameboy::quit = false;
 bool		Gameboy::bIsCGB = false;
@@ -37,7 +36,6 @@ void	Gameboy::init()
 	currentState = 0;
 	internalLY = 0;
 	clockLine = 0;
-	bLCDWasOff = false;
 	bShouldRenderFrame = true;
 	quit = false;
 	bIsCGB = false;
@@ -60,6 +58,7 @@ void	Gameboy::updateLY(int iter)
 	}
 	else if (lcdcWasOff) {
 		// If lcdc was off a return back to on we must update internalLY to 0
+		bShouldRenderFrame = false;
 		lcdcWasOff = false;
 		internalLY = 0;
 	}
@@ -108,31 +107,21 @@ void Gameboy::clear()
 	}
 }
 
-void Gameboy::changeLCD(bool bActivateLCD)
-{
-	if (!bActivateLCD)
-	{
-		bLCDWasOff = false;
-		bShouldRenderFrame = false;
-	}
-}
-
 bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 {
 	if (!bIsInit) {
 		return (false);
 	}
-	bShouldRenderFrame = !bLCDWasOff;
-	bLCDWasOff = !BIT(M_LCDC, 7);
 
 	if (bLogFrameNb)
 		std::cout << "frameNb: " << std::endl;
 	frameNb++;
+
 	// render a white screen if LCD is off
 	// normal render wont be called since we wont enter pxl transfer state
-	if (!bShouldRenderFrame)
-		for (int i = 0; i < 144; i++)
-			Screen::updatePpuLine(Ppu::getDefaultWhiteLine(), i);
+	//if (!bShouldRenderFrame)
+	//	for (int i = 0; i < 144; i++)
+	//		Screen::updatePpuLine(Ppu::getDefaultWhiteLine(), i);
 
 	std::function<bool()> loopFunc = [&]()
 	{
@@ -163,6 +152,7 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	}
 	if (internalLY >= 154) {
 		Ppu::resetWindowCounter();
+		bShouldRenderFrame = true;
 		internalLY = 0;
 	}
 	// internalLY %= 154;
@@ -217,7 +207,8 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 			//std::cout << "request interrupt OAM" << std::endl;
 			Cpu::requestInterrupt(IT_LCD_STAT);
 		}
-		unsigned char lcdcs = M_LCDC_STATUS & ~0x07;
+		// unsigned char lcdcs = M_LCDC_STATUS & ~0x07;
+		unsigned char lcdcs = M_LCDC_STATUS & ~0x03;
 		lcdcs |= newState;
 		mem.supervisorWrite(LCDC_STATUS, lcdcs);
 	}

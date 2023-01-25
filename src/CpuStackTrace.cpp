@@ -70,6 +70,7 @@ void StackData::print()
 	std::cout << "IE: 0x" << std::setw(2) << (int)ie_reg << "\tIF: 0x" << std::setw(2) << (int)if_reg << std::endl;
 	std::cout << "LCDC: 0x" << std::setw(2) << (int)lcdc << "\tLY: 0x" << std::setw(2) << (int)ly_reg  << std::endl;
 	std::cout << "LY: 0x" << std::setw(2) << (int)ly_reg << "\tIME: " << ime << std::endl;
+	std::cout << "STAT: 0x" << std::setw(2) << (int)lcdc_stat << std::endl;
 	if (!customData.empty())
 		std::cout << customData << std::endl;
 }
