@@ -229,13 +229,20 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 	currentState = newState;
 }
 
-void Gameboy::loadSaveState(std::string path) {
+void Gameboy::loadSaveState() {
 	s_state tmp;
 	std::cout << "Loading game state\n";
 	std::cout << "Thread ID : " << pthread_self() << "\n";
 	
-	// TODO LMA PROTECT
-	std::vector<unsigned char> content = Mem::readFile(path);
+	std::string savePath = Gameboy::path + ".state";
+    	std::ifstream infile(savePath, std::ios::binary);
+	if (!infile.is_open()) {
+		UserInterface::throwError("No save state found", false);
+		return ;
+	}
+    	std::vector<unsigned char> content((std::istreambuf_iterator<char>(infile)),
+    	                                       std::istreambuf_iterator<char>());
+    	infile.close();
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
 	size_t romHash = 0;

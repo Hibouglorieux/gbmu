@@ -75,7 +75,7 @@ public:
 	// Save state
 	static void		saveState();
 	static void		saveRam();
-	static void		loadSaveState(std::string path);
+	static void		loadSaveState();
 
 	// Status of execution
 	static void		updateLY(int iter);

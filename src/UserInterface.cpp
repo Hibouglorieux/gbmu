@@ -198,6 +198,10 @@ void UserInterface::showGameboyWindow()
 	if (ImGui::Button("Save State")) {
 		Gameboy::saveState();
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load State")) {
+		Gameboy::loadSaveState();
+	}
 	if (Debugger::state != DebuggerState::PAUSED) {
 		Gameboy::Step step = Gameboy::Step::full;
 		if (Debugger::state == DebuggerState::ONCE)
@@ -311,9 +315,9 @@ bool UserInterface::loop()
 				}
 			}
 			if (!Gameboy::bIsPathValid) {
-	            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-	            ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
-                ImGui::Begin(UserInterface::romFolderPath.c_str());
+				ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
+				ImGui::Begin(UserInterface::romFolderPath.c_str());
 				Gameboy::bIsInit = false;
 				Gameboy::bIsPathValid = false;
 				UserInterface::fileExplorer();
