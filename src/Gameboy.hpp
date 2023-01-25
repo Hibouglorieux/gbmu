@@ -64,6 +64,8 @@ public:
 	static bool		bIsInit;
 	static bool		bIsPathValid;
 
+	static bool		lcdcWasOff;
+
 	static bool		launchUserInterface();
 	static Mem&		getMem();
 	static Clock&		getClock();
