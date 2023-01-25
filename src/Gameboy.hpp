@@ -102,7 +102,6 @@ public:
 
 private:
 	static int		currentState;
-	static bool		bLCDWasOff;
 	static bool		bShouldRenderFrame;
 	static Mem*		gbMem;
 

@@ -360,8 +360,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			// DMA transfert to OAM : This take 160 cycle and CPU can access only HRAM while TODO
 		}
 	}
-	if (addr == 0xFF40)
-		Gameboy::changeLCD(BIT(newValue, 7));// special case for LCD disable/enable
 	try // try block because this is only for CGB registers
 	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
