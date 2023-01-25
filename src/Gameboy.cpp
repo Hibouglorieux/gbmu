@@ -15,6 +15,7 @@ bool		Gameboy::quit = false;
 bool		Gameboy::bIsCGB = false;
 bool		Gameboy::bIsInit = false;
 bool		Gameboy::bIsPathValid = false;
+bool		Gameboy::lcdcWasOff = false;
 std::string	Gameboy::path = "";
 unsigned int	Gameboy::frameNb = 0;
 float		Gameboy::clockRest = 0;
@@ -46,7 +47,6 @@ void	Gameboy::init()
 	clockRest = 0;
 	bLogFrameNb = false;
 	clockLine = 0;
-	internalLY = 0;
 	Hdma::reset();
 	Ppu::reset();
 }
@@ -57,7 +57,13 @@ void	Gameboy::updateLY(int iter)
 		// special case LCD disabled : don't update LY
 		// And set it to 0
 		mem.supervisorWrite(LY, 0);
+		lcdcWasOff = true;
 		return;
+	}
+	else if (lcdcWasOff) {
+		// If lcdc was off a return back to on we must update internalLY to 0
+		lcdcWasOff = false;
+		internalLY = 0;
 	}
 	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
 	if (M_LY == M_LYC) {
@@ -94,7 +100,6 @@ bool Gameboy::launchUserInterface()
 	return UserInterface::loop();
 }
 
-// TODO LMA we have leaks with SDL
 void Gameboy::clear()
 {
 	if (bIsInit) {
@@ -136,26 +141,17 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		if (Gameboy::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
 		{
 			updateLY(1);
-			if (M_LY == 0)
-			{
-				if (BIT(M_LCDC, 7))
-					internalLY = 0;
-				else
-					internalLY++;
-				Ppu::resetWindowCounter();
-			}
-			else
-				internalLY++;
+			internalLY++;
 		}
 		if (step == Step::oneLine || step == Step::oneInstruction)
 			return false;
 		return true;
 	};
 
-	//TODO this needs rework as it might not take a frame if LCD is disabled
-	//but at least it returns when whole 144 lines have been rendered
+	//it returns when whole 144 lines have been rendered
 	//implementation: if lcdc is off then count clocks in order to give the screen
 	//(even if it's white), otherwise always return when ly > 144 because of Screen Tearing
+	//when lcdc was disabled and came back on internalLY is update to 0 thanks to lcdcWasOff
 	while (internalLY < 144)
 	{
 		if (!loopFunc())
@@ -167,9 +163,11 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		if (!loopFunc())
 			break;
 	}
-	if (internalLY >= 154)
+	if (internalLY >= 154) {
 		Ppu::resetWindowCounter();
-	internalLY %= 154;
+		internalLY = 0;
+	}
+	// internalLY %= 154;
 	return true;
 }
 
