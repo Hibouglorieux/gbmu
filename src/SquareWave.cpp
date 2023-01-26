@@ -20,8 +20,8 @@ void SquareWave::channel_2_tick() {
     //     return;
 
     lengthEnable = BIT(mem[NR24], 6);
-    if (lengthEnable)
-        std::cout << "Channel 2 tick : " << lengthEnable << "\n";
+    // if (lengthEnable)
+    //     std::cout << "Channel 2 tick : " << lengthEnable << "\n";
     // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
 
     switch (waveDuty)
@@ -65,7 +65,7 @@ void SquareWave::triggerChannel() {
 
     entry tmp;
     if (channel == 2) {
-        std::cout << "Channel " << channel << " triggered : " << std::hex << (int)mem[NR24] << "\n";
+        // std::cout << "Channel " << channel << " triggered : " << std::hex << (int)mem[NR24] << "\n";
 
         tmp.length_timer = (mem[NR21] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR22] & 0b00000111);
@@ -74,7 +74,7 @@ void SquareWave::triggerChannel() {
         tmp.waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
         tmp.waveDuty = (mem[NR21] & 0b11000000) >> 6;
         
-        std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)mem[NR24] << "\n";
+        // std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)mem[NR24] << "\n";
     }
     else {
         // std::cout << "Channel " << channel << " triggered : \n";

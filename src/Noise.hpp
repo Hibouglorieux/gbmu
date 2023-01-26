@@ -33,7 +33,7 @@ public:
     SDL_AudioSpec obtainedSpec;
     SDL_AudioSpec desiredSpec;
 
-
+    int volumeReduction;
     bool to_trigger;
     int iterations;
 

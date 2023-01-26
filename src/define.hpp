@@ -187,4 +187,4 @@
 
 #define BUFFER_SIZE 1024
 #define SAMPLING_RATE 44100
-#define MAX_VOLUME 0x0fff
+#define MAX_VOLUME 0x7ff

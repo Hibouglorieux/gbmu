@@ -24,6 +24,8 @@ void Noise::triggerChannel() {
     initial_volume = (mem[NR42] & 0b11110000) >> 4;
     envelopeDirection = BIT(mem[NR42], 3);
     sweepPace = mem[NR42] & 0b111;
+    volumeReduction = 0;
+
 
     // std::cout << "Channel 4 triggered\n";
     // std::cout << "\tlength enable : " << length_enable << "\n";

@@ -29,7 +29,7 @@ public:
     static void triggerChannel3();
     static void triggerChannel4();
 
-    static void addDecibel(unsigned short &ref, int val);
+    static bool addDecibel(unsigned short &ref, int val);
 
     static void init();
 
