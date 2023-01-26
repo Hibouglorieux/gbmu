@@ -54,6 +54,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
 			UserInterface::throwError("Error with rom at wrong format", false);
+			file.close();
 			return nullptr;
 			// throw("");
 	}
