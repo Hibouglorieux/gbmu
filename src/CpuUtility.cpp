@@ -234,7 +234,6 @@ unsigned short Cpu::readShort(int incrementPc)
 
 void Cpu::logErr(std::string msg)
 {
+	// Throw a fatal error window
 	UserInterface::throwError(msg.c_str(), true);
-	// std::cerr << msg << std::endl;
-	// exit(-1);
 }

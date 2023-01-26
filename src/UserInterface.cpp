@@ -372,35 +372,52 @@ void	UserInterface::errorWindow()
 
 void	UserInterface::fileExplorer()
 {
-	DIR *dir;
-	struct dirent *entry;
-	struct stat info;
-
-	dir = opendir(UserInterface::romFolderPath.c_str());
-	while ((entry = readdir(dir)) != NULL)
-	{
-		std::string path = UserInterface::romFolderPath + "/" + std::string(entry->d_name);
-		stat(path.c_str(),&info);
-		if ((entry->d_name[0] != '.' || !strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) &&
-				(!strcmp(&entry->d_name[strlen(entry->d_name) - 4], ".gbc")
-				 || !strcmp(&entry->d_name[strlen(entry->d_name) - 3], ".gb")
-				 || S_ISDIR(info.st_mode)))
-		{
-
-			if (ImGui::Button(entry->d_name)) {
-				if (S_ISDIR(info.st_mode))
-				{
-					UserInterface::romFolderPath = path;
-				}
-				else
-				{
-					Gameboy::path = path;
-					Gameboy::bIsPathValid = true;
-				}
-			}
+	// Yes, it's big
+	char filename[8192] = {0};
+	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\"", "r");
+	fgets(filename, 8192, f);
+	for (int i = 0 ; i < 8192 ; i++) {
+		if (filename[i] == '\n') {
+			filename[i] = 0;
+			break ;
 		}
 	}
-	closedir(dir);
+	filename[8191] = 0; // Ensure it last 0
+	Gameboy::path = filename;
+	Gameboy::bIsPathValid = true;
+
+/*
+** TODO old file explorer , to remove ?
+**	DIR *dir;
+**	struct dirent *entry;
+**	struct stat info;
+**
+**	dir = opendir(UserInterface::romFolderPath.c_str());
+**	while ((entry = readdir(dir)) != NULL)
+**	{
+**		std::string path = UserInterface::romFolderPath + "/" + std::string(entry->d_name);
+**		stat(path.c_str(),&info);
+**		if ((entry->d_name[0] != '.' || !strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) &&
+**				(!strcmp(&entry->d_name[strlen(entry->d_name) - 4], ".gbc")
+**				 || !strcmp(&entry->d_name[strlen(entry->d_name) - 3], ".gb")
+**				 || S_ISDIR(info.st_mode)))
+**		{
+**
+**			if (ImGui::Button(entry->d_name)) {
+**				if (S_ISDIR(info.st_mode))
+**				{
+**					UserInterface::romFolderPath = path;
+**				}
+**				else
+**				{
+**					Gameboy::path = path;
+**					Gameboy::bIsPathValid = true;
+**				}
+**			}
+**		}
+**	}
+**	closedir(dir);
+*/
 
 }
 
