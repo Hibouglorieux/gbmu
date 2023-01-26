@@ -103,8 +103,10 @@ unsigned char&	Cpu::getTargetRegister(unsigned short opcode)
 				logErr("unkown opcode sent to getTargetRegister");
 		}
 	}
-	logErr(string_format("Opcode is too little, should at least 0x40 and is 0x%X", opcode));
-	exit(-1);
+	else {
+		logErr(string_format("Opcode is too little, should at least 0x40 and is 0x%X", opcode));
+	}
+	return (A); // Error state, don't care about what is returned
 }
 
 unsigned char	Cpu::getSourceRegister(unsigned short opcode)
@@ -128,7 +130,7 @@ unsigned char	Cpu::getSourceRegister(unsigned short opcode)
 		default:
 			logErr("called getSourceRegister with wrong opcode");
 	}
-	exit(-1);
+	return (A);  // Error state, don't care about what is returned
 }
 
 unsigned char&	Cpu::getSourceRegisterRef(unsigned short opcode)
@@ -152,7 +154,7 @@ unsigned char&	Cpu::getSourceRegisterRef(unsigned short opcode)
 		default:
 			logErr("called getSourceRegisterRef with wrong opcode");
 	}
-	exit(-1);
+	return (A);  // Error state, don't care about what is returned
 }
 
 void	Cpu::setZeroFlag(bool value)
@@ -232,6 +234,7 @@ unsigned short Cpu::readShort(int incrementPc)
 
 void Cpu::logErr(std::string msg)
 {
-	std::cerr << msg << std::endl;
-	exit(-1);
+	UserInterface::throwError(msg.c_str(), true);
+	// std::cerr << msg << std::endl;
+	// exit(-1);
 }

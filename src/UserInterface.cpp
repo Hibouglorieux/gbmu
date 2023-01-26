@@ -215,7 +215,7 @@ void UserInterface::showGameboyWindow()
 			Debugger::state = DebuggerState::PAUSED;
 		}
 	}
-	if (Debugger::stopAtFrame == Gameboy::frameNb)
+	if (!UserInterface::bIsError && Debugger::stopAtFrame == Gameboy::frameNb)
 		Debugger::state = DebuggerState::PAUSED;
 	UserInterface::TexturetoImage(Screen::ppuTexture);
 	ImGui::End();
@@ -323,9 +323,11 @@ bool UserInterface::loop()
 				UserInterface::fileExplorer();
 				ImGui::End();
 			}
-			if (Gameboy::bIsInit) {
+			if (Gameboy::bIsInit && !UserInterface::bIsError) {
 				UserInterface::showGameboyWindow();
-				UserInterface::showSubWindows();
+				if (!UserInterface::bIsError) {
+					UserInterface::showSubWindows();
+				}
 			}
 		}
 
@@ -357,7 +359,7 @@ void	UserInterface::throwError(const char *msg, bool fatal)
 
 void	UserInterface::errorWindow()
 {
-	ImGui::Begin("ERROR");
+	ImGui::Begin(bIsFatalError ? "FATAL ERROR" : "ERROR");
 	ImGui::Text(errMsg.c_str());
 	if (ImGui::Button("OK")) {
 		if (bIsFatalError) {

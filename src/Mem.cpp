@@ -270,6 +270,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
+	if (UserInterface::bIsError) {
+		return (value); // TODO what we should return here ?
+	}
 	if (addr == 0xFF1A) {
 		mem.supervisorWrite(0xFF26, mem[0xff26] & ~(1 << 2));
 	}

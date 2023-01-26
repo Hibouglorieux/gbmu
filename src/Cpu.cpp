@@ -531,7 +531,9 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 				}
 				// NOTE need to exit here because of targetBit/Register references
 				// Cpu::debug(opcode);
-				clock = instruction();
+				if (!UserInterface::bIsError) {
+					clock = instruction();
+				}
 				return std::pair<unsigned char, int>((int)opcode, clock);
 			}
 			break;
@@ -543,7 +545,9 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 			}
 	}
 	// Cpu::debug(opcode);
-	clock = instruction();
+	if (!UserInterface::bIsError) {
+		clock = instruction();
+	}
 	return std::pair<unsigned char, int>((int)opcode, clock);
 }
 
@@ -637,7 +641,7 @@ unsigned char	Cpu::doMinimumStep()
 {
 	// the cpu is halted during hdma
 	int cycleForHdma = Hdma::update();
-	if (cycleForHdma)
+	if (!UserInterface::bIsError && cycleForHdma)
 	{
 		if (cycleForHdma == -1) // special case startup
 		{
@@ -648,18 +652,21 @@ unsigned char	Cpu::doMinimumStep()
 		}
 		return 1;
 	}
-	if (isCpuHalted()) {
+	if (!UserInterface::bIsError && isCpuHalted()) {
 		stackTrace.add(captureCurrentState("IM HALTED"));
 	    	/* Increment one cycle */
 		return 1;
 	}
-	else if (handleInterrupt()) {
+	else if (!UserInterface::bIsError && handleInterrupt()) {
 		// interrupts takes 5 cycles;
 		return 5;
 	}
-	else {
+	else if (!UserInterface::bIsError) {
 		stackTrace.add(captureCurrentState());
 		return executeInstruction().second;
+	}
+	else {
+		return (0); // Errot state
 	}
 }
 
