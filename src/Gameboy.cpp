@@ -109,7 +109,7 @@ void Gameboy::clear()
 
 bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 {
-	if (!bIsInit) {
+	if (!bIsInit || UserInterface::bIsError) {
 		return (false);
 	}
 
@@ -139,18 +139,18 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	//implementation: if lcdc is off then count clocks in order to give the screen
 	//(even if it's white), otherwise always return when ly > 144 because of Screen Tearing
 	//when lcdc was disabled and came back on internalLY is update to 0 thanks to lcdcWasOff
-	while (internalLY < 144)
+	while (!UserInterface::bIsError && internalLY < 144)
 	{
 		if (!loopFunc())
 			break;
 	}
-	while (internalLY >= 144 && internalLY < 154)
+	while (!UserInterface::bIsError && internalLY >= 144 && internalLY < 154)
 	{
 		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
 		if (!loopFunc())
 			break;
 	}
-	if (internalLY >= 154) {
+	if (!UserInterface::bIsError && internalLY >= 154) {
 		Ppu::resetWindowCounter();
 		bShouldRenderFrame = true;
 		internalLY = 0;
@@ -531,7 +531,7 @@ int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 	static const int nbClockLine = 114;
 	std::pair<unsigned char, int>r;
 
-	while (Gameboy::clockLine < nbClockLine)
+	while (!UserInterface::bIsError && Gameboy::clockLine < nbClockLine)
 	{
 		if (updateState && Gameboy::clockLine < 20)
 		{
