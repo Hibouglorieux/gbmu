@@ -20,6 +20,8 @@ void SquareWave::channel_2_tick() {
     //     return;
 
     lengthEnable = BIT(mem[NR24], 6);
+    if (lengthEnable)
+        std::cout << "Channel 2 tick : " << lengthEnable << "\n";
     // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
 
     switch (waveDuty)
@@ -40,8 +42,6 @@ void SquareWave::channel_2_tick() {
     default:
         throw "Wrong waveDuty specified for SquareWave";
     }
-
-    // TODO implement sweep/envelope
 }
 
 void SquareWave::popEntry(entry val) {
@@ -51,7 +51,7 @@ void SquareWave::popEntry(entry val) {
     envelopeDirection = val.envelopeDirection;
     waveLength = val.waveLength;
     waveDuty = val.waveDuty;
-    lengthEnable = val.length_enable;
+    // lengthEnable = BIT(mem[NR24], 6);
     
     if (channel == 1) {
         waveSweepDirection = val.waveSweepDirection;
@@ -62,10 +62,10 @@ void SquareWave::popEntry(entry val) {
 
 void SquareWave::triggerChannel() {
     // if (trigger) return;
-    std::cout << "Channel " << channel << " triggered : \n";
 
     entry tmp;
     if (channel == 2) {
+        std::cout << "Channel " << channel << " triggered : " << std::hex << (int)mem[NR24] << "\n";
 
         tmp.length_timer = (mem[NR21] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR22] & 0b00000111);
@@ -73,24 +73,23 @@ void SquareWave::triggerChannel() {
         tmp.envelopeDirection = BIT(mem[NR22], 3);
         tmp.waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
         tmp.waveDuty = (mem[NR21] & 0b11000000) >> 6;
-        tmp.length_enable = BIT(mem[NR24], 6);
         
         std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)mem[NR24] << "\n";
     }
     else {
+        // std::cout << "Channel " << channel << " triggered : \n";
         tmp.length_timer = (mem[NR11] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR12] & 0b00000111);
         tmp.initialVolume = (mem[NR12] & 0b11110000) >> 4;
         tmp.envelopeDirection = BIT(mem[NR12], 3);
         tmp.waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
         tmp.waveDuty = (mem[NR11] & 0b11000000) >> 6;
-        tmp.length_enable = BIT(mem[NR14], 6);
 
         tmp.waveSweepDirection = BIT(mem[NR10], 3);
         tmp.waveSweepPace = (mem[NR10] & 0b01110000) >> 4;
         tmp.waveSweepSlope = (mem[NR10] & 0b00000111);
         
-        std::cout << std::hex << (int)mem[NR10] << " - " << (int)mem[NR11] << " - " << (int)mem[NR12] << " - " << (int)mem[NR13] << " - " << (int)mem[NR14] << "\n";
+        // std::cout << std::hex << (int)mem[NR10] << " - " << (int)mem[NR11] << " - " << (int)mem[NR12] << " - " << (int)mem[NR13] << " - " << (int)mem[NR14] << "\n";
 
     }
 
@@ -111,7 +110,7 @@ void SquareWave::channel_1_tick() {
     // if (trigger)
     //     return ;
 
-    // lengthEnable = BIT(mem[NR14], 6);
+    lengthEnable = BIT(mem[NR14], 6);
 
 
     switch (waveDuty)
@@ -138,9 +137,11 @@ void SquareWave::changeWavelength(float val) {
     waveLength = val;
     if (channel == 1) {
         mem[NR13] = ((int)val & 0xFF);
+        mem[NR14] &= ~0b111;
         mem[NR14] |= ((int)val >> 8) & 0b111;
     } else {
         mem[NR23] = ((int)val & 0xFF);
+        mem[NR24] &= ~0b111;
         mem[NR24] |= ((int)val >> 8) & 0b111;
     }
 }

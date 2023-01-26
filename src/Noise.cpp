@@ -11,8 +11,6 @@ void Noise::tick() {
 }
 
 void Noise::triggerChannel() {
-    std::cout << "Channel 4 triggered\n";
-    // exit(2);
 
     to_trigger = false;
     trigger = true;
@@ -27,11 +25,12 @@ void Noise::triggerChannel() {
     envelopeDirection = BIT(mem[NR42], 3);
     sweepPace = mem[NR42] & 0b111;
 
-    std::cout << "\tlength enable : " << length_enable << "\n";
-    std::cout << "\tlength timer : " << length_timer << "\n";
-    std::cout << "\tvolume : " << initial_volume << "\n";
-    std::cout << "\tvolume sweep direction : " << envelopeDirection << "\n";
-    std::cout << "\tvolume sweep pace : " << sweepPace << "\n";
+    // std::cout << "Channel 4 triggered\n";
+    // std::cout << "\tlength enable : " << length_enable << "\n";
+    // std::cout << "\tlength timer : " << length_timer << "\n";
+    // std::cout << "\tvolume : " << initial_volume << "\n";
+    // std::cout << "\tvolume sweep direction : " << envelopeDirection << "\n";
+    // std::cout << "\tvolume sweep pace : " << sweepPace << "\n";
 }
 
 Noise::Noise(int chan)

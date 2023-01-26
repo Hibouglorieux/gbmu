@@ -77,6 +77,7 @@ public:
 
     int length_count;
     int volume;
+    int volumeReduction;
 
     std::queue<entry> queue;
 

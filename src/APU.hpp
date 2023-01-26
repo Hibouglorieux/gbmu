@@ -16,7 +16,8 @@ class APU
 private:
     static unsigned char triggers[4];
     static int ticks;
-
+    
+    static int masterVolume;
 public:
     static void tick(int n);
 
@@ -27,6 +28,8 @@ public:
     static void triggerChannel2();
     static void triggerChannel3();
     static void triggerChannel4();
+
+    static void addDecibel(unsigned short &ref, int val);
 
     static void init();
 
