@@ -34,13 +34,17 @@ public:
     SDL_AudioSpec desiredSpec;
 
     int volumeReduction;
-    bool to_trigger;
     int iterations;
 
     int sample;
+    bool DACenable;
+
+    int regulator;
 
     void tick();
     void triggerChannel();
+
+    void clear();
 
     const static int samples_per_length = SAMPLING_RATE/256;
 

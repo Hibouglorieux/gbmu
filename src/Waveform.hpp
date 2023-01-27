@@ -31,11 +31,11 @@ public:
 
     int iterations;
 
+    int regulator;
+
 
     SDL_AudioSpec obtainedSpec;
     SDL_AudioSpec desiredSpec;
-
-    bool to_trigger;
 
     void tick(void);
 
@@ -44,6 +44,7 @@ public:
     int length_count;
 
     void triggerChannel();
+    void clear();
 
     Waveform(int chan);
     ~Waveform();

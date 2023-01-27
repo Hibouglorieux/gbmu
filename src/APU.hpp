@@ -20,18 +20,12 @@ private:
     static int masterVolume;
 public:
     static void tick(int n);
-
-    static void checkTrigger(int channel);
-    static void trigger(int channel);
-
-    static void triggerChannel1();
-    static void triggerChannel2();
-    static void triggerChannel3();
-    static void triggerChannel4();
-
+    
     static bool addDecibel(unsigned short &ref, int val);
 
     static void init();
+
+    static void turnOnOff(unsigned char old, unsigned char val);
 
     static SquareWave channel1;
     static SquareWave channel2;

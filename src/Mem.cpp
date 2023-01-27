@@ -285,24 +285,47 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		}
 		return (value);
 	}
+	if (addr == 0xFF26) {
+		APU::turnOnOff(value, newValue);
+	}
+
 	value = newValue;
+
+	// if (addr == NR22)
+	// 	if ((value & ~0b111) && !(newValue & ~0b111)) {
+	// 		std::cout << "Turning off DAC\n";
+	// 	}
+	// if (addr == NR51)
+	// 	std::cout << "Panning : " << (int)newValue << "\n";
+	// if (addr == NR50)
+	// 	std::cout << "MasterVolume : " << (int)newValue << "\n";
+	// if (addr == NR52)
+	// 	std::cout << "Sound on/off : " << (int)newValue << "\n";
+	// if (addr == NR21)
+	// 	std::cout << "NR21 : " << std::hex << (int)value << "\n";
+	// if (addr == NR22)
+	// 	std::cout << "NR22 : " << std::hex << (int)value << "\n";
+	// if (addr == NR23)
+	// 	std::cout << "NR23 : " << std::hex << (int)value << "\n";
+	// if (addr == NR24)
+	// 	std::cout << "NR24 : " << std::hex << (int)value << "\n";
+
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
-
-	if (addr == NR14) {
-		if (BIT(value, 7))
+	else if (addr == NR14) {
+		if (BIT(value, 7) && APU::channel1.DACenable)
 			APU::channel1.triggerChannel();
 	}
 	else if (addr == NR24) {
-		if (BIT(value, 7))
+		if (BIT(value, 7) && APU::channel2.DACenable)
 			APU::channel2.triggerChannel();
 	}
 	else if (addr == NR34) {
-		if (BIT(value, 7))
+		if (BIT(value, 7) && APU::channel3.DACenable)
 			APU::channel3.triggerChannel();
 	}
 	else if (addr == NR44) {
-		if (BIT(value, 7))
+		if (BIT(value, 7) && APU::channel4.DACenable)
 			APU::channel4.triggerChannel();
 	}
     /* recursive call
