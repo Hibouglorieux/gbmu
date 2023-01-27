@@ -58,9 +58,13 @@ public:
 
     int ticks;
 
-    bool to_trigger;
-
     int iterations;
+    int regulator;
+
+    int length_count;
+    int volume;
+    int volumeReduction;
+    bool DACenable;
 
     SDL_AudioSpec obtainedSpec;
     SDL_AudioSpec desiredSpec;
@@ -73,11 +77,9 @@ public:
     void triggerChannel();
     void popEntry(entry val);
 
-    const static int samples_per_length = SAMPLING_RATE/64;
+    void clear();
 
-    int length_count;
-    int volume;
-    int volumeReduction;
+    const static int samples_per_length = SAMPLING_RATE/64;
 
     std::queue<entry> queue;
 

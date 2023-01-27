@@ -16,12 +16,14 @@ void SquareWave::tick() {
 }
 
 void SquareWave::channel_2_tick() {
-    // if (trigger)
-    //     return;
 
     lengthEnable = BIT(mem[NR24], 6);
+    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
+
+    DACenable = (~(0b111) & mem[NR22]) != 0;
+
     // if (lengthEnable)
-    //     std::cout << "Channel 2 tick : " << lengthEnable << "\n";
+        // std::cout << "Channel 2 tick : " << waveLength << "\n";
     // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
 
     switch (waveDuty)
@@ -45,19 +47,75 @@ void SquareWave::channel_2_tick() {
 }
 
 void SquareWave::popEntry(entry val) {
-    length_timer = val.length_timer;
-    volumeSweepPace = val.volumeSweepPace;
-    initialVolume = val.initialVolume;
-    envelopeDirection = val.envelopeDirection;
-    waveLength = val.waveLength;
-    waveDuty = val.waveDuty;
-    // lengthEnable = BIT(mem[NR24], 6);
-    
+    step = 0;
+
     if (channel == 1) {
-        waveSweepDirection = val.waveSweepDirection;
         waveSweepPace = val.waveSweepPace;
+        waveSweepDirection = val.waveSweepDirection;
         waveSweepSlope = val.waveSweepSlope;
     }
+
+    waveDuty = val.waveDuty;
+    length_timer = val.length_timer;
+    current_length_timer = length_timer;
+
+    initialVolume = val.initialVolume;
+    envelopeDirection = val.envelopeDirection;
+    volumeSweepPace = val.volumeSweepPace;
+
+    trigger = true;
+    lengthEnable = BIT(channel == 1 ? mem[NR14] : mem[NR24], 6);
+
+    waveLength = val.waveLength;
+    wavelengthSweepValue = 0;
+
+    ticks = 0;
+    iterations = 0;
+
+    length_count = 0;
+    volume = initialVolume;
+    volumeReduction = 0;
+
+    switch (waveDuty)
+    {
+    case 0:
+        wave = 0b00000001;
+        break;
+    case 1:
+        wave = 0b10000001;
+        break;
+    case 2:
+        wave = 0b10000111;
+        break;
+    case 3:
+        wave = 0b11100111;
+        break;
+    
+    default:
+        throw "Wrong waveDuty specified for SquareWave";
+    }
+    
+}
+
+void SquareWave::clear() {
+    step = 0;
+
+    trigger = false;
+    
+    if (channel == 1) {
+        mem[NR10] = 0;
+        mem[NR11] = 0;
+        mem[NR12] = 0;
+        mem[NR13] = 0;
+        mem[NR14] = 0;
+    } else {
+        mem[NR21] = 0;
+        mem[NR22] = 0;
+        mem[NR23] = 0;
+        mem[NR24] = 0;
+    }
+
+    queue = std::queue<entry>();
 }
 
 void SquareWave::triggerChannel() {
@@ -65,7 +123,7 @@ void SquareWave::triggerChannel() {
 
     entry tmp;
     if (channel == 2) {
-        // std::cout << "Channel " << channel << " triggered : " << std::hex << (int)mem[NR24] << "\n";
+        // std::cout << "Channel " << channel << " triggered : \n";
 
         tmp.length_timer = (mem[NR21] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR22] & 0b00000111);
@@ -73,8 +131,9 @@ void SquareWave::triggerChannel() {
         tmp.envelopeDirection = BIT(mem[NR22], 3);
         tmp.waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
         tmp.waveDuty = (mem[NR21] & 0b11000000) >> 6;
+        tmp.length_enable = BIT(mem[NR14], 6);
         
-        // std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)mem[NR24] << "\n";
+        // std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)(mem[NR24] | 0b00111000) << "\n";
     }
     else {
         // std::cout << "Channel " << channel << " triggered : \n";
@@ -84,6 +143,7 @@ void SquareWave::triggerChannel() {
         tmp.envelopeDirection = BIT(mem[NR12], 3);
         tmp.waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
         tmp.waveDuty = (mem[NR11] & 0b11000000) >> 6;
+        tmp.length_enable = BIT(mem[NR24], 6);
 
         tmp.waveSweepDirection = BIT(mem[NR10], 3);
         tmp.waveSweepPace = (mem[NR10] & 0b01110000) >> 4;
@@ -105,32 +165,14 @@ void SquareWave::triggerChannel() {
     // std::cout << "\twave sweep slope : " << tmp.waveSweepSlope << "\n";
 }
 
-
 void SquareWave::channel_1_tick() {
     // if (trigger)
     //     return ;
 
     lengthEnable = BIT(mem[NR14], 6);
+    waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
 
-
-    switch (waveDuty)
-    {
-    case 0:
-        wave = 0b00000001;
-        break;
-    case 1:
-        wave = 0b10000001;
-        break;
-    case 2:
-        wave = 0b10000111;
-        break;
-    case 3:
-        wave = 0b11100111;
-        break;
-    
-    default:
-        throw "Wrong waveDuty specified for SquareWave";
-    }
+    DACenable = (~(0b111) & mem[NR12]) != 0;
 }
 
 void SquareWave::changeWavelength(float val) {
@@ -147,7 +189,7 @@ void SquareWave::changeWavelength(float val) {
 }
 
 SquareWave::SquareWave(int chan)
-: channel(chan), step(0), initialVolume(0), trigger(false), to_trigger(false), iterations(0), length_count(0)
+: channel(chan), step(0), initialVolume(0), trigger(false), iterations(0), length_count(0)
 {
     std::cout << "SquareWave channel " << chan << " was created\n";
     if (chan != 1 && chan != 2)

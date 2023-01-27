@@ -6,13 +6,11 @@ void Noise::tick() {
     //     return ;
 
     length_enable = BIT(mem[NR44], 6);
-
-    // TODO implement sweep/envelope
+    DACenable = (~(0b111) & mem[NR42]) != 0;
 }
 
 void Noise::triggerChannel() {
 
-    to_trigger = false;
     trigger = true;
     length_count = 0;
     length_enable = BIT(mem[NR44], 6);
@@ -25,9 +23,10 @@ void Noise::triggerChannel() {
     envelopeDirection = BIT(mem[NR42], 3);
     sweepPace = mem[NR42] & 0b111;
     volumeReduction = 0;
+    regulator = 0;
 
 
-    // std::cout << "Channel 4 triggered\n";
+    // std::cout << "Channel 4 triggered mais " << (int)(!(!BIT(mem[NR51], 3) && !BIT(mem[NR51], 7))) << "\n";
     // std::cout << "\tlength enable : " << length_enable << "\n";
     // std::cout << "\tlength timer : " << length_timer << "\n";
     // std::cout << "\tvolume : " << initial_volume << "\n";
@@ -35,8 +34,17 @@ void Noise::triggerChannel() {
     // std::cout << "\tvolume sweep pace : " << sweepPace << "\n";
 }
 
+void Noise::clear() {
+    trigger = false;
+
+    mem[NR41] = 0;
+    mem[NR42] = 0;
+    mem[NR43] = 0;
+    mem[NR44] = 0;
+}
+
 Noise::Noise(int chan)
-: channel(chan), initial_volume(0), trigger(false), to_trigger(false), iterations(0), sample(rand() % 101), length_count(0)
+: channel(chan), initial_volume(0), trigger(false), iterations(0), sample(rand() % 101), length_count(0)
 {
     std::cout << "Noise channel " << chan << " was created\n";
     if (chan != 4)

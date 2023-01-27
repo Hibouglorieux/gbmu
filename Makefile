@@ -39,7 +39,7 @@ IMGUI_PATH = src/imgui/
 LIBS = libimgui.a
 OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 
-CXXFLAGS = -std=gnu++14 -Wall -Wextra -O3
+CXXFLAGS = -std=gnu++14 -Wall -Wextra -O3 -g
 #-g3 -Og
 
 all: $(APPIMAGE) $(NAME)

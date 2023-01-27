@@ -146,9 +146,9 @@
 
 // SOUND
 
-#define SOUND_ON_OFF 0xFF26
-#define SOUND_PANNING 0xFF25
-#define SOUND_MASTER_VOLUME 0xFF24
+#define NR52 0xFF26
+#define NR51 0xFF25
+#define NR50 0xFF24
 
 // Sound Channel 1 — Pulse with wavelength sweep
 #define CHANNEL_1_ON_BIT 0
@@ -187,4 +187,4 @@
 
 #define BUFFER_SIZE 1024
 #define SAMPLING_RATE 44100
-#define MAX_VOLUME 0x7ff
+#define MAX_VOLUME (0x7ff/4)
