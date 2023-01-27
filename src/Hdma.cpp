@@ -36,8 +36,8 @@ void Hdma::reset()
 }
 void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 {
-	std::cout << "received write in Hdma with dstAddr: " << dstAddr
-		<< " srcAddr: " << srcAddr << " Value: " << +newValue << std::endl;
+	// std::cout << "received write in Hdma with dstAddr: " << dstAddr
+	// 	<< " srcAddr: " << srcAddr << " Value: " << +newValue << std::endl;
 	bool bStopping = !BIT(mem[0xFF55], 7);
 	bool bIsHBlank = BIT(mem[0xFF55], 7);
 	if (bIsWritting && !bStopping)
@@ -61,10 +61,10 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 		vbank = mem[0xFF4F] & 0x1;
 		bIsWritting = true;
 		bIsInHBlankMode = bIsHBlank;
-		std::cout << (bIsInHBlankMode ? "starting hdma in HBLANK" : "started hdma normal") << std::endl;
-		std::cout << "hdma val is: " << +newValue << std::endl;
-		std::cout << "hdma len is: " << len << std::endl;
-		std::cout << std::endl;
+		// std::cout << (bIsInHBlankMode ? "starting hdma in HBLANK" : "started hdma normal") << std::endl;
+		// std::cout << "hdma val is: " << +newValue << std::endl;
+		// std::cout << "hdma len is: " << len << std::endl;
+		// std::cout << std::endl;
 		if (Gameboy::getState() == GBSTATE_H_BLANK)
 			Gameboy::doHblankHdma();
 	}

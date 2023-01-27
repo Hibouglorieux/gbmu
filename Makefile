@@ -26,7 +26,11 @@ FILES = main.cpp \
 		Sprite.cpp \
 		Debugger.cpp \
 		Hdma.cpp \
-		Common.cpp
+		Common.cpp \
+		APU.cpp \
+		SquareWave.cpp \
+		Waveform.cpp \
+		Noise.cpp
 
 
 APPIMAGE = gbmu-x86_64.AppImage
@@ -48,7 +52,6 @@ $(APPIMAGE): $(NAME)
 	./tools/linuxdeploy-x86_64.AppImage -e gbmu -i resources/gbmu.png --create-desktop-file --appdir AppDir
 	./tools/appimagetool-x86_64.AppImage AppDir
 	rm -rf AppDir
-
 
 obj/%.o:src/%.cpp src/*.hpp src/define.hpp src/*.tpp
 	@mkdir -p obj

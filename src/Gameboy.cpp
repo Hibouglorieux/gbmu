@@ -2,6 +2,7 @@
 #include "imgui/imgui_impl_sdl.h"
 #include "Hdma.hpp"
 #include "Debugger.hpp"
+#include "APU.hpp"
 
 Mem*		Gameboy::gbMem = nullptr;
 Clock		Gameboy::gbClock = Clock();
@@ -86,6 +87,7 @@ bool Gameboy::loadRom()
 	bIsCGB = gbMem->isCGB();
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
 	Cpu::loadBootRom();
+	APU::init();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
 	Debugger::createTexture(bIsCGB, UserInterface::uiRenderer);
 	return gbMem->isValid;
@@ -101,6 +103,7 @@ void Gameboy::clear()
 {
 	if (bIsInit) {
 		delete gbMem;
+		APU::clear();
 		Screen::destroyTexture();
 		Debugger::destroyTexture();
 		bIsInit = false;
@@ -167,6 +170,7 @@ void Gameboy::doHblankHdma()
 		// update g_clock/clock here instead of cpu
 		// because it has to be done once per hblank
 		g_clock += clockHblankForHdma;
+		APU::tick(clockHblankForHdma);
 		clockLine += clockHblankForHdma;
 	}
 }
@@ -218,6 +222,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 void Gameboy::loadSaveState() {
 	s_state tmp;
 	std::cout << "Loading game state\n";
+	std::cout << "Thread ID : " << pthread_self() << "\n";
 	
 	std::string savePath = Gameboy::path + ".state";
     	std::ifstream infile(savePath, std::ios::binary);
@@ -548,6 +553,7 @@ int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 		int clockInc = Cpu::doMinimumStep();
 		g_clock += clockInc;
+		APU::tick(clockInc);
 		if (Clock::cgbMode)
 		{
 			int entireClock = (clockInc / 2.0) + clockRest;

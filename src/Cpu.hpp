@@ -39,6 +39,8 @@
 
 class Cpu {
 public:
+	int	executeLine(bool step, bool updateState, bool bRefreshScreen);
+
 	/* StackTrace */
 	static CpuStackTrace	stackTrace;
 	static StackData	captureCurrentState(std::string customData = "");

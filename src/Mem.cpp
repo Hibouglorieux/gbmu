@@ -13,6 +13,7 @@
 #include "Mem.hpp"
 #include "Cpu.hpp"
 #include "Utility.hpp"
+#include "APU.hpp"
 #include "Hdma.hpp"
 #include "Debugger.hpp"
 #include <fstream>
@@ -280,11 +281,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		memRef.mbc->writeInRom(addr, newValue);
 		return value;// XXX that might pose aproblem or not
 	}
-	else if (addr >= 0xA000 && addr <= memRef.mbc->getRamUpperAddress()) {
-		// Write in RAM Bank
-		
-
-	}
+	
 	// make sure the new value doesnt override read only bits
 	if (Mem::readOnlyBits.count(addr))
 		newValue = newValue | Mem::readOnlyBits.at(addr);
@@ -310,6 +307,23 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	value = newValue;
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
+
+	if (addr == NR14) {
+		if (BIT(value, 7))
+			APU::channel1.triggerChannel();
+	}
+	else if (addr == NR24) {
+		if (BIT(value, 7))
+			APU::channel2.triggerChannel();
+	}
+	else if (addr == NR34) {
+		if (BIT(value, 7))
+			APU::channel3.triggerChannel();
+	}
+	else if (addr == NR44) {
+		if (BIT(value, 7))
+			APU::channel4.triggerChannel();
+	}
     /* recursive call
 //	if (addr == LCDC) {
 //		if ((value & 0x80) == 0) {
