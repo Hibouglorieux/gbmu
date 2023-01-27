@@ -50,6 +50,7 @@ public:
 	static bool		bIsError;
 	static bool		bIsFatalError;
 	static std::string	errMsg;
+	static int		volume;
 
 private:
 	static std::string	romFolderPath;

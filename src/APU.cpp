@@ -1,5 +1,7 @@
 #include "APU.hpp"
 
+#include "UserInterface.hpp"
+
 #define CHANNEL1 true
 #define CHANNEL2 true
 #define CHANNEL3 true
@@ -20,12 +22,12 @@ bool APU::addDecibel(unsigned short &ref, int val) {
     if (val <= 0)
         return false;
     int tmp = ref;
-    float mixed = (val * masterVolume / 7);
+    float mixed = (val * (masterVolume / 8));
     tmp += (int)mixed;
     // if (tmp > MAX_VOLUME)
     //     ref = MAX_VOLUME;
     // else
-    ref = (unsigned short)tmp;
+    ref = (unsigned short)(((int)tmp * UserInterface::volume) / 100) ;
     return true;
 }
 
@@ -73,8 +75,9 @@ void APU::tick(int n) {
     ticks += n;
     if (ticks >= 190) {
         masterVolume = ((mem[0xFF24] & 0b111) + ((mem[0xFF24] & 0b1110000) >> 4)) / 2;
-        if (!masterVolume)
-            masterVolume = 1;
+	masterVolume++; // TODO LMA 7 should be 8 and 0 should be 1
+        // if (!masterVolume)
+        //     masterVolume = 1;
 
         channel2.tick();
         channel1.tick();

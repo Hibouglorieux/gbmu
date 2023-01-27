@@ -24,6 +24,7 @@ bool UserInterface::showRegisters = false;
 bool UserInterface::showPalettes = false;
 bool UserInterface::bIsError = false;
 bool UserInterface::bIsFatalError = false;
+int UserInterface::volume = 100;
 SDL_Window*	UserInterface::uiWindow = nullptr;
 SDL_Renderer*	UserInterface::uiRenderer = nullptr;
 std::string	UserInterface::romFolderPath = "";
@@ -176,6 +177,7 @@ void UserInterface::showGameboyWindow()
 	ImGui::NewLine();
 	ImGui::SetNextItemWidth(180);
 	ImGui::SliderInt("FPS", &Debugger::fps, 1, 300);
+	ImGui::SliderInt("Volume", &UserInterface::volume, 0, 100);
 	ImGui::SetNextItemWidth(180);
 	ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
