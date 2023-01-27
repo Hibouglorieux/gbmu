@@ -4,7 +4,6 @@ void Waveform::tick() {
     // if (trigger)
     //     return;
 
-    std::cout << "waveform tick 1\n";
 
     length_enable = BIT(mem[NR34], 6);
     wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
@@ -27,11 +26,9 @@ void Waveform::tick() {
         std::cout << "Volume : " << std::dec << (int)volume <<"\n";
         throw "Wrong volume specified for Waveform channel\n";
     }
-    std::cout << "waveform tick 2\n";
 }
 
 void Waveform::triggerChannel() {
-    std::cout << "waveform trigger 1\n";
     trigger = true;
     current_length_timer = length_timer;
     memcpy(waveform, &mem[0xFF30], 16);
@@ -40,7 +37,7 @@ void Waveform::triggerChannel() {
 
     regulator = 0;
 
-    std::cout << "Channel 3 triggered\n";
+    // std::cout << "Channel 3 triggered\n";
     // std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
     // std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
     // std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";

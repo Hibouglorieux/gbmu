@@ -16,7 +16,6 @@ void SquareWave::tick() {
 }
 
 void SquareWave::channel_2_tick() {
-    std::cout << "square tick 1\n";
 
     lengthEnable = BIT(mem[NR24], 6);
     waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
@@ -45,7 +44,6 @@ void SquareWave::channel_2_tick() {
     default:
         throw "Wrong waveDuty specified for SquareWave";
     }
-    std::cout << "square tick 2\n";
 }
 
 void SquareWave::popEntry(entry val) {
@@ -125,7 +123,7 @@ void SquareWave::triggerChannel() {
 
     entry tmp;
     if (channel == 2) {
-        std::cout << "Channel " << channel << " triggered : \n";
+        // std::cout << "Channel " << channel << " triggered : \n";
 
         tmp.length_timer = (mem[NR21] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR22] & 0b00000111);
@@ -135,10 +133,10 @@ void SquareWave::triggerChannel() {
         tmp.waveDuty = (mem[NR21] & 0b11000000) >> 6;
         tmp.length_enable = BIT(mem[NR14], 6);
         
-        std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)(mem[NR24] | 0b00111000) << "\n";
+        // std::cout << std::hex << (int)mem[NR21] << " - " << (int)mem[NR22] << " - " << (int)mem[NR23] << " - " << (int)(mem[NR24] | 0b00111000) << "\n";
     }
     else {
-        std::cout << "Channel " << channel << " triggered : \n";
+        // std::cout << "Channel " << channel << " triggered : \n";
         tmp.length_timer = (mem[NR11] & 0b00111111);
         tmp.volumeSweepPace = (mem[NR12] & 0b00000111);
         tmp.initialVolume = (mem[NR12] & 0b11110000) >> 4;

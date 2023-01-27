@@ -4,15 +4,12 @@
 void Noise::tick() {
     // if (trigger)
     //     return ;
-    std::cout << "tick noise 1\n";
 
     length_enable = BIT(mem[NR44], 6);
     DACenable = (~(0b111) & mem[NR42]) != 0;
-    std::cout << "tick noise 2\n";
 }
 
 void Noise::triggerChannel() {
-    std::cout << "trigger noise 1\n";
 
     trigger = true;
     length_count = 0;
@@ -29,12 +26,12 @@ void Noise::triggerChannel() {
     regulator = 0;
 
 
-    std::cout << "Channel 4 triggered\n";
-    std::cout << "\tlength enable : " << length_enable << "\n";
-    std::cout << "\tlength timer : " << length_timer << "\n";
-    std::cout << "\tvolume : " << initial_volume << "\n";
-    std::cout << "\tvolume sweep direction : " << envelopeDirection << "\n";
-    std::cout << "\tvolume sweep pace : " << sweepPace << "\n";
+    // std::cout << "Channel 4 triggered mais " << (int)(!(!BIT(mem[NR51], 3) && !BIT(mem[NR51], 7))) << "\n";
+    // std::cout << "\tlength enable : " << length_enable << "\n";
+    // std::cout << "\tlength timer : " << length_timer << "\n";
+    // std::cout << "\tvolume : " << initial_volume << "\n";
+    // std::cout << "\tvolume sweep direction : " << envelopeDirection << "\n";
+    // std::cout << "\tvolume sweep pace : " << sweepPace << "\n";
 }
 
 void Noise::clear() {

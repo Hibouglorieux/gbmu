@@ -111,9 +111,9 @@ void APU::turnOnOff(unsigned char old, unsigned char val) {
         channel3.clear();
         channel4.clear();
 
-        mem[NR50] = 0;
-        mem[NR51] = 0;
-        mem[NR52] = 0;
+        // mem[NR50] = 0;
+        // mem[NR51] = 0;
+        // mem[NR52] = 0;
     }
 }
 
@@ -124,9 +124,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
     // std::cout << "Sound callback\n";
 
     if (!BIT(mem[NR52], 7) || !BIT(mem[LCDC], 7)) {
-        std::cout << "lol\n";
         memset(stream, 0, length);
-        std::cout << "lol1\n";
         return ;
     }
 
