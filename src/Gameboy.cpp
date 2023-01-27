@@ -32,7 +32,6 @@ Clock& Gameboy::getClock()
 
 void	Gameboy::init()
 {
-	APU::init();
 	//gbMem = nullptr;
 	gbClock.reset();
 	currentState = 0;
@@ -88,6 +87,7 @@ bool Gameboy::loadRom()
 	bIsCGB = gbMem->isCGB();
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
 	Cpu::loadBootRom();
+	APU::init();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
 	Debugger::createTexture(bIsCGB, UserInterface::uiRenderer);
 	return gbMem->isValid;
