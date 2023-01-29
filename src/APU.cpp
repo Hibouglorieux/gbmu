@@ -126,8 +126,9 @@ void APU::turnOnOff(unsigned char old, unsigned char val) {
 
 void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
+    (void)arg; //unused
     // TODO verify for ptr[i] overflow
-    uint16_t *ptr = (uint16_t *)stream;
+    auto *ptr = (uint16_t *)stream;
     // std::cout << "Sound callback\n";
 
     if (!BIT(mem[NR52], 7) || !BIT(mem[LCDC], 7)) {
@@ -408,8 +409,8 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                     channel4.regulator = (channel4.regulator + 1);
             }
         }
-        unsigned short max = 0;
-        float factor = 0;
+//        unsigned short max = 0; UNUSED
+//        float factor = 0; UNUSED
 
         
     }

@@ -317,8 +317,6 @@ bool UserInterface::loop()
 				}
 			}
 			if (!Gameboy::bIsPathValid) {
-				ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-				ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
 				ImGui::Begin(UserInterface::romFolderPath.c_str());
 				Gameboy::bIsInit = false;
 				Gameboy::bIsPathValid = false;
@@ -394,7 +392,7 @@ void	UserInterface::fileExplorer()
 	filename[8191] = 0; // Ensure it last 0
 	Gameboy::path = filename;
 	Gameboy::bIsPathValid = true;
-    fclose(f);
+    pclose(f);
 /*
 ** TODO old file explorer , to remove ?
 **	DIR *dir;

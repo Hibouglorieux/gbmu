@@ -77,7 +77,7 @@ int Hdma::update()
 	if (vbank != (mem[0xFF4F] & 0x1)) {
 		printf("error: switching bank while DMA not terminated\n");
 	}
-	if (bJustStarted == true)
+	if (bJustStarted == true) //NEVER accessed cause bJustStarted always false
 	{
 		bJustStarted = false;
 		return -1;
