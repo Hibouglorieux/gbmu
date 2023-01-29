@@ -95,8 +95,9 @@ bool Gameboy::loadRom()
 
 bool Gameboy::launchUserInterface()
 {
-	UserInterface::create();
-	return UserInterface::loop();
+	if (UserInterface::create())
+	    return UserInterface::loop();
+    return false;
 }
 
 void Gameboy::clear()
