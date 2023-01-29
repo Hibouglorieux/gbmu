@@ -385,16 +385,16 @@ void	UserInterface::fileExplorer()
             }
         }
     }
-	for (int i = 0 ; i < 8192 ; i++) {
-		if (filename[i] == '\n') {
-			filename[i] = 0;
+	for (char & i : filename) {
+		if (i == '\n') {
+			i = 0;
 			break ;
 		}
 	}
 	filename[8191] = 0; // Ensure it last 0
 	Gameboy::path = filename;
 	Gameboy::bIsPathValid = true;
-
+    fclose(f);
 /*
 ** TODO old file explorer , to remove ?
 **	DIR *dir;
