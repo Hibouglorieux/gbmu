@@ -362,7 +362,7 @@ void	UserInterface::throwError(const char *msg, bool fatal)
 void	UserInterface::errorWindow()
 {
 	ImGui::Begin(bIsFatalError ? "FATAL ERROR" : "ERROR");
-	ImGui::Text(errMsg.c_str());
+	ImGui::Text("%s", errMsg.c_str());
 	if (ImGui::Button("OK")) {
 		if (bIsFatalError) {
 			Gameboy::quit = true;
@@ -377,7 +377,14 @@ void	UserInterface::fileExplorer()
 	// Yes, it's big
 	char filename[8192] = {0};
 	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\"", "r");
-	fgets(filename, 8192, f);
+    while (!feof(f)) {
+        if (fgets(filename, 8192, f) == nullptr) {
+            if (ferror(f)) {
+                errMsg = "Zenity: File Explorer can't open this file";
+                bIsError = true;
+            }
+        }
+    }
 	for (int i = 0 ; i < 8192 ; i++) {
 		if (filename[i] == '\n') {
 			filename[i] = 0;
