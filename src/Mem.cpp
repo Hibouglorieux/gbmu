@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/30 07:51:21 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/30 11:05:14 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,12 +142,13 @@ Mem::Mem(const std::string& pathToRom)
 	if (tmp.good()) {
 		std::cout << "Save was detected" << std::endl;
 		// std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
-    		std::ifstream infile(pathToRom + ".save", std::ios::binary);
-    		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(infile)),
-    		                                       std::istreambuf_iterator<char>());
-		file.seekg(0, std::ifstream::end);
-		int fileLen = file.tellg();
-    		infile.close();
+		std::ifstream infile(pathToRom + ".save", std::ios::binary);
+		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(infile)),
+				std::istreambuf_iterator<char>());
+		infile.seekg(0, std::ifstream::beg);
+		infile.seekg(0, std::ifstream::end);
+		int fileLen = infile.tellg();
+		infile.close();
 
 		// TODO do more check with size for extraRam
 		if (fileLen >= MEM_SIZE) {
