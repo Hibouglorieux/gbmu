@@ -42,11 +42,13 @@ OBJ = $(addprefix obj/,$(FILES:.cpp=.o))
 CXXFLAGS = -std=gnu++14 -Wall -Wextra -O3 -g
 #-g3 -Og
 
-all: $(APPIMAGE) $(NAME)
+all: $(NAME)
 
 $(NAME): $(OBJ)
 	make -C $(IMGUI_PATH)
 	$(CXX) $^ -o $@ `sdl2-config --cflags --static-libs` $(LIBS)
+
+app: $(APPIMAGE)
 
 $(APPIMAGE): $(NAME)
 	./tools/linuxdeploy-x86_64.AppImage -e gbmu -i resources/gbmu.png --create-desktop-file --appdir AppDir
@@ -68,4 +70,4 @@ fclean : clean
 
 re : fclean all
 
-.PHONY: all norme clean fclean re
+.PHONY: all norme clean fclean re app

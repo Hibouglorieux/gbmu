@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/30 07:55:12 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/30 09:42:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ SDL_Window*	UserInterface::uiWindow = nullptr;
 SDL_Renderer*	UserInterface::uiRenderer = nullptr;
 std::string	UserInterface::romFolderPath = "";
 std::string	UserInterface::errMsg = "";
+
+#define DEFAULT_ROM_PATH "./roms/Super Mario Land 2.gb"
 
 void UserInterface::TexturetoImage(SDL_Texture * Texture)
 {
@@ -381,6 +383,7 @@ bool UserInterface::loop()
 	destroy();
 	return (true);
 }
+
 void	UserInterface::throwError(const char *msg, bool fatal)
 {
 	bIsError = true;
@@ -405,7 +408,7 @@ void	UserInterface::fileExplorer()
 {
 	// Yes, it's big
 	char filename[8192] = {0};
-	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\"", "r");
+	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\" --filename=" DEFAULT_ROM_PATH, "r");
 	fgets(filename, 8192, f);
 	for (int i = 0 ; i < 8192 ; i++) {
 		if (filename[i] == '\n') {
