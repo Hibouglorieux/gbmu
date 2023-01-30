@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/06 21:28:50 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/30 07:55:12 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,37 @@ void UserInterface::showGameboyWindow()
 		ImGui::End();
 		return ;
 	}
+	ImGui::Text("Change this settings reset game : ");
+	ImGui::SameLine();
+	if (ImGui::Button("Autodetect CGB/DMG mode")) {
+		Gameboy::clear();
+		Gameboy::forceMode = false;
+		ImGui::End();
+		return ;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Force CGB mode")) {
+		Gameboy::forceMode = true;
+		Gameboy::forceCGB = true;
+		Gameboy::clear();
+		ImGui::End();
+		return ;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Force DMG mode")) {
+		Gameboy::forceMode = true;
+		Gameboy::forceCGB = false;
+		Gameboy::clear();
+		ImGui::End();
+		return ;
+	}
+	if (Gameboy::forceMode) {
+		ImGui::Text("Forcing");
+		ImGui::SameLine();
+		ImGui::Text((Gameboy::forceCGB ? "CGB mode." : "DMG mode."));
+	} else {
+		ImGui::Text("Using autodetect DMG/CGB mode.");
+	}
 	ImGui::NewLine();
 	ImGui::SetNextItemWidth(180);
 	ImGui::SliderInt("FPS", &Debugger::fps, 1, 300);
@@ -317,13 +348,11 @@ bool UserInterface::loop()
 				}
 			}
 			if (!Gameboy::bIsPathValid) {
-				ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-				ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
-				ImGui::Begin(UserInterface::romFolderPath.c_str());
-				Gameboy::bIsInit = false;
-				Gameboy::bIsPathValid = false;
+				// ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+				// ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
+				// ImGui::Begin(UserInterface::romFolderPath.c_str());
 				UserInterface::fileExplorer();
-				ImGui::End();
+				//ImGui::End();
 			}
 			if (Gameboy::bIsInit && !UserInterface::bIsError) {
 				UserInterface::showGameboyWindow();

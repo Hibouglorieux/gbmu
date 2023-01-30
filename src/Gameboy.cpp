@@ -12,6 +12,9 @@ int		Gameboy::clockLine = 0;
 bool		Gameboy::bShouldRenderFrame = true;
 bool		Gameboy::quit = false;
 bool		Gameboy::bIsCGB = false;
+bool		Gameboy::bCartIsCGB = false;
+bool		Gameboy::forceMode = false;
+bool		Gameboy::forceCGB = true;
 bool		Gameboy::bIsInit = false;
 bool		Gameboy::bIsPathValid = false;
 bool		Gameboy::lcdcWasOff = false;
@@ -40,6 +43,7 @@ void	Gameboy::init()
 	bShouldRenderFrame = true;
 	quit = false;
 	bIsCGB = false;
+	bCartIsCGB = false;
 	frameNb = 0;
 	clockRest = 0;
 	bLogFrameNb = false;
@@ -84,7 +88,9 @@ bool Gameboy::loadRom()
 		bIsPathValid = false;
 		return false;
 	}
-	bIsCGB = gbMem->isCGB();
+	bCartIsCGB = gbMem->isCGB();
+	bIsCGB = (!Gameboy::forceMode ? bCartIsCGB : Gameboy::forceCGB);
+	
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
 	Cpu::loadBootRom();
 	APU::init();
@@ -122,10 +128,6 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 
 	// render a white screen if LCD is off
 	// normal render wont be called since we wont enter pxl transfer state
-	//if (!bShouldRenderFrame)
-	//	for (int i = 0; i < 144; i++)
-	//		Screen::updatePpuLine(Ppu::getDefaultWhiteLine(), i);
-
 	std::function<bool()> loopFunc = [&]()
 	{
 		if (Gameboy::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))

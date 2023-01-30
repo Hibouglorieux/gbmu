@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 20:05:20 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/30 07:24:59 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void Ppu::reset()
 std::array<short, PIXEL_PER_LINE> Ppu::getDefaultWhiteLine()
 {
 	std::array<short, PIXEL_PER_LINE> line;
-	line.fill(Gameboy::bIsCGB ? 0xFFFF : 0);
+	line.fill((!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB)) ? 0 : 0xFFFF);
 	return line;
 }
 
@@ -35,11 +35,9 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 
 	auto backgroundLine = getBackgroundLine();
 
-
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
-		if (!Gameboy::bIsCGB)
-		{
+		if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB)) {
 			// color code == 0 means sprite pixel is translucent
 			if ((pixelLine[i].colorCode != 0 &&
 						((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))

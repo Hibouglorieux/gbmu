@@ -223,7 +223,11 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         }
                     }
                     channel1.length_count = 0;
-                    channel1.regulator = (channel1.regulator + 1) % channel1.volumeSweepPace;
+					if (channel1.volumeSweepPace) {
+                    	channel1.regulator = (channel1.regulator + 1) % channel1.volumeSweepPace;
+					} else {
+                    	channel1.regulator = (channel1.regulator + 1);
+					}
                     wavelenRegu = (wavelenRegu + 1) % 4;
                 }
             }
@@ -297,7 +301,11 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         }
                     }
                     channel2.length_count = 0;
-                    channel2.regulator = (channel2.regulator + 1) % channel2.volumeSweepPace;
+					if (channel2.volumeSweepPace) {
+                    	channel2.regulator = (channel2.regulator + 1) % channel2.volumeSweepPace;
+					} else {
+                    	channel2.regulator = (channel2.regulator + 1);
+					}
                 }
             }
         }
@@ -396,7 +404,11 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         channel4.trigger = false;
                 }
                 channel4.length_count = 0;
-                channel4.regulator = (channel4.regulator + 1) % channel4.sweepPace;
+				if (channel4.sweepPace) {
+                   	channel4.regulator = (channel4.regulator + 1) % channel4.sweepPace;
+				} else {
+                   	channel4.regulator = (channel4.regulator + 1);
+				}
             }
         }
         unsigned short max = 0;

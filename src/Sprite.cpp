@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/02 22:01:24 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/30 07:52:00 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 	if (spriteAddr >= 0x9800 || spriteAddr < 0x8000)
 		std::cerr << "access vram not at vram: "<< spriteAddr << std::endl;
 	const unsigned char* vram = mem.getVram();
-	if (Gameboy::bIsCGB)
+	if (Gameboy::bCartIsCGB && (!Gameboy::forceMode || (Gameboy::forceMode && Gameboy::forceCGB)))
 	{
 		if (OAM_Data.getTileVramBank())
 			vram = mem.getCGBVram();
@@ -55,8 +55,7 @@ Sprite::~Sprite(void)
 
 unsigned long Sprite::getPaletteValue() const
 {
-	//TODO change that for CGB
-	if (!Gameboy::bIsCGB)
+	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
 	{
 		if (OAM_Data.getDMGPalette() == 1)
 			return mem[OBP1];
