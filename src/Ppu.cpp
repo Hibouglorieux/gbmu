@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/30 07:24:59 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/30 09:11:26 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 		TilePixels tilePixels;
 		if (bDrawWindow)
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
-		else if (bBackgroundEnabled || Gameboy::bIsCGB)// because in CGB bit 0 of LCDC only matters for superposition
+		else if (bBackgroundEnabled || Gameboy::bCartIsCGB)// because in CGB bit 0 of LCDC only matters for superposition
 		{
 			//std::cout << std::dec << "creating a tilePixel at LY: " << (int)M_LY << " number of tile: " << (int)(xPosInLine + M_SCX) / 8
 				//<< std::hex << std::endl;
@@ -163,14 +163,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::function<bool(struct OAM_entry& a, struct OAM_entry& b)> sortFunction;
-	if (Gameboy::bIsCGB)
-		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
-			// if same X, we pick the sprites earliest in OAM
-			auto ndxA = std::find(spritesFound2.begin(), spritesFound2.end(), a) - spritesFound2.begin();
-			auto ndxB = std::find(spritesFound2.begin(), spritesFound2.end(), b) - spritesFound2.begin();
-			return ndxA > ndxB;
-		};
-	else
+	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
 		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
 			if (a.posX != b.posX)
 				return a.posX > b.posX;
@@ -180,6 +173,13 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 				auto ndxB = std::find(spritesFound2.begin(), spritesFound2.end(), b) - spritesFound2.begin();
 				return ndxA > ndxB;
 			}
+		};
+	else
+		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
+			// if same X, we pick the sprites earliest in OAM
+			auto ndxA = std::find(spritesFound2.begin(), spritesFound2.end(), a) - spritesFound2.begin();
+			auto ndxB = std::find(spritesFound2.begin(), spritesFound2.end(), b) - spritesFound2.begin();
+			return ndxA > ndxB;
 		};
 	std::sort(spritesFound.begin(), spritesFound.end(), sortFunction);
 

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/30 09:42:22 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/30 09:58:24 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -410,6 +410,10 @@ void	UserInterface::fileExplorer()
 	char filename[8192] = {0};
 	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\" --filename=" DEFAULT_ROM_PATH, "r");
 	fgets(filename, 8192, f);
+	if (filename[0] == 0) {
+		// throwError("Please select a ROM", false);
+		return ;
+	}
 	for (int i = 0 ; i < 8192 ; i++) {
 		if (filename[i] == '\n') {
 			filename[i] = 0;
