@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 02:37:45 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 11:05:02 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ unsigned long Sprite::getPaletteValue() const
 	else if(Gameboy::bCGBIsInCompatMode)
 	{
 		// In compat mode, objects use OBJ palette 0 or 1 depending on bit 4 of their attribute
-		TilePixels::getCGBPaletteColor(OAM_Data.getDMGPalette(), mem.getOBJPalettes());
+		return TilePixels::getCGBPaletteColor(OAM_Data.getDMGPalette(), mem.getOBJPalettes());
 	}
 	else
 	{
