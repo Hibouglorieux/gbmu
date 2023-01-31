@@ -374,11 +374,8 @@ bool UserInterface::loop()
 		if (timeTakenForFrame.count() < frametime.count())
 		{
 			std::this_thread::sleep_for(frametime - timeTakenForFrame);
-//			printf("frametime - timeTakenForFrame = %d (timeTakenForFrame=%d) (frametime=%d)\n", (uint32_t)(frametime.count() - timeTakenForFrame.count()), (uint32_t)timeTakenForFrame.count(), (uint32_t)frametime.count());
 		}
-//		else
-//			printf("frametime - timeTakenForFrame = %d (timeTakenForFrame=%d) (frametime=%d)\n", (uint32_t)(frametime.count() - timeTakenForFrame.count()), (uint32_t)timeTakenForFrame.count(), (uint32_t)frametime.count());
-		
+
 		UserInterface::clear(clear_color);
 	}
 	Gameboy::clear();
@@ -396,7 +393,7 @@ void	UserInterface::throwError(const char *msg, bool fatal)
 void	UserInterface::errorWindow()
 {
 	ImGui::Begin(bIsFatalError ? "FATAL ERROR" : "ERROR");
-	ImGui::Text(errMsg.c_str());
+	ImGui::Text("%s", errMsg.c_str());
 	if (ImGui::Button("OK")) {
 		if (bIsFatalError) {
 			Gameboy::quit = true;
@@ -411,7 +408,15 @@ void	UserInterface::fileExplorer()
 	// Yes, it's big
 	char filename[8192] = {0};
 	FILE *f = popen("zenity --file-selection --file-filter=\"Gameboy Rom | *.gb *.gbc\" --filename=" DEFAULT_ROM_PATH, "r");
-	fgets(filename, 8192, f);
+    while (!feof(f)) {
+       if (fgets(filename, 8192, f) == nullptr) {
+           if (ferror(f)) {
+               throwError("Zenity: File Explorer can't open this file", true);
+               pclose(f);
+               return ;
+           }
+       }
+    }
 	if (filename[0] == 0) {
 		// throwError("Please select a ROM", false);
 		return ;
@@ -425,7 +430,7 @@ void	UserInterface::fileExplorer()
 	filename[8191] = 0; // Ensure it last 0
 	Gameboy::path = filename;
 	Gameboy::bIsPathValid = true;
-
+    pclose(f);
 /*
 ** TODO old file explorer , to remove ?
 **	DIR *dir;

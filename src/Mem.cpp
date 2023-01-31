@@ -50,8 +50,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 		UserInterface::throwError("file not found", false);
 		return nullptr;
 	}
-
-	// read some values in the 
+	// read some values in the
 	file.seekg(0, std::ifstream::end);
 	int fileLen = file.tellg();
 	if (fileLen < 32'768)
@@ -79,9 +78,15 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 		unsigned char bootRomData[2304];
 		cgbBootRom.read((char*)bootRomData, 2304);
 		auto newMem = new CGBMem(pathToRom);
-		memcpy(newMem->internalArray, bootRomData, 2304);
-		cgbBootRom.close();
-		return newMem;
+        if (!newMem->isValid){
+            UserInterface::throwError("can't memcpy bootromData into newMem ", false);
+            cgbBootRom.close();
+            return nullptr;
+        } else {
+            memcpy(newMem->internalArray, bootRomData, 2304);
+            cgbBootRom.close();
+            return newMem;
+        }
 	}
 	else
 	{
@@ -94,9 +99,15 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 		unsigned char bootRomData[256];
 		dmgBootRom.read((char*)bootRomData, 256);
 		auto newMem = new Mem(pathToRom);
-		memcpy(newMem->internalArray, bootRomData, 256);
-		dmgBootRom.close();
-		return newMem;
+		if (!newMem->isValid){
+            UserInterface::throwError("can't memcpy bootromData into newMem ", false);
+            dmgBootRom.close();
+            return nullptr;
+        } else {
+            memcpy(newMem->internalArray, bootRomData, 256);
+            dmgBootRom.close();
+            return newMem;
+        }
 	}
 }
 
@@ -126,16 +137,19 @@ Mem::Mem(const std::string& pathToRom)
 	}
 
 	file.seekg(0, std::ifstream::end);
-	int fileLen = file.tellg();
+
+	long fileLen = file.tellg();
 	file.seekg(0x148, std::ifstream::beg);
-	char romSizeCode;
+    char romSizeCode;
    	file.read(&romSizeCode, 1);
 	int romBanksNb = getRomBanksNb(romSizeCode);
-	if (fileLen != romBanksNb * 1024 * 16)
+    std::cout<<"rombank: "<< std::dec<<(int)romBanksNb << " filelen: "<< (int)fileLen<<std::hex<<std::endl;
+	if (fileLen != romBanksNb * 1024 * 16) //32768
 	{
-    		file.close();
+        file.close();
 		UserInterface::throwError("Wrong size read in header", false);
 		isValid = false;
+        UserInterface::bIsError = true;
 		return ;
 	}
 	char ramSizeCode;
