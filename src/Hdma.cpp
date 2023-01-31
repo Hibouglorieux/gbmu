@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 13:16:03 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 17:55:17 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ void Hdma::reset()
 	bIsInHBlankMode = false;
 	bJustStarted = false;
 }
+
 void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 {
 	// std::cout << "received write in Hdma with dstAddr: " << dstAddr
@@ -72,7 +73,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 
 int Hdma::update()
 {
-	if (!bIsWritting || bIsInHBlankMode || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
+	if (!bIsWritting || bIsInHBlankMode || !Gameboy::bIsCGB)
 		return 0;
 	if (vbank != (mem[0xFF4F] & 0x1)) {
 		printf("error: switching bank while DMA not terminated\n");
@@ -97,7 +98,7 @@ int Hdma::update()
 
 int Hdma::updateHBlank()
 {
-	if (!bIsWritting || !bIsInHBlankMode || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
+	if (!bIsWritting || !bIsInHBlankMode || !Gameboy::bIsCGB)
 		return 0;
 	if (vbank != (mem[0xFF4F] & 0x1)) {
 		printf("error: switching bank while DMA not terminated\n");
