@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 13:01:22 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 13:19:31 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,8 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 		unsigned char bootRomData[2304];
 		cgbBootRom.read((char*)bootRomData, 2304);
 		auto newMem = new CGBMem(pathToRom);
-		memcpy(newMem->internalArray, bootRomData, 256);
-		memcpy(newMem->internalArray + 256, bootRomData + 256, 1792);
+		memcpy(newMem->internalArray, bootRomData, 2304);
+		cgbBootRom.close();
 		return newMem;
 	}
 	else
@@ -95,6 +95,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 		dmgBootRom.read((char*)bootRomData, 256);
 		auto newMem = new Mem(pathToRom);
 		memcpy(newMem->internalArray, bootRomData, 256);
+		dmgBootRom.close();
 		return newMem;
 	}
 }
@@ -263,6 +264,8 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	unsigned char typeMBC = mbc->getType();
 
 	//0xff50 is used to know if bootrom should be loaded or not
+	// address from 0x100 to 0x200 are not considered because that's
+	// where the nintendo logo should be in cartridges
 	if ((addr < 0x100 || (addr >= 0x200 && addr <= 0x08FF)) && internalArray[0xFF50] == 0)
 			return internalArray[addr];
 	if (addr <= 0x7FFF)

@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 01:28:07 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 13:16:03 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 	// 	<< " srcAddr: " << srcAddr << " Value: " << +newValue << std::endl;
 	bool bStopping = !BIT(mem[0xFF55], 7);
 	bool bIsHBlank = BIT(mem[0xFF55], 7);
-	if ((bIsWritting && !bStopping) || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
+	if ((bIsWritting && !bStopping) || !Gameboy::bIsCGB)
 	{
 		std::cerr << "HDMA WEIRD CASE HAPPENING !!!!" << std::endl;
 		//exit(0); TODO LMA manage error 
