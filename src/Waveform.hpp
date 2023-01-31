@@ -46,6 +46,7 @@ public:
     void triggerChannel();
     void clear();
 
+	static Waveform* loadWaveform(int chan);
     Waveform(int chan);
     ~Waveform();
 };

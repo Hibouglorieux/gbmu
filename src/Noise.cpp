@@ -43,6 +43,11 @@ void Noise::clear() {
     mem[NR44] = 0;
 }
 
+Noise* Noise::loadNoise(int chan)
+{
+	return new Noise(chan);
+}
+
 Noise::Noise(int chan)
 : channel(chan), initial_volume(0), trigger(false), iterations(0), sample(rand() % 101), length_count(0)
 {

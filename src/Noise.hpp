@@ -50,6 +50,7 @@ public:
 
     int length_count;
 
+	static Noise* loadNoise(int chan);
     Noise(int chan);
     ~Noise();
 };

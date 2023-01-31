@@ -24,14 +24,15 @@ public:
     static bool addDecibel(unsigned short &ref, int val);
 
     static void init();
+    static void reset();
     static void clear();
 
     static void turnOnOff(unsigned char old, unsigned char val);
 
-    static SquareWave channel1;
-    static SquareWave channel2;
-    static Waveform channel3;
-    static Noise channel4;
+    static SquareWave *channel1;
+    static SquareWave *channel2;
+    static Waveform *channel3;
+    static Noise *channel4;
 
     static SDL_AudioSpec obtainedSpec;
     static SDL_AudioSpec desiredSpec;

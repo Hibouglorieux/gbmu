@@ -39,9 +39,22 @@ unsigned short&	Cpu::DE = registers[2];
 unsigned short&	Cpu::HL = registers[3];
 
 // TODO LMA CGB Compatibility mode init value
+//
+void Cpu::reset()
+{
+	PC = 0;
+	IME = false;
+	setIMEFlag = false;
+	halted = false;
+	halt_counter = 0;
+}
 void Cpu::loadBootRom()
 {
 	PC = 0;
+	IME = false;
+	setIMEFlag = false;
+	halted = false;
+	halt_counter = 0;
 	return;
 	PC = 0x100;
 	mem.supervisorWrite(LCDC_STATUS, 0x85);

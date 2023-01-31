@@ -26,6 +26,7 @@ void SquareWave::channel_2_tick() {
         // std::cout << "Channel 2 tick : " << waveLength << "\n";
     // std::cout << "CHANNEL 2 TICK : " << lengthEnable << " et " << volumeSweepPace << " avec " << envelopeDirection << "\n";
 
+
     switch (waveDuty)
     {
     case 0:
@@ -188,6 +189,11 @@ void SquareWave::changeWavelength(float val) {
     }
 }
 
+SquareWave* SquareWave::loadSquareWave(int chan)
+{
+	return new SquareWave(chan);
+}
+
 SquareWave::SquareWave(int chan)
 : channel(chan), step(0), initialVolume(0), trigger(false), iterations(0), length_count(0)
 {
@@ -195,6 +201,7 @@ SquareWave::SquareWave(int chan)
     if (chan != 1 && chan != 2)
         throw "Wrong channel was specified for SquareWave channel";
     ticks = 0;
+	waveDuty = 0;
 }
 
 SquareWave::~SquareWave()

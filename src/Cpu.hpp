@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 22:50:59 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 22:30:25 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ public:
 
 	/* Initialize CPU register (boot) */
 	static void 		loadBootRom();
+	static void 		reset();
 
 	/* Read opcode and execute instruction (big switch) */
 	static std::pair<unsigned char, int> executeInstruction();

@@ -53,6 +53,11 @@ void Waveform::clear() {
     mem[NR34] = 0;
 }
 
+Waveform* Waveform::loadWaveform(int chan)
+{
+	return new Waveform(chan);
+}
+
 Waveform::Waveform(int chan)
 : channel(chan), step(0), volume(0), trigger(false), iterations(0), length_count(0)
 {

@@ -95,8 +95,9 @@ bool Gameboy::loadRom()
 		bCGBIsInCompatMode = true;
 		std::cout << "CGB is in compatibility mode for DMG" << std::endl;
 	}
-	Cpu::loadBootRom();
-	APU::init();
+	//Cpu::loadBootRom();
+	Cpu::reset();
+	APU::reset();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
 	Debugger::createTexture(bIsCGB, UserInterface::uiRenderer);
 	return gbMem->isValid;

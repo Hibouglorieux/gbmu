@@ -83,6 +83,7 @@ public:
 
     std::queue<entry> queue;
 
+	static SquareWave* loadSquareWave(int);
     SquareWave(int chan);
     ~SquareWave();
 };

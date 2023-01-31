@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:52:11 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 01:26:09 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 17:37:29 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ unsigned char Cpu::nop()
 
 unsigned char Cpu::stop()
 {
-	if (!Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode) {
-		return 2;
-	}
+	//if (!Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode) {
+	//	return 2;
+	//}
 	Cpu::halted = true;
 	Cpu::halt_counter = 1; // init halt counter
 	// After a successfull stop the CPU is stopped for 2050 cycle
