@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/30 07:54:39 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 06:46:09 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ short TilePixels::getColor(unsigned char byteColorCode, unsigned long paletteCol
 	// SDL wrapper only need to wrap that for now	
 	// TODO CGB encode 5bits RGB for color in 2 bytes.
 	short color = 0;
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
+	if (!Gameboy::bIsCGB)
 	{
 		unsigned char bitPosInPalette = byteColorCode == 0b11 ? 6 : byteColorCode == 0b10 ? 4 : byteColorCode == 0b01 ? 2 : 0;
 		color = paletteColor & (0b11 << bitPosInPalette);
@@ -85,9 +85,14 @@ std::array<short, 8> TilePixels::getColorLine(int y)
 	unsigned long paletteColor = 0;
 
 	// means the tile is valid, else return 0
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
+	if (!Gameboy::bIsCGB)
 	{
 		paletteColor = mem[BGP];
+	}
+	else if (Gameboy::bCGBIsInCompatMode)
+	{
+		// When in DMG compatibility mode, the CGB palettes are still being used: the background uses BG palette 0
+		paletteColor = getCGBPaletteColor(0, mem.getBGPalettes());
 	}
 	else
 	{
@@ -118,9 +123,9 @@ TilePixels::TilePixels()
 }
 
 TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress): TilePixels(tileAddress, mapAddress,
-							Gameboy::bCartIsCGB)
+							Gameboy::bIsCGB)
 {
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
+	if (!Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
 		return ;
 	{
 		unsigned char attribute = mem.getCGBVram()[(mapAddr == 0 ? 0: mapAddr - 0x8000)];
@@ -136,14 +141,15 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress, in
 	bIsValid = true;
 	mapAddr = mapAddress;
 	unsigned char* vram = mem.getVram();
-	if (vRamBankSelector == 2 && Gameboy::bCartIsCGB)
+	// TODO LMA this if is unused ?
+	if (vRamBankSelector == 2 && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode)
 		vram = mem.getCGBVram();
-	if (vRamBankSelector == 1 && Gameboy::bCartIsCGB)
+	if (vRamBankSelector == 1 && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode)
 	{
 		unsigned char attribute = mem.getCGBVram()[(mapAddr == 0 ? 0: mapAddr - 0x8000)];
 		if (BIT(attribute, 3))
 			vram = mem.getCGBVram();
-	}	
+	}
 	for (int y = 0; y < 8; y++) {
 
 		unsigned char byte1 = vram[tileAddress + (y * 2) - 0x8000];
@@ -165,7 +171,7 @@ TilePixels::TilePixels(unsigned short tileAddress, unsigned short mapAddress, in
 
 bool TilePixels::isAboveOAM() const
 {
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB) || !bIsValid)
+	if (!Gameboy::bIsCGB || !bIsValid)
 		return false;
 	unsigned char attribute = mem.getCGBVram()[(mapAddr == 0 ? 0: mapAddr - 0x8000)];
 	return BIT(attribute, 7);

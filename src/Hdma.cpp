@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/12 02:25:55 by nathan           ###   ########.fr       */
+/*   Updated: 2023/01/31 01:28:07 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,10 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 	// 	<< " srcAddr: " << srcAddr << " Value: " << +newValue << std::endl;
 	bool bStopping = !BIT(mem[0xFF55], 7);
 	bool bIsHBlank = BIT(mem[0xFF55], 7);
-	if (bIsWritting && !bStopping)
+	if ((bIsWritting && !bStopping) || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
 	{
 		std::cerr << "HDMA WEIRD CASE HAPPENING !!!!" << std::endl;
-		exit(0);
+		//exit(0); TODO LMA manage error 
 	}
 	else if (bStopping && bIsWritting)
 	{
@@ -72,7 +72,7 @@ void Hdma::writeInHdma(uint16_t dstAddr, uint16_t srcAddr, uint8_t newValue)
 
 int Hdma::update()
 {
-	if (!bIsWritting || bIsInHBlankMode)
+	if (!bIsWritting || bIsInHBlankMode || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
 		return 0;
 	if (vbank != (mem[0xFF4F] & 0x1)) {
 		printf("error: switching bank while DMA not terminated\n");
@@ -97,7 +97,7 @@ int Hdma::update()
 
 int Hdma::updateHBlank()
 {
-	if (!bIsWritting || !bIsInHBlankMode)
+	if (!bIsWritting || !bIsInHBlankMode || !Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
 		return 0;
 	if (vbank != (mem[0xFF4F] & 0x1)) {
 		printf("error: switching bank while DMA not terminated\n");

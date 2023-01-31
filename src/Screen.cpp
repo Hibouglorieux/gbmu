@@ -72,7 +72,7 @@ bool	Screen::drawPoint(unsigned short x, unsigned short y, const unsigned short&
 	x *= pixelScale;
 	y *= pixelScale;
 	int colorForSDL;
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB)) {
+	if (!Gameboy::bIsCGB) {
 		//colorForSDL = convertRGBforGB(color);
 		colorForSDL = 255 - color * (255 / 3);
 		colorForSDL = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8);

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/30 09:11:26 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 06:28:27 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void Ppu::reset()
 std::array<short, PIXEL_PER_LINE> Ppu::getDefaultWhiteLine()
 {
 	std::array<short, PIXEL_PER_LINE> line;
-	line.fill((!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB)) ? 0 : 0xFFFF);
+	line.fill(!Gameboy::bIsCGB ? 0 : 0xFFFF);
 	return line;
 }
 
@@ -37,7 +37,7 @@ std::array<short, PIXEL_PER_LINE> Ppu::doOneLine()
 
 	for (int i = 0; i < PIXEL_PER_LINE; i++)
 	{
-		if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB)) {
+		if (!Gameboy::bIsCGB) {
 			// color code == 0 means sprite pixel is translucent
 			if ((pixelLine[i].colorCode != 0 &&
 						((pixelLine[i].bIsAboveBackground && !backgroundLine[i].bIsAboveOAM)|| backgroundLine[i].colorCode == 0)))
@@ -93,7 +93,7 @@ std::array<BackgroundData, PIXEL_PER_LINE> Ppu::getBackgroundLine()
 		TilePixels tilePixels;
 		if (bDrawWindow)
 			tilePixels = getWindowTile((xPosInLine + WX_OFFSET - M_WX) / 8,  windowCounter / 8);// should not underflow/panic because of windowDraw bool
-		else if (bBackgroundEnabled || Gameboy::bCartIsCGB)// because in CGB bit 0 of LCDC only matters for superposition
+		else if (bBackgroundEnabled || (Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode))// because in CGB bit 0 of LCDC only matters for superposition
 		{
 			//std::cout << std::dec << "creating a tilePixel at LY: " << (int)M_LY << " number of tile: " << (int)(xPosInLine + M_SCX) / 8
 				//<< std::hex << std::endl;
@@ -163,7 +163,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 	// 2 -reverse sort sprites so that the first (in X drawn order) will be drawn fully
 	// CHANGE : Priorities : we will draw first the greatest X so the lowest X overlap them
 	std::function<bool(struct OAM_entry& a, struct OAM_entry& b)> sortFunction;
-	if (!Gameboy::bCartIsCGB || (Gameboy::forceMode && !Gameboy::forceCGB))
+	if (!Gameboy::bIsCGB || Gameboy::bCGBIsInCompatMode)
 		sortFunction = [&spritesFound2](struct OAM_entry& a, struct OAM_entry& b){
 			if (a.posX != b.posX)
 				return a.posX > b.posX;

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/30 11:05:14 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 06:59:33 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
-	if (CGBCode & 0x80)
+	if ((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
 		return new CGBMem(pathToRom);
 	else
 		return new Mem(pathToRom);
@@ -75,7 +75,8 @@ void Mem::supervisorWrite(unsigned int addr, unsigned char value)
 	Mem::internalArray[addr] = value;
 }
 
-std::vector<unsigned char> Mem::readFile(const std::string& filename) {
+std::vector<unsigned char> Mem::readFile(const std::string& filename)
+{
     std::ifstream infile(filename, std::ios::binary);
     std::vector<unsigned char> fileContent((std::istreambuf_iterator<char>(infile)),
                                            std::istreambuf_iterator<char>());
@@ -414,14 +415,17 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			std::cout << "HDMA done and was a " << (newValue & (1 << 7) ? "basic DMA": "HBLANK DMA (heavy one)")<< std::endl;
 			*/
 		}
-		if (addr == 0xFF4F) // VBK
+		if (addr == 0xFF4F && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode) // VBK
 		{
 			//std::cout << "changed VBK value !" << std::endl;
 			asCGB.bIsUsingCGBVram = newValue & 1;
 			//std::cout << (newValue ? "Enabling CGB VRBank" : "Disabling CGB VRBank") << std::endl;
 		}
-		if (addr == 0xFF70) // SVBK
+		if (addr == 0xFF70 && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode) // SVBK
 			asCGB.CGBextraRamBankNb = newValue & 7;
+		// if (addr == 0xff47 && bCGBIsInCompatMode) // TODO TBD LMA for CGB compat mode
+		// 	asCGB.BGPalettes[0] = newValue; // TODO LMA transform value ??
+		// 									// This need to be clarify
 		if (addr == 0xFF69) // BCPD/BGPD
 		{
 			unsigned char BCPSVal = memRef[0xFF68];
@@ -577,7 +581,7 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 	}
 	if (addr >= 0x8000 && addr <= 0x9FFF)
 	{
-		if (bIsUsingCGBVram)
+		if (bIsUsingCGBVram && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode)
 		{
 			//std::cout << "accessing CGBVramBank !" << std::endl;
 			return CGBVramBank[addr - 0x8000];
@@ -588,7 +592,7 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 			return internalArray[addr];
 		}
 	}
-	else if (addr >= 0xC000 && addr <= 0xDFFF)
+	else if (addr >= 0xC000 && addr <= 0xDFFF && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode)
 	{
 		if (addr <= 0xCFFF)
 			return CGBextraRamBanks[0][addr - 0xC000];

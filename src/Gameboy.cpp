@@ -12,9 +12,7 @@ int		Gameboy::clockLine = 0;
 bool		Gameboy::bShouldRenderFrame = true;
 bool		Gameboy::quit = false;
 bool		Gameboy::bIsCGB = false;
-bool		Gameboy::bCartIsCGB = false;
-bool		Gameboy::forceMode = false;
-bool		Gameboy::forceCGB = true;
+bool		Gameboy::bCGBIsInCompatMode = false;
 bool		Gameboy::bIsInit = false;
 bool		Gameboy::bIsPathValid = false;
 bool		Gameboy::lcdcWasOff = false;
@@ -43,7 +41,7 @@ void	Gameboy::init()
 	bShouldRenderFrame = true;
 	quit = false;
 	bIsCGB = false;
-	bCartIsCGB = false;
+	bCGBIsInCompatMode = false;
 	frameNb = 0;
 	clockRest = 0;
 	bLogFrameNb = false;
@@ -88,10 +86,15 @@ bool Gameboy::loadRom()
 		bIsPathValid = false;
 		return false;
 	}
-	bCartIsCGB = gbMem->isCGB();
-	bIsCGB = (!Gameboy::forceMode ? bCartIsCGB : Gameboy::forceCGB);
-	
+	bool bCartIsCGB = gbMem->isCGB();
+	bIsCGB = (!UserInterface::forceMode ? bCartIsCGB : UserInterface::forceCGB);
+
 	std::cout << (bIsCGB ? "cartridge is CGB" : "cartridge is DMG") << std::endl;
+
+	if (bIsCGB && !bCartIsCGB) {
+		bCGBIsInCompatMode = true;
+		std::cout << "CGB is in compatibility mode for DMG" << std::endl;
+	}
 	Cpu::loadBootRom();
 	APU::init();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
@@ -221,7 +224,8 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 	currentState = newState;
 }
 
-void Gameboy::loadSaveState() {
+void Gameboy::loadSaveState()
+{
 	s_state tmp;
 	std::cout << "Loading game state\n";
 	std::cout << "Thread ID : " << pthread_self() << "\n";
@@ -360,7 +364,8 @@ void Gameboy::loadSaveState() {
 	}
 }
 
-void Gameboy::saveState() {
+void Gameboy::saveState()
+{
 	std::cout << "Saving game state\n";
 	s_state tmp;
 
@@ -491,7 +496,8 @@ void Gameboy::saveState() {
 	outfile.close();
 }
 
-void Gameboy::saveRam() {
+void Gameboy::saveRam()
+{
 	if (!bIsPathValid || !bIsInit)
 		return ;
 	std::ofstream outfile(path + ".save", std::ios::binary);

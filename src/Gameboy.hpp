@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/30 01:06:07 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 00:13:43 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,7 @@ public:
 	static int		clockLine;
 	static float		clockRest;
 	static bool		bIsCGB;
-	static bool		bCartIsCGB;
-	static bool		forceMode;
-	static bool		forceCGB;
+	static bool		bCGBIsInCompatMode;
 	static unsigned int	frameNb;
 
 	static bool		bIsInit;

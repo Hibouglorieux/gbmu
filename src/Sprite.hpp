@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:01 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/02 22:01:23 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 02:08:40 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@
 #include "Gameboy.hpp"
 #include "define.hpp"
 
-struct OAM_entry {
+struct OAM_entry
+{
 	unsigned char posY;
 	unsigned char posX;
 	unsigned char tileIndex;
@@ -41,7 +42,8 @@ struct OAM_entry {
 	}
 };
 
-class Sprite {
+class Sprite
+{
 
 public:
 	Sprite(OAM_entry newOAM, unsigned char newSpriteHeight);

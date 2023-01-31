@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/30 09:58:24 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 00:13:11 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ bool UserInterface::showRegisters = false;
 bool UserInterface::showPalettes = false;
 bool UserInterface::bIsError = false;
 bool UserInterface::bIsFatalError = false;
+bool UserInterface::forceMode = false;
+bool UserInterface::forceCGB = true;
 int UserInterface::volume = 0;
 SDL_Window*	UserInterface::uiWindow = nullptr;
 SDL_Renderer*	UserInterface::uiRenderer = nullptr;
@@ -180,30 +182,30 @@ void UserInterface::showGameboyWindow()
 	ImGui::SameLine();
 	if (ImGui::Button("Autodetect CGB/DMG mode")) {
 		Gameboy::clear();
-		Gameboy::forceMode = false;
+		forceMode = false;
 		ImGui::End();
 		return ;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Force CGB mode")) {
-		Gameboy::forceMode = true;
-		Gameboy::forceCGB = true;
+		forceMode = true;
+		forceCGB = true;
 		Gameboy::clear();
 		ImGui::End();
 		return ;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Force DMG mode")) {
-		Gameboy::forceMode = true;
-		Gameboy::forceCGB = false;
+		forceMode = true;
+		forceCGB = false;
 		Gameboy::clear();
 		ImGui::End();
 		return ;
 	}
-	if (Gameboy::forceMode) {
+	if (forceMode) {
 		ImGui::Text("Forcing");
 		ImGui::SameLine();
-		ImGui::Text((Gameboy::forceCGB ? "CGB mode." : "DMG mode."));
+		ImGui::Text((forceCGB ? "CGB mode." : "DMG mode."));
 	} else {
 		ImGui::Text("Using autodetect DMG/CGB mode.");
 	}

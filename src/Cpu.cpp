@@ -38,6 +38,7 @@ unsigned short&	Cpu::BC = registers[1];
 unsigned short&	Cpu::DE = registers[2];
 unsigned short&	Cpu::HL = registers[3];
 
+// TODO LMA CGB Compatibility mode init value
 void Cpu::loadBootRom()
 {
 	PC = 0x100;
@@ -62,6 +63,50 @@ void Cpu::loadBootRom()
 		E = 0xD8;
 		H = 0x01;
 		L = 0x4D;
+	}
+	else if (Gameboy::bCGBIsInCompatMode)
+	{
+		A = 0x11;
+		F = 0;
+		B = 0x43; // TODO may change
+		C = 0;
+		setZeroFlag(1);
+		D = 0x00;
+		E = 0x08;
+		H = 0x99; // TODO may change
+		L = 0x1A; // TODO may change
+		// TODO Fill palette DEBUG PALETTES
+	    if (Gameboy::bIsCGB && Gameboy::bCGBIsInCompatMode) {
+			const CGBMem& asCGB = dynamic_cast<const CGBMem&>(mem);
+			
+			asCGB.BGPalettes[0] = 0xFF;
+			asCGB.BGPalettes[1] = 0xFF;
+			asCGB.BGPalettes[2] = 0xAA;
+			asCGB.BGPalettes[3] = 0xAA;
+			asCGB.BGPalettes[4] = 0x55;
+			asCGB.BGPalettes[5] = 0x55;
+			asCGB.BGPalettes[6] = 0x00;
+			asCGB.BGPalettes[7] = 0x00;
+			
+			asCGB.OBJPalettes[0] = 0xFF;
+			asCGB.OBJPalettes[1] = 0xFF;
+			asCGB.OBJPalettes[2] = 0x24;
+			asCGB.OBJPalettes[3] = 0x24;
+			asCGB.OBJPalettes[4] = 0x42;
+			asCGB.OBJPalettes[5] = 0x42;
+			asCGB.OBJPalettes[6] = 0x00;
+			asCGB.OBJPalettes[7] = 0x00;
+			
+			asCGB.OBJPalettes[8+0] = 0xFF;
+			asCGB.OBJPalettes[8+1] = 0xFF;
+			asCGB.OBJPalettes[8+2] = 0x35;
+			asCGB.OBJPalettes[8+3] = 0x35;
+			asCGB.OBJPalettes[8+4] = 0x53;
+			asCGB.OBJPalettes[8+5] = 0x53;
+			asCGB.OBJPalettes[8+6] = 0x00;
+			asCGB.OBJPalettes[8+7] = 0x00;
+			asCGB.bIsUsingCGBVram = 0;
+	    }
 	}
 	else
 	{
