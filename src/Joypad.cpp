@@ -41,18 +41,22 @@ void Joypad::handleEvent(SDL_Event *ev)
 	if (keyboardEv.type == SDL_KEYDOWN && keyboardEv.repeat == 0) {
 		switch (keyboardEv.keysym.sym) {
 			case SDLK_DOWN:
+			case SDLK_KP_5:
 				input |= JOYPAD_MSK_DOWN;
 				bSomethingChanged = true;
 				break;
 			case SDLK_UP:
+			case SDLK_KP_8:
 				input |= JOYPAD_MSK_UP;
 				bSomethingChanged = true;
 				break;
 			case SDLK_LEFT:
+			case SDLK_KP_4:
 				input |= JOYPAD_MSK_LEFT;
 				bSomethingChanged = true;
 				break;
 			case SDLK_RIGHT:
+			case SDLK_KP_6:
 				input |= JOYPAD_MSK_RIGHT;
 				bSomethingChanged = true;
 				break;
@@ -79,18 +83,22 @@ void Joypad::handleEvent(SDL_Event *ev)
 	if (keyboardEv.type == SDL_KEYUP) {
 		switch (keyboardEv.keysym.sym) {
 			case SDLK_DOWN:
+			case SDLK_KP_5:
 				input &= ~JOYPAD_MSK_DOWN;
 				bSomethingChanged = true;
 				break;
 			case SDLK_UP:
+			case SDLK_KP_8:
 				input &= ~JOYPAD_MSK_UP;
 				bSomethingChanged = true;
 				break;
 			case SDLK_LEFT:
+			case SDLK_KP_4:
 				input &= ~JOYPAD_MSK_LEFT;
 				bSomethingChanged = true;
 				break;
 			case SDLK_RIGHT:
+			case SDLK_KP_6:
 				input &= ~JOYPAD_MSK_RIGHT;
 				bSomethingChanged = true;
 				break;
