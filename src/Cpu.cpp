@@ -41,8 +41,9 @@ unsigned short&	Cpu::HL = registers[3];
 // TODO LMA CGB Compatibility mode init value
 void Cpu::loadBootRom()
 {
+	PC = 0;
+	return;
 	PC = 0x100;
-	SP = 0xFFFE;
 	mem.supervisorWrite(LCDC_STATUS, 0x85);
 	mem.supervisorWrite(HDMA1, 0xFF);
 	mem.supervisorWrite(HDMA2, 0xFF);

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 06:59:33 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/01/31 12:51:56 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,9 @@
 #include "Debugger.hpp"
 #include <fstream>
 #include <iostream>
+
+#define DMG_BOOT_ROM_PATH "./resources/dmg_boot.bin"
+#define CGB_BOOT_ROM_PATH "./resources/cgb_boot.bin"
 
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are
@@ -65,9 +68,34 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
 	if ((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
-		return new CGBMem(pathToRom);
+	{
+		std::ifstream cgbBootRom = std::ifstream(CGB_BOOT_ROM_PATH, std::ios::binary);
+		if (!cgbBootRom.is_open())
+		{
+			UserInterface::throwError("bootRomNotFound", false);
+			return nullptr;
+		}
+		unsigned char bootRomData[2304];
+		cgbBootRom.read((char*)bootRomData, 2304);
+		auto newMem = new CGBMem(pathToRom);
+		memcpy(newMem->internalArray, bootRomData, 256);
+		memcpy(newMem->internalArray + 256, bootRomData + 256, 1792);
+		return newMem;
+	}
 	else
-		return new Mem(pathToRom);
+	{
+		std::ifstream dmgBootRom = std::ifstream(DMG_BOOT_ROM_PATH, std::ios::binary);
+		if (!dmgBootRom.is_open())
+		{
+			UserInterface::throwError("bootRomNotFound", false);
+			return nullptr;
+		}
+		unsigned char bootRomData[256];
+		dmgBootRom.read((char*)bootRomData, 256);
+		auto newMem = new Mem(pathToRom);
+		memcpy(newMem->internalArray, bootRomData, 256);
+		return newMem;
+	}
 }
 
 void Mem::supervisorWrite(unsigned int addr, unsigned char value)
@@ -161,7 +189,7 @@ Mem::Mem(const std::string& pathToRom)
 				std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 			}
 
-			memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
+			//memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
 
 			for (int i = 0; i < extraRamBanksNb; i++) {
 				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
@@ -233,6 +261,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
 	unsigned char typeMBC = mbc->getType();
 
+	//0xff50 is used to know if bootrom should be loaded or not
+	if ((addr < 0x100 || (addr >= 0x200 && addr <= 0x08FF)) && internalArray[0xFF50] == 0)
+			return internalArray[addr];
 	if (addr <= 0x7FFF)
 	{
 		unsigned char romBankNb = mbc->getRomBank(addr);
