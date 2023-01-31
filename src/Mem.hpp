@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/03 00:39:23 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 00:19:49 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,11 @@ public:
 	virtual const std::array<unsigned char, 64>& getOBJPalettes() {return OBJPalettes;}
 	mutable std::array<unsigned char, 64> BGPalettes;
 	mutable std::array<unsigned char, 64> OBJPalettes;
+
+	// CGB Compatibility palette saving
+	mutable bool	bCGBCompatPalettesLoaded;
+	mutable std::array<unsigned char, 8> CGBCompatPaletteSaveBG;
+	mutable std::array<unsigned char, 16> CGBCompatPaletteSaveOBJ;
 
 	std::array<unsigned char*, 8> getCGBExtraRamBanks() {return CGBextraRamBanks;}
 protected:

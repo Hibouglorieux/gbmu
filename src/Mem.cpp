@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 22:39:09 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 00:42:41 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -441,6 +441,14 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	try // try block because this is only for CGB registers
 	{
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		// Save palettes for CGB in compatibility mode
+		// Use ff50 to happen only when bootrom is done
+		if (Gameboy::bCGBIsInCompatMode && !asCGB.bCGBCompatPalettesLoaded && mem[0xFF50] != 0)
+		{
+			asCGB.bCGBCompatPalettesLoaded = true;
+			memcpy(asCGB.CGBCompatPaletteSaveBG.data(), asCGB.BGPalettes.data(), 8);
+			memcpy(asCGB.CGBCompatPaletteSaveOBJ.data(), asCGB.OBJPalettes.data(), 16);
+		}
 		if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
 		{
 			// TODO WIP
@@ -472,9 +480,39 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		}
 		if (addr == 0xFF70 && Gameboy::bIsCGB && !Gameboy::bCGBIsInCompatMode) // SVBK
 			asCGB.CGBextraRamBankNb = newValue & 7;
-		// if (addr == 0xff47 && bCGBIsInCompatMode) // TODO TBD LMA for CGB compat mode
-		// 	asCGB.BGPalettes[0] = newValue; // TODO LMA transform value ??
-		// 									// This need to be clarify
+		if (addr == 0xff47 && Gameboy::bCGBIsInCompatMode) { // BGP for CGB in compat mode
+			int index;
+			index = value & 0b11;
+			memcpy(&asCGB.BGPalettes.data()[0], &asCGB.CGBCompatPaletteSaveBG.data()[index * 2], 2);
+			index = (value >> 2) & 0b11;
+			memcpy(&asCGB.BGPalettes.data()[2], &asCGB.CGBCompatPaletteSaveBG.data()[index * 2], 2);
+			index = (value >> 4) & 0b11;
+			memcpy(&asCGB.BGPalettes.data()[4], &asCGB.CGBCompatPaletteSaveBG.data()[index * 2], 2);
+			index = (value >> 6) & 0b11;
+			memcpy(&asCGB.BGPalettes.data()[6], &asCGB.CGBCompatPaletteSaveBG.data()[index * 2], 2);
+		}
+		if (addr == 0xff48 && Gameboy::bCGBIsInCompatMode) { // OBJ0 for CGB in compat mode
+			int index;
+			// index = value & 0b11;
+			// memcpy(&asCGB.OBJPalettes.data()[0], &asCGB.CGBCompatPaletteSaveOBJ.data()[index * 2], 2);
+			index = (value >> 2) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[2], &asCGB.CGBCompatPaletteSaveOBJ.data()[index * 2], 2);
+			index = (value >> 4) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[4], &asCGB.CGBCompatPaletteSaveOBJ.data()[index * 2], 2);
+			index = (value >> 6) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[6], &asCGB.CGBCompatPaletteSaveOBJ.data()[index * 2], 2);
+		}
+		if (addr == 0xff49 && Gameboy::bCGBIsInCompatMode) { // OBJ1 for CGB in compat mode
+			int index;
+			// index = value & 0b11;
+			// memcpy(&asCGB.OBJPalettes.data()[0], &asCGB.CGBCompatPaletteSaveOBJ.data()[index * 2], 2);
+			index = (value >> 2) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[8 + 2], &asCGB.CGBCompatPaletteSaveOBJ.data()[8 + index * 2], 2);
+			index = (value >> 4) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[8 + 4], &asCGB.CGBCompatPaletteSaveOBJ.data()[8 + index * 2], 2);
+			index = (value >> 6) & 0b11;
+			memcpy(&asCGB.OBJPalettes.data()[8 + 6], &asCGB.CGBCompatPaletteSaveOBJ.data()[8 + index * 2], 2);
+		}
 		if (addr == 0xFF69) // BCPD/BGPD
 		{
 			unsigned char BCPSVal = memRef[0xFF68];
@@ -604,6 +642,7 @@ CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
 		bzero(CGBextraRamBanks[i], 0x1000);
 	}
+	bCGBCompatPalettesLoaded = false;
 }
 
 CGBMem::~CGBMem()
