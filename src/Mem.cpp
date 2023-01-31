@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 12:51:56 by nallani          ###   ########.fr       */
+/*   Updated: 2023/01/31 13:01:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,8 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
-	if ((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
+	if (((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
+			&& !(UserInterface::forceMode && !UserInterface::forceCGB))
 	{
 		std::ifstream cgbBootRom = std::ifstream(CGB_BOOT_ROM_PATH, std::ios::binary);
 		if (!cgbBootRom.is_open())
