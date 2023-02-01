@@ -111,6 +111,16 @@ bool Gameboy::loadRom()
 			saveBuffer.bHasBeenWritten[i] = false;
 		}
 	}
+	else if (mem.mbc->getType() == 2) {
+		saveBufferSize = 512;
+		saveBuffer.value = new unsigned char[saveBufferSize];
+		saveBuffer.bHasBeenWritten = new bool[saveBufferSize];
+		for (int i = 0; i < saveBufferSize; i++)
+		{
+			saveBuffer.value[i] = 0;
+			saveBuffer.bHasBeenWritten[i] = false;
+		}
+	}
 	Cpu::reset();
 	APU::reset();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);

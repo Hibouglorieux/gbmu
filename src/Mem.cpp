@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 21:13:44 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 23:55:06 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,6 +152,7 @@ Mem::Mem(const std::string& pathToRom)
 	internalArray = new unsigned char[MEM_SIZE];
 	bzero(internalArray, MEM_SIZE);
 
+
     for (int i = 0; i < romBanksNb; i++) {
         file.read((char *) romBanks[i], ROM_BANK_SIZE);
     }
@@ -164,6 +165,11 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << "loaded rom with title: " << getTitle() << std::endl;
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
+
+	if (mbc->getType() == 2) {
+		builtinExtraRam = new unsigned char[512];
+		bzero(builtinExtraRam, 512);
+	}
 
 	// Check if there is a save
 	std::ifstream tmp(pathToRom + ".save");
@@ -189,6 +195,9 @@ Mem::Mem(const std::string& pathToRom)
 			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
+		if (mbc->getType() == 2) {
+			memcpy(builtinExtraRam, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), 512);
+		}
 		for (int i = 0; i < extraRamBanksNb; i++) {
 			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
 		}
@@ -215,6 +224,7 @@ Mem::~Mem()
 		return;
 
 	delete[] internalArray;
+	delete[] builtinExtraRam;
 	for (unsigned char* ramBank : extraRamBanks)
 		delete[] ramBank;
 	extraRamBanks.clear();
@@ -284,6 +294,12 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 				} else
 					throw "Could not dynamically cast MBC3";
 			}
+			// mbc2 exception : return builtinExtraRam
+			// only the 9 bottom bits are used for addresse
+			if (typeMBC == 2) {
+				return builtinExtraRam[addr & 0x1FF];
+			}
+			// else return 0
 			internalArray[addr] = 0;
 			return internalArray[addr];
 		}
@@ -310,6 +326,10 @@ void	Mem::saveByteInSave(unsigned short addr, unsigned char value) const
 		std::cout << "at addr: " << (int)addr << " and ramBankNb: " << (int)ramBankNb << 
 			" i get finalAddr: " << (ramBankNb & (extraRamBanks.size() - 1)) * RAM_BANK_SIZE
 				+ (addr - 0xA000) << " with value: " << (int)value << std::endl;
+	}
+	else if (mbc->getType() == 2 && addr - 0xA000 < 512)
+	{
+		Gameboy::saveByteInSave(addr - 0xA000, value);
 	}
 }
 

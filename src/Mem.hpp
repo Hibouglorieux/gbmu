@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 09:00:31 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 23:55:17 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ public:
 
 	static const std::map<unsigned short, unsigned char> readOnlyBits;
     std::vector<unsigned char*>	extraRamBanks;
+	unsigned char*	builtinExtraRam;
     std::vector<unsigned char*>	romBanks;
 	MBC* mbc;
 	void saveByteInSave(unsigned short addr, unsigned char value) const;
