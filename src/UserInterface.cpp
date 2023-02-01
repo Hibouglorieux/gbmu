@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 11:52:41 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 21:29:19 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,12 @@ void UserInterface::destroy()
 	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 	SDL_Quit();
 	SDL_TLSCleanup();
+}
+
+void UserInterface::reset()
+{
+	UserInterface::framesToSkipRender = 0;
+	UserInterface::framesToSkipUpdate = 0;
 }
 
 bool UserInterface::create()

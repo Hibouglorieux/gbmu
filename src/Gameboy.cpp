@@ -51,6 +51,7 @@ void	Gameboy::init()
 	clockLine = 0;
 	Hdma::reset();
 	Ppu::reset();
+	UserInterface::reset();
 }
 
 void	Gameboy::updateLY(int iter)

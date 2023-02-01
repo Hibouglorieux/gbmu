@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:45:13 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 11:29:18 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 21:29:35 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ public:
 	static void 		showSubWindows(bool bShouldComputeScreen = true);
 	static bool		create();
 	static void		destroy();
+	static void		reset();
 	static SDL_Window*	uiWindow;
 	static SDL_Renderer*	uiRenderer;
     	static void		TexturetoImage(SDL_Texture *);
