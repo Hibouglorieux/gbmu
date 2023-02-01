@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 09:37:06 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 09:44:42 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,7 +330,7 @@ void UserInterface::showSubWindows()
 }
 
 bool UserInterface::loop()
-{	
+{
 
 	static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -368,15 +368,18 @@ bool UserInterface::loop()
 
 		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 
+		auto handleEvents = [](){
+			SDL_Event event;
+			while (SDL_PollEvent(&event))
+				UserInterface::handleEvent(&event);
+		};
+		handleEvents();
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		if (timeTakenForFrame.count() < frametime.count())
 		{
 			while (frametime.count() > timeTakenForFrame.count())
 			{
-				SDL_Event event;
-				//SDL_WaitEventTimeout(&event, (frametime.count() - timeTakenForFrame.count()) / 1000);
-				while (SDL_PollEvent(&event))
-					UserInterface::handleEvent(&event);
+				handleEvents();
 				timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 				std::this_thread::sleep_for(std::min(frametime - timeTakenForFrame, std::chrono::microseconds(500)));
 			}
