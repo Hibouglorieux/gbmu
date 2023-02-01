@@ -591,20 +591,6 @@ int Gameboy::getState()
 	return (currentState);
 }
 
-void Gameboy::pollEvent()
-{
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		UserInterface::handleEvent(&event);
-		if (!UserInterface::bIsError && Gameboy::bIsInit) {
-			Joypad::handleEvent(&event);
-		}
-		if (event.type == SDL_QUIT) {
-			Gameboy::quit = true;
-		}
-	}
-}
-
 int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 {
 	static const int nbClockLine = 114;

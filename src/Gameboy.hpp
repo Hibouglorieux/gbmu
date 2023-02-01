@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 09:00:50 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 09:23:21 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,6 @@ public:
 	static int		executeLine(bool step, bool updateState,
 					bool bRefreshScreen);
 
-	// Events : Screen, Joypad
-	static void		pollEvent();
 	static void		clear();
 
 	// Rendering ctrl

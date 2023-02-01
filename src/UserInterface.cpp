@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 06:07:27 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 09:37:06 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -366,14 +366,20 @@ bool UserInterface::loop()
 			}
 		}
 
-		Gameboy::pollEvent();
-
 		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
 		if (timeTakenForFrame.count() < frametime.count())
 		{
-			std::this_thread::sleep_for(frametime - timeTakenForFrame);
+			while (frametime.count() > timeTakenForFrame.count())
+			{
+				SDL_Event event;
+				//SDL_WaitEventTimeout(&event, (frametime.count() - timeTakenForFrame.count()) / 1000);
+				while (SDL_PollEvent(&event))
+					UserInterface::handleEvent(&event);
+				timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
+				std::this_thread::sleep_for(std::min(frametime - timeTakenForFrame, std::chrono::microseconds(500)));
+			}
 		}
 
 		UserInterface::clear(clear_color);
@@ -469,6 +475,8 @@ void	UserInterface::fileExplorer()
 void	UserInterface::handleEvent(SDL_Event *ev)
 {
 	ImGui_ImplSDL2_ProcessEvent(ev);
+	if (ev->type == SDL_QUIT)
+		Gameboy::quit = true;
 	if (ev->type == SDL_WINDOWEVENT) {
 		switch (ev->window.event) {
 			case SDL_WINDOWEVENT_CLOSE:
@@ -492,5 +500,7 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 		Gameboy::bIsPathValid = true;
 		SDL_free(ev->drop.file);
 	}
+	if (!bIsError && Gameboy::bIsInit)
+		Joypad::handleEvent(ev);
 
 }
