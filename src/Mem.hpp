@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 00:19:49 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 05:48:12 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ public:
 	MemWrap operator[](unsigned int i);
 	const MemWrap operator[](unsigned int i) const;
 	void supervisorWrite(unsigned int addr, unsigned char value);
+	void saveByte(unsigned int addr, unsigned char value);
 	unsigned char* getVram() {return &internalArray[0x8000];}
 	static std::vector<unsigned char> readFile(const std::string& filename);
 
@@ -104,7 +105,6 @@ public:
 	mutable std::array<unsigned char, 64> OBJPalettes;
 
 	// CGB Compatibility palette saving
-	mutable bool	bCGBCompatPalettesLoaded;
 	mutable std::array<unsigned char, 8> CGBCompatPaletteSaveBG;
 	mutable std::array<unsigned char, 16> CGBCompatPaletteSaveOBJ;
 

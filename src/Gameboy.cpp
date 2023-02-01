@@ -353,6 +353,12 @@ void Gameboy::loadSaveState()
 			ptr->BGPalettes[i] = tmp.cgb.BGPalettes[i];
 			ptr->OBJPalettes[i] = tmp.cgb.OBJPalettes[i];
 		}
+		for (int i = 0; i < 8; i++) {
+			ptr->CGBCompatPaletteSaveBG[i] = tmp.cgb.CGBCompatPaletteSaveBG[i];
+		}
+		for (int i = 0; i < 16; i++) {
+			ptr->CGBCompatPaletteSaveOBJ[i] = tmp.cgb.CGBCompatPaletteSaveOBJ[i];
+		}
 		ptr->bIsUsingCGBVram = tmp.cgb.bIsUsingCGBVram;
 		
 		memcpy(ptr->getCGBVram(), content.data() + offset, 0x2000);
@@ -465,6 +471,9 @@ void Gameboy::saveState()
 		tmp.cgb.CGBextraRamBankNb = ptr->CGBextraRamBankNb;
 		memcpy(tmp.cgb.BGPalettes, ptr->BGPalettes.data(), sizeof(unsigned char) * 64);
 		memcpy(tmp.cgb.OBJPalettes, ptr->OBJPalettes.data(), sizeof(unsigned char) * 64);
+
+		memcpy(tmp.cgb.CGBCompatPaletteSaveBG, ptr->CGBCompatPaletteSaveBG.data(), sizeof(unsigned char) * 8);
+		memcpy(tmp.cgb.CGBCompatPaletteSaveOBJ, ptr->CGBCompatPaletteSaveOBJ.data(), sizeof(unsigned char) * 16);
 	}
 
 	outfile.write(reinterpret_cast<char*>(&tmp), sizeof(tmp));

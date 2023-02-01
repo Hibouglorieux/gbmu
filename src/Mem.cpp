@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 01:54:02 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 06:12:31 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,6 +414,14 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
+	if (addr == 0xff50 && value != 0) {
+		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		if (Gameboy::bCGBIsInCompatMode)
+		{
+			memcpy(asCGB.CGBCompatPaletteSaveBG.data(), asCGB.BGPalettes.data(), 8);
+			memcpy(asCGB.CGBCompatPaletteSaveOBJ.data(), asCGB.OBJPalettes.data(), 16);
+		}
+	}
 	
     if (addr == 0xFF46) {
 		if (newValue <= 0xF1) {
@@ -426,12 +434,6 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
 		// Save palettes for CGB in compatibility mode
 		// Use ff50 to happen only when bootrom is done
-		if (Gameboy::bCGBIsInCompatMode && !asCGB.bCGBCompatPalettesLoaded && mem[0xFF50] != 0)
-		{
-			asCGB.bCGBCompatPalettesLoaded = true;
-			memcpy(asCGB.CGBCompatPaletteSaveBG.data(), asCGB.BGPalettes.data(), 8);
-			memcpy(asCGB.CGBCompatPaletteSaveOBJ.data(), asCGB.OBJPalettes.data(), 16);
-		}
 		if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
 		{
 			// TODO WIP
@@ -625,7 +627,6 @@ CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
 		bzero(CGBextraRamBanks[i], 0x1000);
 	}
-	bCGBCompatPalettesLoaded = false;
 }
 
 CGBMem::~CGBMem()

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/31 00:13:43 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 06:03:04 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,8 @@ typedef struct {
 		unsigned char CGBextraRamBankNb;
 		unsigned char BGPalettes[64];
 		unsigned char OBJPalettes[64];
+		unsigned char CGBCompatPaletteSaveBG[8];
+		unsigned char CGBCompatPaletteSaveOBJ[16];
 	} cgb;
 } s_state;
 
