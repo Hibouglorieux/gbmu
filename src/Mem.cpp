@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 09:00:59 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 21:13:44 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -430,7 +430,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		else
 			RES(M_LCDC_STATUS, 2);
 	}
-	if (addr == 0xff50 && value != 0) {
+	if (addr == 0xff50 && value != 0 && Gameboy::bIsCGB) {
 		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
 		if (Gameboy::bCGBIsInCompatMode)
 		{
@@ -643,6 +643,7 @@ CGBMem::CGBMem(const std::string& pathToRom) : Mem(pathToRom)
 		CGBextraRamBanks[i] = new unsigned char[0x1000];
 		bzero(CGBextraRamBanks[i], 0x1000);
 	}
+	bIsUsingCGBVram = 0;
 }
 
 CGBMem::~CGBMem()

@@ -62,8 +62,10 @@ Waveform::Waveform(int chan)
 : channel(chan), step(0), volume(0), trigger(false), iterations(0), length_count(0)
 {
     std::cout << "Waveform channel " << chan << " was created\n";
-    if (chan != 3)
+    if (chan != 3) {
         throw "Wrong channel was specified for Waveform channel";
+	}
+	DACenable = 0;
 }
 
 Waveform::~Waveform()

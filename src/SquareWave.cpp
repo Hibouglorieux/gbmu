@@ -202,6 +202,7 @@ SquareWave::SquareWave(int chan)
         throw "Wrong channel was specified for SquareWave channel";
     ticks = 0;
 	waveDuty = 0;
+	DACenable = 0;
 }
 
 SquareWave::~SquareWave()
