@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 06:12:31 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 09:00:59 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,7 @@ Mem::Mem(const std::string& pathToRom)
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
 	file.seekg(0, std::ifstream::beg);
-	int extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
+	extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
 
 	for (int i = 0; i < romBanksNb; i++)
 		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
@@ -147,7 +147,7 @@ Mem::Mem(const std::string& pathToRom)
 	for (int i = 0; i < extraRamBanksNb; i++)
 		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
 
-	std::cout << "created " << extraRamBanksNb << " extra ram banks" << std::endl;
+	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
 	bzero(internalArray, MEM_SIZE);
@@ -173,26 +173,24 @@ Mem::Mem(const std::string& pathToRom)
 		std::ifstream infile(pathToRom + ".save", std::ios::binary);
 		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(infile)),
 				std::istreambuf_iterator<char>());
+		/*
 		infile.seekg(0, std::ifstream::beg);
 		infile.seekg(0, std::ifstream::end);
 		int fileLen = infile.tellg();
+		*/
 		infile.close();
 
 		// TODO do more check with size for extraRam
-		if (fileLen >= MEM_SIZE) {
-			if (mbc->hasTimer) {
-				// Fetching timer save
-				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
-				if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
-				memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-				std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
-			}
+		if (mbc->hasTimer) {
+			// Fetching timer save
+			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
+			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
+			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
+			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
+		}
 
-			//memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
-
-			for (int i = 0; i < extraRamBanksNb; i++) {
-				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
-			}
+		for (int i = 0; i < extraRamBanksNb; i++) {
+			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;
@@ -302,10 +300,28 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 		return internalArray[addr];
 }
 
+void	Mem::saveByteInSave(unsigned short addr, unsigned char value) const
+{
+	unsigned char ramBankNb = mbc->getRamBank();
+	if (ramBankNb != 0xFF)
+	{
+		Gameboy::saveByteInSave((ramBankNb & (extraRamBanks.size() - 1)) * RAM_BANK_SIZE
+				+ (addr - 0xA000), value);
+		std::cout << "at addr: " << (int)addr << " and ramBankNb: " << (int)ramBankNb << 
+			" i get finalAddr: " << (ramBankNb & (extraRamBanks.size() - 1)) * RAM_BANK_SIZE
+				+ (addr - 0xA000) << " with value: " << (int)value << std::endl;
+	}
+}
+
 unsigned char& MemWrap::operator=(unsigned char newValue)
 {
 	if (UserInterface::bIsError) {
 		return (value); // TODO what we should return here ?
+	}
+	if (addr >= 0xA000 && addr < 0xC000)
+	{
+		//Writing in external ram
+		memRef.saveByteInSave(addr, newValue);
 	}
 	if (addr == 0xFF1A) {
 		mem.supervisorWrite(0xFF26, mem[0xff26] & ~(1 << 2));

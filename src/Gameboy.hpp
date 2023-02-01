@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 06:03:04 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 09:00:50 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ public:
 	static void		saveState();
 	static void		saveRam();
 	static void		loadSaveState();
+	static void		saveByteInSave(unsigned short addr, unsigned char value);
 
 	// Status of execution
 	static void		updateLY(int iter);
@@ -100,12 +101,19 @@ public:
 	// Hdma H-BLANK
 	static void 		doHblankHdma();
 	static std::string	path;
+	struct saveBufferStruct
+	{
+		unsigned char*	value;
+		bool*			bHasBeenWritten;
+	};
 
 private:
 	static int		currentState;
 	static bool		bShouldRenderFrame;
 	static Mem*		gbMem;
 
+	static saveBufferStruct saveBuffer;
+	static unsigned short saveBufferSize;
 };
 
 // Save State structure

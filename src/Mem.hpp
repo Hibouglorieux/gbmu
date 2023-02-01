@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 05:48:12 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 09:00:31 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,8 @@ public:
     std::vector<unsigned char*>	extraRamBanks;
     std::vector<unsigned char*>	romBanks;
 	MBC* mbc;
+	void saveByteInSave(unsigned short addr, unsigned char value) const;
+	unsigned char extraRamBanksNb;
 
 protected:
 	void init();

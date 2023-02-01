@@ -3,6 +3,7 @@
 #include "Hdma.hpp"
 #include "Debugger.hpp"
 #include "APU.hpp"
+#include <sys/stat.h>
 
 Mem*		Gameboy::gbMem = nullptr;
 Clock		Gameboy::gbClock = Clock();
@@ -19,6 +20,8 @@ bool		Gameboy::lcdcWasOff = false;
 std::string	Gameboy::path = "";
 unsigned int	Gameboy::frameNb = 0;
 float		Gameboy::clockRest = 0;
+Gameboy::saveBufferStruct	Gameboy::saveBuffer = {nullptr, nullptr};
+unsigned short	Gameboy::saveBufferSize = 0;
 bool		bLogFrameNb = false;
 
 Mem& Gameboy::getMem()
@@ -95,7 +98,18 @@ bool Gameboy::loadRom()
 		bCGBIsInCompatMode = true;
 		std::cout << "CGB is in compatibility mode for DMG" << std::endl;
 	}
-	//Cpu::loadBootRom();
+	if (mem.extraRamBanksNb != 0)
+	{
+		saveBufferSize = mem.extraRamBanksNb * ((mem.mbc->getRamUpperAddress() + 1) - 0xA000);
+		std::cout << "saveBufferSize is: " << saveBufferSize << std::endl;
+		saveBuffer.value = new unsigned char[saveBufferSize];
+		saveBuffer.bHasBeenWritten = new bool[saveBufferSize];
+		for (int i = 0; i < saveBufferSize; i++)
+		{
+			saveBuffer.value[i] = 0;
+			saveBuffer.bHasBeenWritten[i] = false;
+		}
+	}
 	Cpu::reset();
 	APU::reset();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
@@ -113,7 +127,10 @@ bool Gameboy::launchUserInterface()
 void Gameboy::clear()
 {
 	if (bIsInit) {
+		saveRam();
 		delete gbMem;
+		delete [] saveBuffer.value;
+		delete [] saveBuffer.bHasBeenWritten;
 		APU::clear();
 		Screen::destroyTexture();
 		Debugger::destroyTexture();
@@ -507,11 +524,20 @@ void Gameboy::saveState()
 	outfile.close();
 }
 
+void Gameboy::saveByteInSave(unsigned short addr, unsigned char value)
+{
+	saveBuffer.value[addr] = value;
+	saveBuffer.bHasBeenWritten[addr] = true;
+}
+
 void Gameboy::saveRam()
 {
 	if (!bIsPathValid || !bIsInit)
 		return ;
-	std::ofstream outfile(path + ".save", std::ios::binary);
+	struct stat _;
+	bool bSaveExists = stat((path + ".save").c_str(), &_) != -1;
+	std::ofstream outfile(path + ".save", std::ios::binary | std::ios::out |
+			(bSaveExists ? std::ios::in : std::ios::out));
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
@@ -523,10 +549,39 @@ void Gameboy::saveRam()
 		outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
-	outfile.write(reinterpret_cast<char*>(mem.getInternalArray()), MEM_SIZE);
-
-	for (unsigned char *elem : mem.extraRamBanks) {
-		outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
+	if (!bSaveExists)
+	{
+		outfile.write((char*)saveBuffer.value, saveBufferSize);
+	}
+	else
+	{
+		//TODO redo and write instead a whole buffer created by diffing with what is in save,
+		//that might be better for performances IF it is needed
+		unsigned short startAddr = 0;
+		unsigned short len = 0;
+		bool bHasMultipleChar = false;
+		for (int i = 0; i < saveBufferSize; i++)
+		{
+			if (saveBuffer.bHasBeenWritten[i] == true)
+			{
+				if (!bHasMultipleChar)
+				{
+					outfile.seekp(i - (startAddr + len), std::ofstream::cur);
+					bHasMultipleChar = true;
+					startAddr = i;
+					len = 1;
+				}
+				else
+					len++;
+			}
+			else if (bHasMultipleChar)
+			{
+				bHasMultipleChar = false;
+				outfile.write((char*)&(saveBuffer.value[startAddr]), len);
+			}
+		}
+		if (bHasMultipleChar)
+			outfile.write((char*)&(saveBuffer.value[startAddr]), len);
 	}
 	outfile.close();
 }

@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/31 00:13:11 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 06:07:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -475,7 +475,6 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 				if (ev->window.windowID
 						== SDL_GetWindowID(uiWindow)) {
 					Gameboy::quit = true;
-					Gameboy::saveRam();
 				}
 				break;
 		}
@@ -484,7 +483,6 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 	{
 		if (ev->key.keysym.sym == SDLK_ESCAPE) {
 			Gameboy::quit = true;
-			Gameboy::saveRam();
 		}
 	}
 	if (ev->type == SDL_DROPFILE)
