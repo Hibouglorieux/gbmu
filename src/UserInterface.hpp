@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:45:13 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/31 00:12:29 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 11:29:18 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,14 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <chrono>
 
 class UserInterface
 {
 public:
 	static bool 		loop();
 	static void 		showGameboyWindow();
-	static void 		showSubWindows();
+	static void 		showSubWindows(bool bShouldComputeScreen = true);
 	static bool		create();
 	static void		destroy();
 	static SDL_Window*	uiWindow;
@@ -67,6 +68,8 @@ private:
 	static double		fpsRefreshTime;
 	static unsigned char	frameCount;
 	const static double	refreshingRate;
+	static float framesToSkipRender;
+	static float framesToSkipUpdate;
 };
 
 #endif

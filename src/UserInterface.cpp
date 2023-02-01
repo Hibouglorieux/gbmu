@@ -6,14 +6,13 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 09:44:42 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/01 11:52:41 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "UserInterface.hpp"
 #include "Ppu.hpp"
 #include "Debugger.hpp"
-#include <chrono>
 #include <thread>
 
 bool UserInterface::showVram = false;
@@ -26,13 +25,15 @@ bool UserInterface::bIsError = false;
 bool UserInterface::bIsFatalError = false;
 bool UserInterface::forceMode = false;
 bool UserInterface::forceCGB = true;
-int UserInterface::volume = 0;
+int UserInterface::volume = 100;
 SDL_Window*	UserInterface::uiWindow = nullptr;
 SDL_Renderer*	UserInterface::uiRenderer = nullptr;
 std::string	UserInterface::romFolderPath = "";
 std::string	UserInterface::errMsg = "";
+float UserInterface::framesToSkipRender = 0;
+float UserInterface::framesToSkipUpdate = 0;
 
-#define DEFAULT_ROM_PATH "./roms/Super Mario Land 2.gb"
+#define DEFAULT_ROM_PATH "./roms/42roms/Super Mario Land 2"
 
 void UserInterface::TexturetoImage(SDL_Texture * Texture)
 {
@@ -211,7 +212,11 @@ void UserInterface::showGameboyWindow()
 	}
 	ImGui::NewLine();
 	ImGui::SetNextItemWidth(180);
-	ImGui::SliderInt("FPS", &Debugger::fps, 1, 300);
+	if (ImGui::SliderInt("FPS", &Debugger::fps, 1, 300))
+	{
+		framesToSkipRender = 0;
+		framesToSkipUpdate = 0;
+	}
 	ImGui::SliderInt("Volume", &UserInterface::volume, 0, 100);
 	ImGui::SetNextItemWidth(180);
 	ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
@@ -239,40 +244,29 @@ void UserInterface::showGameboyWindow()
 	if (ImGui::Button("Load State")) {
 		Gameboy::loadSaveState();
 	}
-	if (Debugger::state != DebuggerState::PAUSED) {
-		Gameboy::Step step = Gameboy::Step::full;
-		if (Debugger::state == DebuggerState::ONCE)
-			step = Gameboy::Step::oneInstruction;
-		if (Debugger::state == DebuggerState::ONCE_LINE)
-			step = Gameboy::Step::oneLine;
-		Gameboy::execFrame(step);
-		if (Debugger::state == DebuggerState::ONCE ||
-				Debugger::state == DebuggerState::ONCE_FRAME ||
-				Debugger::state == DebuggerState::ONCE_LINE) {
-			Debugger::state = DebuggerState::PAUSED;
-		}
-	}
 	if (!UserInterface::bIsError && Debugger::stopAtFrame == Gameboy::frameNb)
 		Debugger::state = DebuggerState::PAUSED;
 	UserInterface::TexturetoImage(Screen::ppuTexture);
 	ImGui::End();
 }
 
-void UserInterface::showSubWindows()
+void UserInterface::showSubWindows(bool bShouldComputeScreen)
 {
 	if (!Gameboy::bIsInit)
 		return ;
 	if (showVram)
 	{
 		ImGui::Begin("Vram");
-		Debugger::drawVRam(Gameboy::bIsCGB);
+		if (bShouldComputeScreen)
+			Debugger::drawVRam(Gameboy::bIsCGB);
 		UserInterface::TexturetoImage(Debugger::VRamTexture);
 		ImGui::End();
 	}
 	if (showSprite)
 	{
 		ImGui::Begin("Sprite Map 8x8 only");
-		Debugger::drawSprite();
+		if (bShouldComputeScreen)
+			Debugger::drawSprite();
 		UserInterface::TexturetoImage(Debugger::SpriteTexture);
 		Debugger::Sprites();
 		ImGui::End();
@@ -302,7 +296,8 @@ void UserInterface::showSubWindows()
 		if (ImGui::Button("Draw 0x8000")) {
 			Debugger::mapAddr = 0x8000;
 		}
-		Debugger::drawBG(Debugger::mapAddr);
+		if (bShouldComputeScreen)
+			Debugger::drawBG(Debugger::mapAddr);
 		UserInterface::TexturetoImage(Debugger::BGTexture);
 		ImGui::End();
 	}
@@ -333,6 +328,8 @@ bool UserInterface::loop()
 {
 
 	static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	std::chrono::time_point<std::chrono::system_clock> lastTimeGameboyUpdated;
+	std::chrono::microseconds hardwareFrameTime(1'000'000 / 60);
 
 	while (!Gameboy::quit)
 	{
@@ -358,15 +355,47 @@ bool UserInterface::loop()
 				UserInterface::fileExplorer();
 				//ImGui::End();
 			}
-			if (Gameboy::bIsInit && !UserInterface::bIsError) {
+			Gameboy::Step step = Gameboy::Step::full;
+			if (Debugger::state != DebuggerState::PAUSED) {
+				step = Gameboy::Step::full;
+				if (Debugger::state == DebuggerState::ONCE)
+					step = Gameboy::Step::oneInstruction;
+				if (Debugger::state == DebuggerState::ONCE_LINE)
+					step = Gameboy::Step::oneLine;
+				if (Debugger::state == DebuggerState::ONCE ||
+						Debugger::state == DebuggerState::ONCE_FRAME ||
+						Debugger::state == DebuggerState::ONCE_LINE) {
+					Debugger::state = DebuggerState::PAUSED;
+				}
+			}
+
+			if (Gameboy::bIsInit && !UserInterface::bIsError)
+			{
+				bool bShouldUpdateGameboy = Debugger::state != DebuggerState::PAUSED;
+				//printf("framesToSkipUpdate: %f\n", framesToSkipUpdate);
+				if (bShouldUpdateGameboy && framesToSkipUpdate < 1)
+				{
+					//printf("rendering with updateGameboy: %d and skipping:%f\n",
+							//bShouldUpdateGameboy, framesToSkipRender);
+					do
+					{
+						framesToSkipRender -= 1;
+						Gameboy::execFrame(step, framesToSkipRender < 1);
+						//printf("execframe %s\n", framesToSkipRender < 1 ? "WITH RENDER" : "WITHOUT RENDER");
+					} while (framesToSkipRender >= 1);
+					lastTimeGameboyUpdated = std::chrono::system_clock::now();
+					framesToSkipUpdate += (60.f / (float)Debugger::fps) - 1;
+					framesToSkipRender += ((float)Debugger::fps / 60.f);
+				}
+				framesToSkipUpdate -= 1;
 				UserInterface::showGameboyWindow();
-				if (!UserInterface::bIsError) {
-					UserInterface::showSubWindows();
+				if (!UserInterface::bIsError)
+				{
+					UserInterface::showSubWindows(bShouldUpdateGameboy);
 				}
 			}
 		}
 
-		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 
 		auto handleEvents = [](){
 			SDL_Event event;
@@ -374,14 +403,17 @@ bool UserInterface::loop()
 				UserInterface::handleEvent(&event);
 		};
 		handleEvents();
+		std::chrono::microseconds timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
 		/* Sleep : TODO calculate compute time to have a frame rate ~60fps*/
-		if (timeTakenForFrame.count() < frametime.count())
+		if (timeTakenForFrame.count() < hardwareFrameTime.count())
 		{
-			while (frametime.count() > timeTakenForFrame.count())
+			//std::cout << std::dec <<  "timeTakenForFrame : " << timeTakenForFrame.count() << std::endl;
+			//std::cout << "sleeping for: " << hardwareFrameTime.count() - timeTakenForFrame.count() << std::endl;
+			std::this_thread::sleep_for(hardwareFrameTime - timeTakenForFrame);
+			//while (hardwareFrameTime.count() > timeTakenForFrame.count())
 			{
-				handleEvents();
-				timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
-				std::this_thread::sleep_for(std::min(frametime - timeTakenForFrame, std::chrono::microseconds(500)));
+				//timeTakenForFrame = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - beginFrameTime);
+				//std::this_thread::sleep_for(std::min(hardwareFrameTime - timeTakenForFrame, std::chrono::microseconds(500)));
 			}
 		}
 
