@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:42 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 18:31:20 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 00:01:58 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,10 @@ unsigned short MBC2::getRomBank(unsigned short addr)
 
 unsigned char MBC2::getRamBank()
 {
-	return 0xFF;// wont work with saves but works otherwise
+	// return ff because no extra RAM bank used
+	// BUT getRefWithBank will return a reference to builtinExtraRam
+	// for support 512 half bytes builtin RAM of MBC2
+	return 0xFF;
 }
 
 rtc MBC3::getCurrentTime() {
