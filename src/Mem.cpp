@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 00:42:41 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/01 01:54:02 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 #include "Debugger.hpp"
 #include <fstream>
 #include <iostream>
+
+#include "Bootrom.hpp"
 
 #define DMG_BOOT_ROM_PATH "./resources/dmg_boot.bin"
 #define CGB_BOOT_ROM_PATH "./resources/cgb_boot.bin"
@@ -66,46 +68,27 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
+	// boot roms are stored in byte array in Bootrom.hpp
 	if (((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
 			&& !(UserInterface::forceMode && !UserInterface::forceCGB))
 	{
-		std::ifstream cgbBootRom = std::ifstream(CGB_BOOT_ROM_PATH, std::ios::binary);
-		if (!cgbBootRom.is_open())
-		{
-			UserInterface::throwError("bootRomNotFound", false);
-			return nullptr;
-		}
-		unsigned char bootRomData[2304];
-		cgbBootRom.read((char*)bootRomData, 2304);
 		auto newMem = new CGBMem(pathToRom);
         if (!newMem->isValid){
             UserInterface::throwError("can't memcpy bootromData into newMem ", false);
-            cgbBootRom.close();
             return nullptr;
         } else {
-            memcpy(newMem->internalArray, bootRomData, 2304);
-            cgbBootRom.close();
+            memcpy(newMem->internalArray, cgbBootRom, 2304);
             return newMem;
         }
 	}
 	else
 	{
-		std::ifstream dmgBootRom = std::ifstream(DMG_BOOT_ROM_PATH, std::ios::binary);
-		if (!dmgBootRom.is_open())
-		{
-			UserInterface::throwError("bootRomNotFound", false);
-			return nullptr;
-		}
-		unsigned char bootRomData[256];
-		dmgBootRom.read((char*)bootRomData, 256);
 		auto newMem = new Mem(pathToRom);
 		if (!newMem->isValid){
             UserInterface::throwError("can't memcpy bootromData into newMem ", false);
-            dmgBootRom.close();
             return nullptr;
         } else {
-            memcpy(newMem->internalArray, bootRomData, 256);
-            dmgBootRom.close();
+            memcpy(newMem->internalArray, dmgBootRom, 256);
             return newMem;
         }
 	}
