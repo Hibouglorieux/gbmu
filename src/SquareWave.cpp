@@ -64,7 +64,10 @@ void SquareWave::popEntry(entry val) {
     volumeSweepPace = val.volumeSweepPace;
 
     trigger = true;
-    lengthEnable = BIT(channel == 1 ? mem[NR14] : mem[NR24], 6);
+    // if (channel == 1)
+    //     lengthEnable = BIT(mem[NR14], 6);
+    // else
+    //     lengthEnable = BIT(mem[NR24], 6);
 
     waveLength = val.waveLength;
     wavelengthSweepValue = 0;
@@ -170,7 +173,7 @@ void SquareWave::channel_1_tick() {
     //     return ;
 
     lengthEnable = BIT(mem[NR14], 6);
-    waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
+    // waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
 
     DACenable = (~(0b111) & mem[NR12]) != 0;
 }

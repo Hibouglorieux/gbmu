@@ -63,7 +63,7 @@ public:
 
     int length_count;
     int volume;
-    int volumeReduction;
+    float volumeReduction;
     bool DACenable;
 
     SDL_AudioSpec obtainedSpec;

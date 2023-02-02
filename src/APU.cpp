@@ -2,11 +2,11 @@
 
 #include "UserInterface.hpp"
 
-#define CHANNEL1 true
+#define CHANNEL1 false
 #define CHANNEL1_FACTOR 5
-#define CHANNEL1_VOLUME_SPEED 15
+#define CHANNEL1_VOLUME_SPEED 45
 
-#define CHANNEL2 false
+#define CHANNEL2 true
 #define CHANNEL2_FACTOR 5
 #define CHANNEL2_VOLUME_SPEED 50
 
@@ -151,16 +151,16 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 if (channel1.waveSweepSlope)
                     channel1.waveSweepSlope = 7 - channel1.waveSweepSlope;
 
-                // std::cout << "Channel 1 playing :\n";
-                // std::cout << "\tlength enable : " << channel1.lengthEnable << "\n";
-                // std::cout << "\tlength timer : " << channel1.length_timer << "\n";
-                // std::cout << "\tvolume : " << channel1.initialVolume << "\n";
-                // std::cout << "\tvolume sweep direction : " << channel1.envelopeDirection << "\n";
-                // std::cout << "\tvolume sweep pace : " << channel1.volumeSweepPace << "\n";
-                // std::cout << "\twave length : " << channel1.waveLength << "\n";
-                // std::cout << "\twave sweep direction : " << channel1.waveSweepDirection << "\n";
-                // std::cout << "\twave sweep pace : " << channel1.waveSweepPace << "\n";
-                // std::cout << "\twave sweep slope : " << channel1.waveSweepSlope << "\n";
+                std::cout << "Channel 1 playing :\n";
+                std::cout << "\tlength enable : " << channel1.lengthEnable << "\n";
+                std::cout << "\tlength timer : " << channel1.length_timer << "\n";
+                std::cout << "\tvolume : " << channel1.initialVolume << "\n";
+                std::cout << "\tvolume sweep direction : " << channel1.envelopeDirection << "\n";
+                std::cout << "\tvolume sweep pace : " << channel1.volumeSweepPace << "\n";
+                std::cout << "\twave length : " << channel1.waveLength << "\n";
+                std::cout << "\twave sweep direction : " << channel1.waveSweepDirection << "\n";
+                std::cout << "\twave sweep pace : " << channel1.waveSweepPace << "\n";
+                std::cout << "\twave sweep slope : " << channel1.waveSweepSlope << "\n";
             }
             if (channel1.trigger && channel1.DACenable && !(!BIT(mem[NR51], 0) && !BIT(mem[NR51], 4))) {
 
@@ -170,11 +170,9 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                 float val = (float)(channel1.volume)/0xF;
 
-                // std::cout << "Channel 1 : " << std::dec << val << " == " << channel1.volume << "\n";
-
                 // ptr[i] = (BIT(channel1.wave, channel1.step) * (int)(val * MAX_VOLUME));
-                if (val)
-                    addDecibel(ptr[i], (BIT(channel1.wave, channel1.step) * (int)(val * MAX_VOLUME * CHANNEL1_FACTOR)) - channel1.volumeReduction);
+                if (val + channel1.volumeReduction)
+                    addDecibel(ptr[i], (BIT(channel1.wave, channel1.step) * (int)((val + channel1.volumeReduction) * MAX_VOLUME * CHANNEL1_FACTOR)));
 
                 channel1.iterations++;
                 channel1.length_count++;
@@ -205,14 +203,14 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                     if (channel1.volumeSweepPace && !channel1.regulator) {
                         if (channel1.envelopeDirection)
-                            channel1.volumeReduction -= CHANNEL1_VOLUME_SPEED;
+                            channel1.volumeReduction += 0.1;
                         else
-                            channel1.volumeReduction += CHANNEL1_VOLUME_SPEED;
+                            channel1.volumeReduction -= 0.1;
                         
-                        if (channel1.volumeReduction > MAX_VOLUME)
-                            channel1.trigger = false;
-                        else if (channel1.volumeReduction < -MAX_VOLUME)
-                            channel1.volumeReduction = -MAX_VOLUME;
+                        if (channel1.volumeReduction > 1)
+                            channel1.volumeReduction = 1;
+                        else if (channel1.volumeReduction < -1)
+                            channel1.volumeReduction = -1;
                     }
 
                     if (channel1.lengthEnable) {
@@ -231,38 +229,45 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
             }
         }
 
-
         if (CHANNEL2)
         {
             if (channel2.queue.size()) {
                 channel2.popEntry(channel2.queue.front());
                 channel2.queue.pop();
                 SET(mem[NR52], 1);
+                channel2.regulator = 0;
 
+                std::cout << "Channel 2 playing :\n";
+                std::cout << "\tlength enable : " << channel2.lengthEnable << "\n";
+                std::cout << "\tlength timer : " << channel2.length_timer << "\n";
+                std::cout << "\tvolume : " << channel2.initialVolume << "\n";
+                std::cout << "\tvolume sweep direction : " << channel2.envelopeDirection << "\n";
+                std::cout << "\tvolume sweep pace : " << channel2.volumeSweepPace << "\n";
+                std::cout << "\twave length : " << channel2.waveLength << "\n";
+                std::cout << "\twave sweep direction : " << channel2.waveSweepDirection << "\n";
+                std::cout << "\twave sweep pace : " << channel2.waveSweepPace << "\n";
+                std::cout << "\twave sweep slope : " << channel2.waveSweepSlope << "\n";
 
-                // std::cout << "Channel 2 playing :\n";
-                // std::cout << "\tlength enable : " << channel2.lengthEnable << "\n";
-                // std::cout << "\tlength timer : " << channel2.length_timer << "\n";
-                // std::cout << "\tvolume : " << channel2.initialVolume << "\n";
-                // std::cout << "\tvolume sweep direction : " << channel2.envelopeDirection << "\n";
-                // std::cout << "\tvolume sweep pace : " << channel2.volumeSweepPace << "\n";
-                // std::cout << "\twave length : " << channel2.waveLength << "\n";
-                // std::cout << "\twave sweep direction : " << channel2.waveSweepDirection << "\n";
-                // std::cout << "\twave sweep pace : " << channel2.waveSweepPace << "\n";
-                // std::cout << "\twave sweep slope : " << channel2.waveSweepSlope << "\n";                
+                // channel2.envelopeDirection = 1;
+                // channel2.volumeSweepPace = 5;
+                // channel2.initialVolume = 0;
+                // channel2.volume = 0.3;
             }
             if (channel2.trigger && channel2.DACenable && !(!BIT(mem[NR51], 1) && !BIT(mem[NR51], 5))) {
-                // Channel 2
-                int freq = abs(1048576/(2048 - (channel2.waveLength == 2048 ? 2047 : channel2.waveLength)));
+                float static yo = 0;
+
+                // Channel 1
+                int freq = abs(1048576/(2048 - (int)((int)channel2.waveLength == 2048 ? 2047 : channel2.waveLength)));
                 int samples_per_step = (SAMPLING_RATE / freq);
 
                 float val = (float)(channel2.volume)/0xF;
 
-                // std::cout << "Channel 2 : " << std::dec << val << " == " << channel2.volume << "\n";
+                std::cout << "Channel 2 volume : " << std::dec << (BIT(channel2.wave, channel2.step) * (int)((val + channel2.volumeReduction) * MAX_VOLUME * CHANNEL2_FACTOR)) << "\n";
 
-                if (val)
-                    addDecibel(ptr[i], (BIT(channel2.wave, channel2.step) * (int)(val * MAX_VOLUME * CHANNEL2_FACTOR)) - channel2.volumeReduction);
-                    
+                // ptr[i] = (BIT(channel1.wave, channel1.step) * (int)(val * MAX_VOLUME));
+                if (val + channel2.volumeReduction)
+                    addDecibel(ptr[i], (BIT(channel2.wave, channel2.step) * (int)((val + channel2.volumeReduction) * MAX_VOLUME * CHANNEL2_FACTOR)));
+
                 channel2.iterations++;
                 channel2.length_count++;
 
@@ -275,19 +280,15 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                     // Each 64 Hz
 
                     if (channel2.volumeSweepPace && !channel2.regulator) {
-                        if (channel2.envelopeDirection) {
-                            channel2.volumeReduction -= CHANNEL2_VOLUME_SPEED;
-                            // std::cout << "volume reduction : " << std::dec << channel2.volumeReduction << "\n";
-                        }
-                        else {
-                            channel2.volumeReduction += CHANNEL2_VOLUME_SPEED;
-                            // std::cout << "volume reduction : " << std::dec << channel2.volumeReduction << "\n";
-                        }
-
-                        if (channel2.volumeReduction > MAX_VOLUME)
-                            channel2.trigger = false;
-                        else if (channel2.volumeReduction < -MAX_VOLUME)
-                            channel2.volumeReduction = -MAX_VOLUME;
+                        if (channel2.envelopeDirection)
+                            channel2.volumeReduction += 0.1;
+                        else
+                            channel2.volumeReduction -= 0.1;
+                        
+                        if (channel2.volumeReduction > 1)
+                            channel2.volumeReduction = 1;
+                        else if (channel2.volumeReduction < -1)
+                            channel2.volumeReduction = -1;
                     }
 
                     if (channel2.lengthEnable) {
@@ -304,6 +305,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 }
             }
         }
+
 
         
 
