@@ -79,9 +79,9 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 
 void	Debugger::lockTexture()
 {
-    SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)
-    SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)
-    SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)
+    SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch);
+    SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch);
+    SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch);
 }
 
 void Debugger::hexdump() {
