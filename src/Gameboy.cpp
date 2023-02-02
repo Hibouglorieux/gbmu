@@ -96,7 +96,7 @@ bool Gameboy::loadRom()
 	}
 	if (mem.extraRamBanksNb)
 	{
-		saveBufferSize = mem.extraRamBanksNb * ((mem.mbc->getRamUpperAddress() + 1) - 0xA000);
+		saveBufferSize = mem.extraRamBanksNb * mem.getRamBankSize();
 		std::cout << "saveBufferSize is: " << saveBufferSize << std::endl;
 		saveBuffer.value = new unsigned char[saveBufferSize];
 		saveBuffer.bHasBeenWritten = new bool[saveBufferSize];
@@ -356,9 +356,12 @@ void Gameboy::loadSaveState()
 
 	offset += MEM_SIZE;
 
-	for (size_t i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
-		memcpy(Gameboy::getMem().extraRamBanks[i], content.data() + offset, RAM_BANK_SIZE);
-		offset += RAM_BANK_SIZE;
+	{
+		unsigned short ramBankSize = mem.getRamBankSize();
+		for (size_t i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
+			memcpy(Gameboy::getMem().extraRamBanks[i], content.data() + offset, ramBankSize);
+			offset += ramBankSize;
+		}
 	}
 
 	CGBMem *ptr = dynamic_cast<CGBMem*>(&Gameboy::getMem());
@@ -513,8 +516,11 @@ void Gameboy::saveState()
 
 	outfile.write(reinterpret_cast<char*>(mem.getInternalArray()), MEM_SIZE);
 
-	for (unsigned char *elem : mem.extraRamBanks) {
-		outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
+	{
+		unsigned short ramBankSize = mem.getRamBankSize();
+		for (unsigned char *elem : mem.extraRamBanks) {
+			outfile.write(reinterpret_cast<char*>(elem), ramBankSize);
+		}
 	}
 
 	if (ptr) {

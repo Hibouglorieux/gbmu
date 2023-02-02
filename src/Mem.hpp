@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:41:45 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:05:03 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,8 @@ public:
 	MBC* mbc;
 	void saveByteInSave(unsigned short addr, unsigned char value) const;
 	unsigned char extraRamBanksNb;
+
+	unsigned short getRamBankSize() const;
 
 protected:
 	void init();

@@ -50,7 +50,6 @@
 /* Memory */
 
 #define MEM_SIZE (0xFFFF + 1)
-#define RAM_BANK_SIZE (8 * 1024)
 #define ROM_BANK_SIZE (16 * 1024)
 #define BIT(val, bit) ((val & (1 << bit)) >> bit)
 #define SET(val, bit) (val |= (1 << bit))

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:41:36 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:05:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,11 @@ std::vector<unsigned char> Mem::readFile(const std::string& filename)
     return fileContent;
 }
 
+unsigned short Mem::getRamBankSize() const
+{
+	return mbc->getRamUpperAddress() - 0xA000 + 1;
+}
+
 Mem::Mem(const std::string& pathToRom)
 {
 	std::ifstream file = std::ifstream(pathToRom, std::ios::binary);
@@ -165,7 +170,7 @@ Mem::Mem(const std::string& pathToRom)
 	extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
 	if (extraRamBanksNb == 0 && mbc->type == 2)
 		extraRamBanksNb = 1;
-	unsigned short ramBankSize = mbc->getRamUpperAddress() - 0xA000 + 1;
+	unsigned short ramBankSize = getRamBankSize();
 	for (int i = 0; i < extraRamBanksNb; i++)
 		extraRamBanks.push_back(new unsigned char[ramBankSize]);
 	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
@@ -298,7 +303,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 void	Mem::saveByteInSave(unsigned short addr, unsigned char value) const
 {
 	unsigned char ramBankNb = mbc->getRamBank();
-	unsigned short ramBankSize = mbc->getRamUpperAddress() - 0xA000 + 1;
+	unsigned short ramBankSize = getRamBankSize();
 	if (ramBankNb != 0xFF)
 	{
 		Gameboy::saveByteInSave((ramBankNb & (extraRamBanks.size() - 1)) * ramBankSize
