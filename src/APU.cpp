@@ -2,7 +2,7 @@
 
 #include "UserInterface.hpp"
 
-#define CHANNEL1 false
+#define CHANNEL1 true
 #define CHANNEL1_FACTOR 5
 #define CHANNEL1_VOLUME_SPEED 45
 
@@ -10,11 +10,11 @@
 #define CHANNEL2_FACTOR 5
 #define CHANNEL2_VOLUME_SPEED 50
 
-#define CHANNEL3 false
-#define CHANNEL3_FACTOR 0.4
-#define CHANNEL3_VOLUME_SPEED 500
+#define CHANNEL3 true
+#define CHANNEL3_FACTOR 5
+#define CHANNEL3_VOLUME_SPEED 50
 
-#define CHANNEL4 false
+#define CHANNEL4 true
 #define CHANNEL4_FACTOR 4
 #define CHANNEL4_VOLUME_SPEED 60
 
@@ -174,14 +174,17 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 if (val + channel1.volumeReduction)
                     addDecibel(ptr[i], (BIT(channel1.wave, channel1.step) * (int)((val + channel1.volumeReduction) * MAX_VOLUME * CHANNEL1_FACTOR)));
 
+                
+
                 channel1.iterations++;
                 channel1.length_count++;
 
                 if (channel1.iterations >= samples_per_step) {
                     channel1.step = (channel1.step + 1) % 8;
                     channel1.iterations = 0;
+                    
                 }
-
+                
                 if (channel1.length_count >= SquareWave::samples_per_length) {
                     // Each 64 Hz
                     static int wavelenRegu = 0;
@@ -262,7 +265,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
                 float val = (float)(channel2.volume)/0xF;
 
-                std::cout << "Channel 2 volume : " << std::dec << (BIT(channel2.wave, channel2.step) * (int)((val + channel2.volumeReduction) * MAX_VOLUME * CHANNEL2_FACTOR)) << "\n";
+                // std::cout << "Channel 2 volume : " << std::dec << (BIT(channel2.wave, channel2.step) * (int)((val + channel2.volumeReduction) * MAX_VOLUME * CHANNEL2_FACTOR)) << "\n";
 
                 // ptr[i] = (BIT(channel1.wave, channel1.step) * (int)(val * MAX_VOLUME));
                 if (val + channel2.volumeReduction)
@@ -284,6 +287,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                             channel2.volumeReduction += 0.1;
                         else
                             channel2.volumeReduction -= 0.1;
+                        std::cout << "Test : " << channel2.volumeReduction << "\n";
                         
                         if (channel2.volumeReduction > 1)
                             channel2.volumeReduction = 1;
@@ -309,20 +313,19 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 
         
 
-        if (CHANNEL3 && channel3.trigger && BIT(mem[NR52], 2) && channel3.DACenable && !(!BIT(mem[NR51], 2) && !BIT(mem[NR51], 6)))
+        if (CHANNEL3 && channel3.trigger && channel3.DACenable && !(!BIT(mem[NR51], 2) && !BIT(mem[NR51], 6)))
         {
             // Channel 3
             int freq = abs(2097152/(2048 - (channel3.wavelength == 2048 ? 2047 : channel3.wavelength)));
             int samples_per_step = (SAMPLING_RATE / freq);
-            float volumeFactor = (channel3.volume)/(0x4);
-
-            // std::cout << "Channel 3 : " << std::dec << volumeFactor << " == " << (int)channel3.volume << "\n";
+            float volumeFactor = ((float)channel3.volume)/(0x4);
+            
 
             static char tmp = 0;
             if (!(tmp % 2))
                 addDecibel(ptr[i], (channel3.waveform[channel3.step/2] & 0x0F) * (int)(volumeFactor * MAX_VOLUME * CHANNEL3_FACTOR/0xF));
             else
-                addDecibel(ptr[i], (channel3.waveform[channel3.step/2] & 0xF0) * (int)(volumeFactor * MAX_VOLUME * CHANNEL3_FACTOR/0xF));
+                addDecibel(ptr[i], ((channel3.waveform[channel3.step/2] & 0xF0) >> 4) * (int)(volumeFactor * MAX_VOLUME * CHANNEL3_FACTOR/0xF));
             tmp++;
             
             channel3.iterations++;

@@ -18,7 +18,7 @@ void SquareWave::tick() {
 void SquareWave::channel_2_tick() {
 
     lengthEnable = BIT(mem[NR24], 6);
-    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
+    // waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
 
     DACenable = (~(0b111) & mem[NR22]) != 0;
 
@@ -174,6 +174,7 @@ void SquareWave::channel_1_tick() {
 
     lengthEnable = BIT(mem[NR14], 6);
     // waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
+    // volume = (mem[NR12] & 0b11110000) >> 4;
 
     DACenable = (~(0b111) & mem[NR12]) != 0;
 }
