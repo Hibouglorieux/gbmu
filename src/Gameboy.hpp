@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 12:00:40 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 18:18:50 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,6 @@ public:
 	static float		clockRest;
 	static bool		bIsCGB;
 	static bool		bCGBIsInCompatMode;
-	static unsigned int	frameNb;
 
 	static bool		bIsInit;
 	static bool		bIsPathValid;

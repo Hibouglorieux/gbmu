@@ -10,16 +10,12 @@
 #include "imgui/imgui_impl_sdlrenderer.h"
 #include <cstdio>
 #include "imgui/imconfig.h"
-#include "Sprite.hpp"
 #include "TilePixels.hpp"
 
 SDL_Texture 	*Debugger::BGTexture = nullptr;
 void 		*Debugger::BGPixels = nullptr;
 int 		Debugger::BGPitch = 0;
 
-SDL_Texture 	*Debugger::SpriteTexture = nullptr;
-void 		*Debugger::SpritePixels = nullptr;
-int 		Debugger::SpritePitch = 0;
 
 SDL_Texture 	*Debugger::VRamTexture = nullptr;
 void 		*Debugger::VramPixels = nullptr;
@@ -29,13 +25,11 @@ int 		Debugger::VramPitch = 0;
 DebuggerState Debugger::state = DebuggerState::RUNNING;
 // DebuggerState Debugger::state = DebuggerState::PAUSED;
 int Debugger::fps = 60;
-unsigned int Debugger::stopAtFrame = 0;
 int 		Debugger::mapAddr = 0x9c00;
 
 void		Debugger::destroyTexture()
 {
 	SDL_DestroyTexture(BGTexture);
-	SDL_DestroyTexture(SpriteTexture);
 	SDL_DestroyTexture(VRamTexture);
 }
 
@@ -48,17 +42,6 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			32 * BG_SCREEN_SCALE * 9);
 	if (!BGTexture) {
 		// std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
-        	Gameboy::throwError("Internal error encountered: couldn't create needed texture");
-		return false;
-	}
-
-	SpriteTexture = SDL_CreateTexture(uiRenderer,
-			SDL_PIXELFORMAT_RGBA8888,
-			SDL_TEXTUREACCESS_STREAMING,
-			32 * BG_SCREEN_SCALE * 9,
-			2 * BG_SCREEN_SCALE * 9);
-	if (!SpriteTexture) {
-		//std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
         	Gameboy::throwError("Internal error encountered: couldn't create needed texture");
 		return false;
 	}
@@ -81,7 +64,6 @@ void	Debugger::lockTexture()
 {
     SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch);
     SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch);
-    SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch);
 }
 
 void Debugger::hexdump() {
@@ -180,7 +162,6 @@ void Debugger::registers() {
         ImGui::Text("       opcode = [0x%02X] %02X %02X", (int)mem[Cpu::PC], (int)mem[Cpu::PC + 1], (int)mem[Cpu::PC + 2]);
         ImGui::NextColumn();
         ImGui::Text("SP = [0x%04X]", Cpu::SP);
-        ImGui::Text("frameNumber : %u", Gameboy::frameNb);
         ImGui::NewLine();
 
         ImGui::NextColumn();
@@ -228,49 +209,6 @@ void Debugger::registers() {
     	ImGui::Separator();
         ImGui::End();
     }
-}
-
-void Debugger::Sprites() {
-	const int OAM_Addr = 0xFE00;
-
-	for (int i = 0; i < SPRITES_IN_OAM; i++) {
-		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
-		ImGui::Text("Sprite Index:%02d", i);
-		ImGui::Text("tileIndex:%02x ", entry->tileIndex);
-            	ImGui::SameLine();
-		ImGui::Text("posY:%02x ", entry->posY);
-            	ImGui::SameLine();
-		ImGui::Text("posX:%02x ", entry->posX);
-            	ImGui::SameLine();
-		ImGui::Text("attributes:%02x", entry->attributes);
-		ImGui::NewLine();
-	}
-}
-
-void	Debugger::drawSprite(void)
-{
-	const int OAM_Addr = 0xFE00;
-	unsigned char spriteHeight = 8; // Always show the sprit in 8x8 mode
-
-	for (int i = 0; i < SPRITES_IN_OAM; i++) {
-		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
-		Sprite sprite = Sprite(*entry, spriteHeight);
-		if (entry->getFlipY()) // reverse offset if flipped
-			sprite.flipY();
-		if (entry->getFlipX())
-			sprite.flipX();
-
-		int x_offset = (i % 32) * 9;
-		int y_offset = (i / 32) * 9;
-		for (int y = 0; y < 8; y++) {
-			// fetch the 8 pixel of the sprite in a tmp buffer
-			std::array<short, 8> line = sprite.getColoredLine(y);
-			for (int x = 0; x < 8; x++) {
-				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)SpritePixels,
-						SpritePitch, BG_SCREEN_SCALE, Gameboy::bIsCGB);
-			}
-		}
-	}
 }
 
 void	Debugger::drawBG(int mapAddr)
@@ -380,4 +318,10 @@ void	Debugger::drawVRam(bool bIsCGB)
 			}
 	}
 
+}
+
+void	Debugger::reset()
+{
+	Debugger::state = DebuggerState::RUNNING;
+	Debugger::fps = 60;
 }

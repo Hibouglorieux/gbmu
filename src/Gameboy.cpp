@@ -27,7 +27,6 @@ bool		Gameboy::bIsInit = false;
 bool		Gameboy::bIsPathValid = false;
 bool		Gameboy::lcdcWasOff = false;
 std::string	Gameboy::path = "";
-unsigned int	Gameboy::frameNb = 0;
 float		Gameboy::clockRest = 0;
 Gameboy::saveBufferStruct	Gameboy::saveBuffer = {nullptr, nullptr};
 unsigned short	Gameboy::saveBufferSize = 0;
@@ -49,13 +48,13 @@ void	Gameboy::init()
 	quit = false;
 	bIsCGB = false;
 	bCGBIsInCompatMode = false;
-	frameNb = 0;
 	clockRest = 0;
 	bLogFrameNb = false;
 	clockLine = 0;
 	Hdma::reset();
 	Ppu::reset();
 	UserInterface::reset();
+	Debugger::reset();
 }
 
 void	Gameboy::updateLY(int iter)
@@ -153,10 +152,6 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 	if (!bIsInit || UserInterface::bIsError) {
 		return (false);
 	}
-
-	if (bLogFrameNb)
-		std::cout << "frameNb: " << std::endl;
-	frameNb++;
 
 	// render a white screen if LCD is off
 	// normal render wont be called since we wont enter pxl transfer state

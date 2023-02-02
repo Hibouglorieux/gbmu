@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 12:40:05 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 17:03:44 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,19 +184,20 @@ Mem::Mem(const std::string& pathToRom)
 		if (mbc->hasTimer) {
 			// Fetching timer save
 			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
-			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
 			if (saveContent.size() > sizeof(time_t))
 				memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-			else
-				; // TODO this should trigger a warning and cancel the save as it might be corrupted
+			else {
+				UserInterface::throwError("Corrupted save, please delete it before rerun.", true);
+			}
 			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
 		for (int i = 0; i < extraRamBanksNb; i++) {
 			if (saveContent.size() > (ramBankSize * i + (mbc->hasTimer ? sizeof(time_t) : 0)))
 				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * ramBankSize), ramBankSize);
-			else
-				; // TODO this should trigger a warning and cancel the save as it might be corrupted
+			else {
+				UserInterface::throwError("Corrupted save, please delete it before rerun.", true);
+			}
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;

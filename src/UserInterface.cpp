@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 16:01:17 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 18:27:00 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@
 
 bool UserInterface::showVram = false;
 bool UserInterface::showBG = false;
-bool UserInterface::showSprite = false;
 bool UserInterface::showHexdump = false;
 bool UserInterface::showRegisters = false;
 bool UserInterface::showPalettes = false;
@@ -159,13 +158,9 @@ void	UserInterface::clear()
 
 void UserInterface::showGameboyWindow()
 {
-	ImGui::Begin("PPU");
+	ImGui::Begin("GBMU");
 	if (ImGui::Button(showBG ? "Hide BG" : "Show BG")) {
 		showBG = !showBG;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(showSprite ? "Hide Sprites" : "Show Sprites")) {
-		showSprite = !showSprite;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button(showVram ? "Hide Vram" : "Show Vram")) {
@@ -193,7 +188,8 @@ void UserInterface::showGameboyWindow()
 	ImGui::SameLine();
 	if (ImGui::Button("Load Rom")) {
 		Gameboy::clear();
-		Gameboy::bIsPathValid = false;
+		//Gameboy::bIsPathValid = false;
+		fileExplorer();
 		ImGui::End();
 		return ;
 	}
@@ -250,10 +246,6 @@ void UserInterface::showGameboyWindow()
 		if (volume < 1)
 			volume = 1;
 	}
-	//ImGui::SetNextItemWidth(180);
-	//ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
-	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	//ImGui::SameLine();
 	if (ImGui::Button(  Debugger::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
 		Debugger::state = (Debugger::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
 	}
@@ -276,9 +268,6 @@ void UserInterface::showGameboyWindow()
 	if (ImGui::Button("Load State")) {
 		Gameboy::loadSaveState();
 	}
-	if (!UserInterface::bIsError && Debugger::stopAtFrame == Gameboy::frameNb)
-		Debugger::state = DebuggerState::PAUSED;
-	UserInterface::TexturetoImage(Screen::ppuTexture);
 	ImGui::End();
 }
 
@@ -292,15 +281,6 @@ void UserInterface::showSubWindows(bool bShouldComputeScreen)
 		if (bShouldComputeScreen)
 			Debugger::drawVRam(Gameboy::bIsCGB);
 		UserInterface::TexturetoImage(Debugger::VRamTexture);
-		ImGui::End();
-	}
-	if (showSprite)
-	{
-		ImGui::Begin("Sprite Map 8x8 only");
-		if (bShouldComputeScreen)
-			Debugger::drawSprite();
-		UserInterface::TexturetoImage(Debugger::SpriteTexture);
-		Debugger::Sprites();
 		ImGui::End();
 	}
 	if (showBG)
@@ -354,6 +334,11 @@ void UserInterface::showSubWindows(bool bShouldComputeScreen)
 	{
 		Debugger::hexdump();
 	}
+	if (Gameboy::bIsPathValid) {
+		ImGui::Begin("PPU");
+		UserInterface::TexturetoImage(Screen::ppuTexture);
+		ImGui::End();
+	}
 }
 
 bool UserInterface::loop()
@@ -373,17 +358,14 @@ bool UserInterface::loop()
 		}
 		else
 		{
-			if (!Gameboy::bIsInit) {
+			UserInterface::showGameboyWindow();
+			if (!bIsError && !Gameboy::bIsInit) {
 				if (Gameboy::bIsPathValid) {
 					Gameboy::bIsInit = Gameboy::loadRom();
+					if (!Gameboy::bIsInit) {
+						Gameboy::bIsPathValid = false;
+					}
 				}
-			}
-			if (!bIsError && !Gameboy::bIsPathValid) {
-				// ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-				// ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
-				// ImGui::Begin(UserInterface::romFolderPath.c_str());
-				UserInterface::fileExplorer();
-				//ImGui::End();
 			}
 			Gameboy::Step step = Gameboy::Step::full;
 			if (Gameboy::bIsInit && !UserInterface::bIsError)
@@ -428,7 +410,6 @@ bool UserInterface::loop()
 						Debugger::state == DebuggerState::ONCE_LINE) {
 					Debugger::state = DebuggerState::PAUSED;
 				}
-				UserInterface::showGameboyWindow();
 				if (!UserInterface::bIsError)
 				{
 					UserInterface::showSubWindows(bShouldUpdateGameboy);
@@ -500,6 +481,8 @@ void	UserInterface::fileExplorer()
     }
 	if (filename[0] == 0) {
 		// throwError("Please select a ROM", false);
+		// Gameboy::bIsPathValid = false;
+    	pclose(f);
 		return ;
 	}
 	for (int i = 0 ; i < 8192 ; i++) {
@@ -565,7 +548,8 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 	if (ev->type == SDL_KEYDOWN)
 	{
 		if (ev->key.keysym.sym == SDLK_ESCAPE) {
-			Gameboy::quit = true;
+			Gameboy::clear();
+			Gameboy::bIsPathValid = false;
 		}
 	}
 	if (ev->type == SDL_DROPFILE)

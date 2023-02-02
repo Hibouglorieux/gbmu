@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 12:05:25 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 18:19:41 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,27 +39,21 @@ public:
     static DebuggerState state;
     static int fps;
     static void registers();
-    static void Sprites();
     static void hexdump();
 
 	static void		lockTexture();
 	static void		destroyTexture();
 	static bool		createTexture(bool, SDL_Renderer *);
 	static void		drawBG(int mapAddr);
-	static void		drawSprite(void);
 	static void		drawVRam(bool bIsCGB);
 	static void		drawPalettes();
+	static void		reset();
 
 	static int		mapAddr;
-	static unsigned int stopAtFrame;
 
 	static SDL_Texture*	BGTexture;
 	static void*		BGPixels;
 	static int		BGPitch;
-
-	static SDL_Texture*	SpriteTexture;
-	static void*		SpritePixels;
-	static int		SpritePitch;
 
 	static SDL_Texture*	VRamTexture;
 	static void*		VramPixels;
