@@ -19,7 +19,7 @@ private:
 public:
     static void tick(int n);
     
-    static bool addDecibel(unsigned short &ref, int val);
+    static bool addDecibel(float &ref, float val, int index);
 
     static void init();
     static void reset();

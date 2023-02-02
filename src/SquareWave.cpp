@@ -20,7 +20,7 @@ void SquareWave::tick() {
 void SquareWave::channel_2_tick() {
 
     lengthEnable = BIT(mem[NR24], 6);
-    // waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
+    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
 
     DACenable = (~(0b111) & mem[NR22]) != 0;
 
@@ -72,7 +72,7 @@ void SquareWave::popEntry(entry val) {
     // else
     //     lengthEnable = BIT(mem[NR24], 6);
 
-    // waveLength = val.waveLength;
+    waveLength = val.waveLength;
     wavelengthSweepValue = 0;
 
     ticks = 0;
