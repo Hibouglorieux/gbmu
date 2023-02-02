@@ -47,4 +47,4 @@
 #define NR44 0xFF23 // FF23 — NR44: Channel 4 control
 
 #define SAMPLING_RATE 44100
-#define MAX_VOLUME (0x7ff/4)
+#define MAX_VOLUME (0x7ff)

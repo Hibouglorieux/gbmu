@@ -8,9 +8,9 @@ void Waveform::tick() {
 
 
     length_enable = BIT(mem[NR34], 6);
-    wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
+    // wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
     DACenable = BIT(mem[NR30], 7);
-    volume = (mem[NR32] & 0b01100000) >> 5;
+    // volume = (mem[NR32] & 0b01100000) >> 5;
 
     switch (volume)
     {

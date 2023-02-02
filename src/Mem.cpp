@@ -374,19 +374,20 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
 	else if (addr == NR14) {
-		if (BIT(value, 7) && APU::channel1->DACenable)
+		if (BIT(value, 7))
 			APU::channel1->triggerChannel();
 	}
 	else if (addr == NR24) {
-		if (BIT(value, 7) && APU::channel2->DACenable)
+		if (BIT(value, 7))
 			APU::channel2->triggerChannel();
 	}
 	else if (addr == NR34) {
-		if (BIT(value, 7) && APU::channel3->DACenable)
+		if (BIT(value, 7)) {
 			APU::channel3->triggerChannel();
+		}
 	}
 	else if (addr == NR44) {
-		if (BIT(value, 7) && APU::channel4->DACenable)
+		if (BIT(value, 7))
 			APU::channel4->triggerChannel();
 	}
     /* recursive call

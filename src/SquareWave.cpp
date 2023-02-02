@@ -20,7 +20,7 @@ void SquareWave::tick() {
 void SquareWave::channel_2_tick() {
 
     lengthEnable = BIT(mem[NR24], 6);
-    waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
+    // waveLength = ((mem[NR24] & 0b111) << 8) | mem[NR23];
 
     DACenable = (~(0b111) & mem[NR22]) != 0;
 
@@ -55,7 +55,7 @@ void SquareWave::popEntry(entry val) {
     if (channel == 1) {
         waveSweepPace = val.waveSweepPace;
         waveSweepDirection = val.waveSweepDirection;
-        waveSweepSlope = val.waveSweepSlope;
+        // waveSweepSlope = val.waveSweepSlope;
     }
 
     waveDuty = val.waveDuty;
@@ -67,9 +67,12 @@ void SquareWave::popEntry(entry val) {
     volumeSweepPace = val.volumeSweepPace;
 
     trigger = true;
-    lengthEnable = BIT(channel == 1 ? mem[NR14] : mem[NR24], 6);
+    // if (channel == 1)
+    //     lengthEnable = BIT(mem[NR14], 6);
+    // else
+    //     lengthEnable = BIT(mem[NR24], 6);
 
-    waveLength = val.waveLength;
+    // waveLength = val.waveLength;
     wavelengthSweepValue = 0;
 
     ticks = 0;
@@ -174,6 +177,9 @@ void SquareWave::channel_1_tick() {
 
     lengthEnable = BIT(mem[NR14], 6);
     waveLength = ((mem[NR14] & 0b111) << 8) | mem[NR13];
+
+    waveSweepSlope = (mem[NR10] & 0b00000111);
+    // volume = (mem[NR12] & 0b11110000) >> 4;
 
     DACenable = (~(0b111) & mem[NR12]) != 0;
 }
