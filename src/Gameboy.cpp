@@ -551,50 +551,42 @@ void Gameboy::saveRam()
 		return ;
 	struct stat _;
 	bool bSaveExists = stat((path + ".save").c_str(), &_) != -1;
-	std::ofstream outfile(path + ".save", std::ios::binary | std::ios::out |
+	std::fstream saveFile(path + ".save", std::ios::binary | std::ios::out |
 			(bSaveExists ? std::ios::in : std::ios::out));
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
 		if (ptr)
-			outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
+			saveFile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
 	if (!bSaveExists)
 	{
-		outfile.write((char*)saveBuffer.value, saveBufferSize);
+		saveFile.write((char*)saveBuffer.value, saveBufferSize);
 	}
 	else
 	{
-		//TODO redo and write instead a whole buffer created by diffing with what is in save,
-		//that might be better for performances IF it is needed
-		unsigned short startAddr = 0;
-		unsigned short len = 0;
-		bool bHasMultipleChar = false;
-		for (int i = 0; i < saveBufferSize; i++)
+		auto startPos = saveFile.tellp();
+		unsigned char* finalBuffer = new unsigned char[saveBufferSize];
+		saveFile.read((char*)finalBuffer, saveBufferSize);
+		if (saveFile.tellg() - startPos != saveBufferSize)
 		{
-			if (saveBuffer.bHasBeenWritten[i] == true)
-			{
-				if (!bHasMultipleChar)
-				{
-					outfile.seekp(i - (startAddr + len), std::ofstream::cur);
-					bHasMultipleChar = true;
-					startAddr = i;
-					len = 1;
-				}
-				else
-					len++;
-			}
-			else if (bHasMultipleChar)
-			{
-				bHasMultipleChar = false;
-				outfile.write((char*)&(saveBuffer.value[startAddr]), len);
-			}
+			std::cerr << "warning existant save had a bad size when writing to it" << std::endl;
+			saveFile.write((char*)saveBuffer.value, saveBufferSize);// save is corrupted so rewrite it
 		}
-		if (bHasMultipleChar)
-			outfile.write((char*)&(saveBuffer.value[startAddr]), len);
+		else
+		{
+			for (int i = 0; i < saveBufferSize; i++)
+			{
+				if (saveBuffer.bHasBeenWritten[i])
+					finalBuffer[i] = saveBuffer.value[i];
+			}
+			saveFile.seekp(startPos);
+			saveFile.write((char*)finalBuffer, saveBufferSize);
+		}
+		delete [] finalBuffer;
 	}
-	outfile.close();
+	saveFile.close();
 }
 
 int Gameboy::getState()

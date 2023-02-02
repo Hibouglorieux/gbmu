@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 12:06:15 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 14:43:07 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -425,7 +425,6 @@ bool UserInterface::loop()
 		{
 			//std::cout << std::dec <<  "timeTakenForFrame : " << timeTakenForFrame.count() << std::endl;
 			//std::cout << "sleeping for: " << hardwareFrameTime.count() - timeTakenForFrame.count() << std::endl;
-#warning TODO we should try to catchup with saveBuf here instead of sleeping if we have some time
 			std::this_thread::sleep_for(hardwareFrameTime - timeTakenForFrame);
 			//while (hardwareFrameTime.count() > timeTakenForFrame.count())
 			{
