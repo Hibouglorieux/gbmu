@@ -99,20 +99,10 @@ bool Gameboy::loadRom()
 		bCGBIsInCompatMode = true;
 		std::cout << "CGB is in compatibility mode for DMG" << std::endl;
 	}
-	if (mem.extraRamBanksNb != 0)
+	if (mem.extraRamBanksNb)
 	{
 		saveBufferSize = mem.extraRamBanksNb * ((mem.mbc->getRamUpperAddress() + 1) - 0xA000);
 		std::cout << "saveBufferSize is: " << saveBufferSize << std::endl;
-		saveBuffer.value = new unsigned char[saveBufferSize];
-		saveBuffer.bHasBeenWritten = new bool[saveBufferSize];
-		for (int i = 0; i < saveBufferSize; i++)
-		{
-			saveBuffer.value[i] = 0;
-			saveBuffer.bHasBeenWritten[i] = false;
-		}
-	}
-	else if (mem.mbc->getType() == 2) {
-		saveBufferSize = 512;
 		saveBuffer.value = new unsigned char[saveBufferSize];
 		saveBuffer.bHasBeenWritten = new bool[saveBufferSize];
 		for (int i = 0; i < saveBufferSize; i++)

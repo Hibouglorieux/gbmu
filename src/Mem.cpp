@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 23:55:06 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 09:11:50 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,16 +138,12 @@ Mem::Mem(const std::string& pathToRom)
 	char ramSizeCode;
    	file.read(&ramSizeCode, 1);
 	file.seekg(0, std::ifstream::beg);
-	extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
 
 	for (int i = 0; i < romBanksNb; i++)
 		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
 	std::cout << "created " << romBanksNb << " rom banks" << std::endl;
 
-	for (int i = 0; i < extraRamBanksNb; i++)
-		extraRamBanks.push_back(new unsigned char[RAM_BANK_SIZE]);
 
-	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
 
 	internalArray = new unsigned char[MEM_SIZE];
 	bzero(internalArray, MEM_SIZE);
@@ -166,10 +162,13 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << std::hex << "CartRidge type: " << (int)getCartridgeType() << std::endl;
 	mbc = MBC::createMBC(getCartridgeType());
 
-	if (mbc->getType() == 2) {
-		builtinExtraRam = new unsigned char[512];
-		bzero(builtinExtraRam, 512);
-	}
+	extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
+	if (extraRamBanksNb == 0 && mbc->getType() == 2)
+		extraRamBanksNb = 1;
+	unsigned short ramBankSize = mbc->getRamUpperAddress() - 0xA000 + 1;
+	for (int i = 0; i < extraRamBanksNb; i++)
+		extraRamBanks.push_back(new unsigned char[ramBankSize]);
+	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
 
 	// Check if there is a save
 	std::ifstream tmp(pathToRom + ".save");
@@ -191,15 +190,18 @@ Mem::Mem(const std::string& pathToRom)
 			// Fetching timer save
 			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
 			if (!ptr) throw "Could not dynamically cast MBC3 pointer (loading rom)";
-			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
+			if (saveContent.size() > sizeof(time_t))
+				memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
+			else
+				; // TODO this should trigger a warning and cancel the save as it might be corrupted
 			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
-		if (mbc->getType() == 2) {
-			memcpy(builtinExtraRam, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), 512);
-		}
 		for (int i = 0; i < extraRamBanksNb; i++) {
-			memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE), RAM_BANK_SIZE);
+			if (saveContent.size() > (ramBankSize * i + (mbc->hasTimer ? sizeof(time_t) : 0)))
+				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * ramBankSize), ramBankSize);
+			else
+				; // TODO this should trigger a warning and cancel the save as it might be corrupted
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;
@@ -224,7 +226,6 @@ Mem::~Mem()
 		return;
 
 	delete[] internalArray;
-	delete[] builtinExtraRam;
 	for (unsigned char* ramBank : extraRamBanks)
 		delete[] ramBank;
 	extraRamBanks.clear();
@@ -266,7 +267,6 @@ const MemWrap Mem::operator[](unsigned int i) const
 
 unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
-	unsigned char typeMBC = mbc->getType();
 
 	//0xff50 is used to know if bootrom should be loaded or not
 	// address from 0x100 to 0x200 are not considered because that's
@@ -285,6 +285,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
+		unsigned char typeMBC = mbc->getType();
 		unsigned char ramBankNb = mbc->getRamBank();
 		if (ramBankNb == 0xFF) { // 0xFF stands for no extra ram used
 			if (typeMBC == 3) {
@@ -294,10 +295,10 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 				} else
 					throw "Could not dynamically cast MBC3";
 			}
-			// mbc2 exception : return builtinExtraRam
-			// only the 9 bottom bits are used for addresse
+			// mbc2 exception : use only first extraRamBank
+			// only the 9 bottom bits are used for address
 			if (typeMBC == 2) {
-				return builtinExtraRam[addr & 0x1FF];
+				return extraRamBanks[0][addr & 0x1FF];
 			}
 			// else return 0
 			internalArray[addr] = 0;
@@ -319,13 +320,11 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 void	Mem::saveByteInSave(unsigned short addr, unsigned char value) const
 {
 	unsigned char ramBankNb = mbc->getRamBank();
+	unsigned short ramBankSize = mbc->getRamUpperAddress() - 0xA000 + 1;
 	if (ramBankNb != 0xFF)
 	{
-		Gameboy::saveByteInSave((ramBankNb & (extraRamBanks.size() - 1)) * RAM_BANK_SIZE
+		Gameboy::saveByteInSave((ramBankNb & (extraRamBanks.size() - 1)) * ramBankSize
 				+ (addr - 0xA000), value);
-		std::cout << "at addr: " << (int)addr << " and ramBankNb: " << (int)ramBankNb << 
-			" i get finalAddr: " << (ramBankNb & (extraRamBanks.size() - 1)) * RAM_BANK_SIZE
-				+ (addr - 0xA000) << " with value: " << (int)value << std::endl;
 	}
 	else if (mbc->getType() == 2 && addr - 0xA000 < 512)
 	{
