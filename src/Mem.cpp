@@ -198,6 +198,11 @@ Mem::Mem(const std::string& pathToRom)
 			else {
 				UserInterface::throwError("Corrupted save, please delete it before rerun.", true);
 			}
+
+			// CGBMem *ptr = dynamic_cast<CGBMem*>(&mem);
+			// if (ptr) {
+
+			// }
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;
@@ -375,19 +380,20 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr == 0xFF00) //JOYPAD register is 0xFF00
 		Joypad::refresh();
 	else if (addr == NR14) {
-		if (BIT(value, 7) && APU::channel1->DACenable)
+		if (BIT(value, 7))
 			APU::channel1->triggerChannel();
 	}
 	else if (addr == NR24) {
-		if (BIT(value, 7) && APU::channel2->DACenable)
+		if (BIT(value, 7))
 			APU::channel2->triggerChannel();
 	}
 	else if (addr == NR34) {
-		if (BIT(value, 7) && APU::channel3->DACenable)
+		if (BIT(value, 7)) {
 			APU::channel3->triggerChannel();
+		}
 	}
 	else if (addr == NR44) {
-		if (BIT(value, 7) && APU::channel4->DACenable)
+		if (BIT(value, 7))
 			APU::channel4->triggerChannel();
 	}
     /* recursive call
