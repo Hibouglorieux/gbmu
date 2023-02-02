@@ -37,11 +37,11 @@ void Waveform::triggerChannel() {
 
     regulator = 0;
 
-    std::cout << "Channel 3 triggered\n";
-    std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
-    std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
-    std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
-    std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
+    // std::cout << "Channel 3 triggered\n";
+    // std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
+    // std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
+    // std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
+    // std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
 }
 
 void Waveform::clear() {
