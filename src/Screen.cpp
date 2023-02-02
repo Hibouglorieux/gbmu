@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Screen.hpp"
 #include "Cpu.hpp"
-#include "Ppu.hpp"
 #include "Debugger.hpp"
 #include <fstream>
 

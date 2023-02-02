@@ -6,12 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/02 17:59:31 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:27:40 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TILEPIXELS_HPP
-#define TILEPIXELS_HPP
+# define TILEPIXELS_HPP
 
 /*
 ** Translate Tiles information into pixel

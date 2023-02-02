@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 17:55:17 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:14:56 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@ uint8_t	Hdma::vbank = 0;
 bool Hdma::bIsWritting = false;
 bool Hdma::bIsInHBlankMode = false;
 bool Hdma::bJustStarted = false;
-
-
-#define HDMA_HEADER_CYCLE 1
 
 void Hdma::reset()
 {

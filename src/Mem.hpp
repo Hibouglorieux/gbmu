@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:05:03 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:17:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@
 #define HDMA3 0xFF53
 #define HDMA4 0xFF54
 #define HDMA5 0xFF55
+#define MEM_SIZE (0xFFFF + 1)
+#define ROM_BANK_SIZE (16 * 1024)
 
 class Mem;
 

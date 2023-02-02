@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:05:07 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:17:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@
 #include <iostream>
 
 #include "Bootrom.hpp"
-
-#define DMG_BOOT_ROM_PATH "./resources/dmg_boot.bin"
-#define CGB_BOOT_ROM_PATH "./resources/cgb_boot.bin"
 
 const std::map<unsigned short, unsigned char> Mem::readOnlyBits = {
  {0xFF00, 0b1100'1111}, // 0xCF, 0xFF00 is input register, first 4 bit are

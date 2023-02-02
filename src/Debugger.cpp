@@ -229,7 +229,7 @@ void Debugger::registers() {
 void Debugger::Sprites() {
 	const int OAM_Addr = 0xFE00;
 
-	for (int i = 0; i < MAX_SPRITES; i++) {
+	for (int i = 0; i < SPRITES_IN_OAM; i++) {
 		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
 		ImGui::Text("Sprite Index:%02d", i);
 		ImGui::Text("tileIndex:%02x ", entry->tileIndex);
@@ -248,7 +248,7 @@ void	Debugger::drawSprite(void)
 	const int OAM_Addr = 0xFE00;
 	unsigned char spriteHeight = 8; // Always show the sprit in 8x8 mode
 
-	for (int i = 0; i < MAX_SPRITES; i++) {
+	for (int i = 0; i < SPRITES_IN_OAM; i++) {
 		struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr + i*4]);
 		Sprite sprite = Sprite(*entry, spriteHeight);
 		if (entry->getFlipY()) // reverse offset if flipped

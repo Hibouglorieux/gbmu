@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:31:00 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:12:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,15 @@
 #include <functional>
 
 #include "define.hpp"
+
+#define M_EI (mem[0xFFFF])
+#define M_IF (mem[0xFF0F])
+
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
 
 class Cpu {
 public:

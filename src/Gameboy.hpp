@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 09:36:43 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:19:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,12 @@
 // Theses are used by all class to access mem and clock
 #define g_clock (Gameboy::getClock())
 #define mem (Gameboy::getMem())
+
+#define GBSTATE_MSK 0x03
+#define GBSTATE_H_BLANK 0
+#define GBSTATE_V_BLANK 1
+#define GBSTATE_OAM_SEARCH 2
+#define GBSTATE_PX_TRANSFERT 3
 
 class Gameboy {
 public:

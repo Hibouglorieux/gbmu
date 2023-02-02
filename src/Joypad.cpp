@@ -7,6 +7,19 @@
 // the update of bit 4-5 is done by sw ROM
 // so, at every write to bit 4 or 5, cpy bit 0-3 accordingly
 
+#define A_BUTTON SDLK_s
+#define B_BUTTON SDLK_a
+#define SELECT_BUTTON SDLK_LSHIFT
+#define START_BUTTON SDLK_RETURN
+#define JOYPAD_MSK_START	0x80
+#define JOYPAD_MSK_SELECT 	0x40
+#define JOYPAD_MSK_B 		0x20
+#define JOYPAD_MSK_A 		0x10
+#define JOYPAD_MSK_DOWN	    0x08
+#define JOYPAD_MSK_UP 		0x04
+#define JOYPAD_MSK_LEFT 	0x02
+#define JOYPAD_MSK_RIGHT 	0x01
+
 unsigned char Joypad::input = 0;
 
 void	Joypad::refresh()

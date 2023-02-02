@@ -6,13 +6,16 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 11:05:02 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:15:41 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Sprite.hpp"
 #include "define.hpp"
 #include <algorithm>
+
+#define OBP0 (0xFF48) // Object/Sprite palette 0
+#define OBP1 (0xFF49) // Object/Sprite palette 1
 
 Sprite::Sprite(OAM_entry newOAM, unsigned char newSpriteHeight)
 {

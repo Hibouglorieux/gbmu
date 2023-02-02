@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:39:43 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 10:15:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,11 @@ bool Clock::cgbMode = false;
 bool Clock::reloadTMA = false;
 int Clock::timaClock = 0;
 int Clock::divClock = 0;
+
+#define M_DIV	mem[0xFF04]
+#define M_TIMA	mem[0xFF05]
+#define M_TMA	mem[0xFF06]
+#define M_TAC	mem[0xFF07]
 
 Clock::Clock()
 {

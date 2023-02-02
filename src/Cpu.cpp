@@ -38,6 +38,12 @@ unsigned short&	Cpu::BC = registers[1];
 unsigned short&	Cpu::DE = registers[2];
 unsigned short&	Cpu::HL = registers[3];
 
+#define IT_VBLANK 0x40
+#define IT_LCD_STAT 0x48
+#define IT_TIMER 0x50
+#define IT_SERIAL 0x58
+#define IT_JOYPAD 0x60
+
 // TODO LMA CGB Compatibility mode init value
 //
 void Cpu::reset()

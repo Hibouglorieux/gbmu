@@ -6,13 +6,14 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 06:28:27 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 10:31:33 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Ppu.hpp"
 #include <algorithm>
 #include <iostream>
+
 
 unsigned char Ppu::windowCounter = 0;
 
@@ -144,7 +145,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 
 	struct OAM_entry *entry = (struct OAM_entry *)(&mem[OAM_Addr]);
 	// 1 - fetch the sprites needed for that line
-	for (int i = 0; i < MAX_SPRITES; i++)
+	for (int i = 0; i < SPRITES_IN_OAM; i++)
 	{
 		// verify if the sprite should be rendered on this line
 		// if posX == 0 then sprite is totally off the screen.

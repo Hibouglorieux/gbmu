@@ -6,12 +6,11 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 21:29:19 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 10:27:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "UserInterface.hpp"
-#include "Ppu.hpp"
 #include "Debugger.hpp"
 #include <thread>
 
@@ -415,6 +414,7 @@ bool UserInterface::loop()
 		{
 			//std::cout << std::dec <<  "timeTakenForFrame : " << timeTakenForFrame.count() << std::endl;
 			//std::cout << "sleeping for: " << hardwareFrameTime.count() - timeTakenForFrame.count() << std::endl;
+#warning TODO we should try to catchup with saveBuf here instead of sleeping if we have some time
 			std::this_thread::sleep_for(hardwareFrameTime - timeTakenForFrame);
 			//while (hardwareFrameTime.count() > timeTakenForFrame.count())
 			{
