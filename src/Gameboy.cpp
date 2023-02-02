@@ -250,8 +250,12 @@ void Gameboy::loadSaveState()
 	std::cout << "Loading game state\n";
 	std::cout << "Thread ID : " << pthread_self() << "\n";
 	
-	std::string savePath = Gameboy::path + ".state";
-    	std::ifstream infile(savePath, std::ios::binary);
+	std::string savePath;
+    if (bIsCGB)
+        savePath = Gameboy::path + ".cbg.state";
+    else
+        savePath = Gameboy::path + ".dmg.state";
+    std::ifstream infile(savePath, std::ios::binary);
 	if (!infile.is_open()) {
 		UserInterface::throwError("No save state found", false);
 		return ;
@@ -479,9 +483,14 @@ void Gameboy::saveState()
 	// std::cout << "\tSP = " << Cpu::SP << "\n";
 	// std::cout << "\tRegisters = " << Cpu::registers[0] << Cpu::registers[1] << Cpu::registers[2] << Cpu::registers[3] << "\n";
 	// std::cout << "\tLY = " << (int)M_LY << "\n";
-	
-	std::ofstream outfile(path + ".state", std::ios::binary);
 
+    std::string savePath;
+    if (bIsCGB) {
+        savePath = Gameboy::path + ".cbg.state";
+    } else {
+        savePath = Gameboy::path + ".dmg.state";
+    }
+	std::ofstream outfile(savePath, std::ios::binary);
 	CGBMem *ptr = dynamic_cast<CGBMem*>(&Gameboy::getMem());
 	if (ptr) {
 		// CGB

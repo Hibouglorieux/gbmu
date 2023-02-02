@@ -430,10 +430,10 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
 				}
             }
         }
-        unsigned short max = 0;
-        float factor = 0;
-
+//        unsigned short max = 0; UNUSED Variable
+//        float factor = 0;  UNUSED Variable
         
     }
+    (void)arg; // Unused Variable
     // std::cout << "\n";
 }
