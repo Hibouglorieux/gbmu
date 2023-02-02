@@ -91,6 +91,11 @@ bool Gameboy::loadRom()
 	gbMem = Mem::loadFromFile(path);
 	if (!gbMem || !gbMem->isValid)
 	{
+		if (gbMem)
+		{
+			delete gbMem;
+			gbMem = nullptr;
+		}
 		bIsPathValid = false;
 		return false;
 	}
