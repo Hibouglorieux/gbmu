@@ -612,6 +612,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 
 StackData	Cpu::captureCurrentState(std::string customData)
 {
+	return StackData();
 	StackData stackData;
 
 	stackData.PC = PC;

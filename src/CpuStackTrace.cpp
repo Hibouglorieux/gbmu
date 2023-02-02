@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/20 16:33:15 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 02:39:27 by nathan           ###   ########.fr       */
+/*   Updated: 2023/02/02 09:34:57 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ void CpuStackTrace::print()
 
 void CpuStackTrace::add(StackData stackData)
 {
+	return;
 	if (autoPrint)
 	{
 		stackData.print();

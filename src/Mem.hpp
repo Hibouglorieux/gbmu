@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:02 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/01 23:55:17 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 09:41:45 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ class Mem;
 
 class MemWrap {
 	public:
-		MemWrap(const Mem& parent, unsigned short offset, unsigned char& ref):
-			addr(offset), value(ref), memRef(parent) {}
+		MemWrap(unsigned short offset, unsigned char& ref):
+			addr(offset), value(ref) {}
 		unsigned char& operator=(unsigned char newValue);
 		unsigned char	operator+() {return value;}
 		unsigned char* operator&() {return &value;}
@@ -49,7 +49,6 @@ class MemWrap {
 	private:
 		const unsigned short addr;
 		unsigned char& value;
-		const Mem& memRef;
 };
 
 

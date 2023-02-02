@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 23:28:18 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 09:31:23 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,18 +217,16 @@ bool	Cpu::getCarryFlag()
 	return (F >> 4) & 1;
 }
 
-unsigned char Cpu::readByte(int incrementPc)
+unsigned char Cpu::readByte()
 {
-	unsigned char val = mem[PC];
-    if (incrementPc)
-		PC++;
+	unsigned char val = mem[PC++];
 	return val;
 }
 
-unsigned short Cpu::readShort(int incrementPc)
+unsigned short Cpu::readShort()
 {
-	unsigned short shortVal = readByte(incrementPc);
-	shortVal += ((unsigned short)readByte(incrementPc) << 8);
+	unsigned short shortVal = readByte();
+	shortVal += ((unsigned short)readByte() << 8);
 	return shortVal;
 }
 

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:38 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/06 18:28:33 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 09:39:43 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,6 @@ int Clock::divClock = 0;
 
 Clock::Clock()
 {
-	/* Init DIV at 0 */
-	//mem[0xFF04] = 0;//XXX nallani: this is wrong because mem is not yet loaded
-	/* Init TIMA at 0 */
-	//mem[0xFF05] = 0;//XXX nallani: this is wrong because mem is not yet loaded
 	clock = 0;
 } 
 
@@ -41,7 +37,7 @@ void Clock::reset()
 // NOTE : addValue is in cycle in this context
 int&	Clock::operator+=(int addValue)
 {
-	static int clocks_array[4] = {1024, 16, 64, 256};
+	const int clocks_array[4] = {1024, 16, 64, 256};
 	int timaFreqDivider = 0;
 	// TODO cgb double speed Mode impl
 	uint8_t clockMul = (cgbMode ? 2 : 4);

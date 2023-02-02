@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:42 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 00:01:58 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 09:21:18 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 #include <ctime>
 #include <cstdlib>
 
-MBC::MBC(int mbcCode) {
+MBC::MBC(int mbcCode, unsigned char typeNb) : type(typeNb)
+{
 	std::cout << "MBC constructor\n";
 	// Determine if MBC has timer
 	if (mbcCode == 0x0F || mbcCode == 0x10) {

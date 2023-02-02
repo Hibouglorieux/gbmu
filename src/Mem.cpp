@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:11:50 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 09:41:36 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,7 @@ Mem::Mem(const std::string& pathToRom)
 	mbc = MBC::createMBC(getCartridgeType());
 
 	extraRamBanksNb = getExtraRamBanksNb(ramSizeCode);
-	if (extraRamBanksNb == 0 && mbc->getType() == 2)
+	if (extraRamBanksNb == 0 && mbc->type == 2)
 		extraRamBanksNb = 1;
 	unsigned short ramBankSize = mbc->getRamUpperAddress() - 0xA000 + 1;
 	for (int i = 0; i < extraRamBanksNb; i++)
@@ -237,41 +237,20 @@ Mem::~Mem()
 
 MemWrap Mem::operator[](unsigned int i)
 {
-	if (i > 0xFFFF)
-	{
-		std::cerr << "Error, trying to access mem at: " + std::to_string(i) << std::endl;
-		throw("");
-	}
-	if (!isValid)
-	{
-		std::cerr << "Error, trying to access uninitialized mem" << std::endl;
-		throw("");
-	}
-	return MemWrap(*this, i, getRefWithBanks(i));
+	return MemWrap(i, getRefWithBanks(i));
 }
 
 const MemWrap Mem::operator[](unsigned int i) const
 {
-	if (i > 0xFFFF)
-	{
-		std::cerr << "Error, trying to access mem at: " << i << std::endl;
-		exit(-1);
-	}
-	if (!isValid)
-	{
-		std::cerr << "trying to access bad memory" << std::endl;
-		exit(-1);
-	}
-	return MemWrap(*this, i, getRefWithBanks(i));
+	return MemWrap(i, getRefWithBanks(i));
 }
 
 unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 {
-
 	//0xff50 is used to know if bootrom should be loaded or not
 	// address from 0x100 to 0x200 are not considered because that's
 	// where the nintendo logo should be in cartridges
-	if ((addr < 0x100 || (addr >= 0x200 && addr <= 0x08FF)) && internalArray[0xFF50] == 0)
+	if (internalArray[0xFF50] == 0 && (addr < 0x100 || (addr >= 0x200 && addr <= 0x08FF)))
 			return internalArray[addr];
 	if (addr <= 0x7FFF)
 	{
@@ -285,10 +264,9 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF)
 	{
-		unsigned char typeMBC = mbc->getType();
 		unsigned char ramBankNb = mbc->getRamBank();
 		if (ramBankNb == 0xFF) { // 0xFF stands for no extra ram used
-			if (typeMBC == 3) {
+			if (mbc->type == 3) {
 				MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
 				if (ptr) {
 					return *(((unsigned char *)&ptr->rtc_register) + ptr->rtcBindNb);
@@ -297,7 +275,7 @@ unsigned char& Mem::getRefWithBanks(unsigned short addr) const
 			}
 			// mbc2 exception : use only first extraRamBank
 			// only the 9 bottom bits are used for address
-			if (typeMBC == 2) {
+			if (mbc->type == 2) {
 				return extraRamBanks[0][addr & 0x1FF];
 			}
 			// else return 0
@@ -326,7 +304,7 @@ void	Mem::saveByteInSave(unsigned short addr, unsigned char value) const
 		Gameboy::saveByteInSave((ramBankNb & (extraRamBanks.size() - 1)) * ramBankSize
 				+ (addr - 0xA000), value);
 	}
-	else if (mbc->getType() == 2 && addr - 0xA000 < 512)
+	else if (mbc->type == 2 && addr - 0xA000 < 512)
 	{
 		Gameboy::saveByteInSave(addr - 0xA000, value);
 	}
@@ -340,14 +318,14 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	if (addr >= 0xA000 && addr < 0xC000)
 	{
 		//Writing in external ram
-		memRef.saveByteInSave(addr, newValue);
+		mem.saveByteInSave(addr, newValue);
 	}
 	if (addr == 0xFF1A) {
 		mem.supervisorWrite(0xFF26, mem[0xff26] & ~(1 << 2));
 	}
 	if (addr <= 0x7FFF) // This is a special case to write in special register for bank switching
 	{
-		memRef.mbc->writeInRom(addr, newValue);
+		mem.mbc->writeInRom(addr, newValue);
 		return value;// XXX that might pose aproblem or not
 	}
 	
@@ -424,13 +402,13 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 //	}
 //	if (addr == 0xFF02 && newValue == 0x81)
 //	{
-//		if (memRef[0xFF01] == ' ')
+//		if (mem[0xFF01] == ' ')
 //		{
 //			std::cout << std::endl;
 //		}
 //		else
 //		{
-//			std::cout << (char)(memRef[0xFF01]);
+//			std::cout << (char)(mem[0xFF01]);
 //		}
 //	}
 */
@@ -450,7 +428,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			RES(M_LCDC_STATUS, 2);
 	}
 	if (addr == 0xff50 && value != 0 && Gameboy::bIsCGB) {
-		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(mem);
 		if (Gameboy::bCGBIsInCompatMode)
 		{
 			memcpy(asCGB.CGBCompatPaletteSaveBG.data(), asCGB.BGPalettes.data(), 8);
@@ -466,7 +444,7 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 	}
 	try // try block because this is only for CGB registers
 	{
-		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(memRef);
+		const CGBMem& asCGB = dynamic_cast<const CGBMem&>(mem);
 		// Save palettes for CGB in compatibility mode
 		// Use ff50 to happen only when bootrom is done
 		if (addr == 0xFF55) // CGB DMA transfert// CGB ONLY
@@ -475,14 +453,14 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 			// NOTE : most of the registers are in readOnlyBits
 			// TODO need to create HDMA class and do it clock by clock in order
 			// to be able to stop it
-			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
-			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
+			unsigned short srcAddr = (mem[0xFF51] << 8) | (mem[0xFF52] & 0xF0);
+			unsigned short dstAddr = (mem[0xFF53] << 8) | (mem[0xFF54] & 0xF0);
 			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
 			//unsigned short len = ((newValue & 0x7F) + 1) * 0x10;// this breaks crystal 
 			Hdma::writeInHdma(dstAddr, srcAddr, newValue);
 			/*
-			unsigned short srcAddr = (memRef[0xFF51] << 8) | (memRef[0xFF52] & 0xF0);
-			unsigned short dstAddr = (memRef[0xFF53] << 8) | (memRef[0xFF54] & 0xF0);
+			unsigned short srcAddr = (mem[0xFF51] << 8) | (mem[0xFF52] & 0xF0);
+			unsigned short dstAddr = (mem[0xFF53] << 8) | (mem[0xFF54] & 0xF0);
 			dstAddr = (dstAddr | 0x8000) & 0x9FF0; 
 			unsigned short len = ((newValue & 0x7F) + 1) * 0x10;// this breaks crystal 
 			std::cout << "writing to HMDA5: " << +newValue << std::endl;
@@ -535,27 +513,27 @@ unsigned char& MemWrap::operator=(unsigned char newValue)
 		}
 		if (addr == 0xFF69) // BCPD/BGPD
 		{
-			unsigned char BCPSVal = memRef[0xFF68];
+			unsigned char BCPSVal = mem[0xFF68];
 			bool bShouldIncrement = BCPSVal & (1 << 7);
 			unsigned char BGPAddress = BCPSVal & 0x3F;
 			asCGB.BGPalettes[BGPAddress] = newValue;
 			if (bShouldIncrement)
 			{
-				mem[0xFF68] = (memRef[0xFF68] & (1 << 7)) | ((BGPAddress + 1) & 0x3F);
+				mem[0xFF68] = (mem[0xFF68] & (1 << 7)) | ((BGPAddress + 1) & 0x3F);
 			}
 			//std::cout << "wrote " << +newValue << " to BG palette nb: " << +(BGPAddress / 8) << " at color nb: " << +(BGPAddress % 8) << std::endl;
 			return asCGB.BGPalettes[BGPAddress];
 		}
 		if (addr == 0xFF6B) // OPCS/OBPD
 		{
-			unsigned char OCPSVal = memRef[0xFF6A];
+			unsigned char OCPSVal = mem[0xFF6A];
 			bool bShouldIncrement = OCPSVal & (1 << 7);
 			unsigned char OBJPAddress = OCPSVal & 0x3F;
 			//std::cout << "wrote in FF6B at addr: " << (int)OBJPAddress << std::endl;
 			asCGB.OBJPalettes[OBJPAddress] = newValue;
 			if (bShouldIncrement)
 			{
-				mem.supervisorWrite(0xFF6A, (memRef[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F) | (1 << 6));
+				mem.supervisorWrite(0xFF6A, (mem[0xFF6A] & (1 << 7)) | ((OBJPAddress + 1) & 0x3F) | (1 << 6));
 				//std::cout << "incremented 0xFF6A: " << (int)mem[0xFF6A] << std::endl;
 			}
 			//std::cout << "wrote color: " << +newValue << " to OBJ Palette nb: " << +(OBJPAddress / 8) << " at color nb: " << +(OBJPAddress % 8) << std::endl;
@@ -680,7 +658,6 @@ unsigned char& CGBMem::getRefWithBanks(unsigned short addr) const
 		unsigned char BGPAddress = BCPSVal & 0x3F;
 		return BGPalettes[BGPAddress];
 	}
-	
 	if (addr == 0xFF6B)
 	{
 		unsigned char OCPSVal = internalArray[0xFF6A];

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 22:30:25 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 09:31:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,8 +92,8 @@ public:
 
 	static void		printRegisters();
 	static void		debug(int opcode);
-	static unsigned char	readByte(int incrementPc = true);
-	static unsigned short	readShort(int incrementPc = true);
+	static unsigned char	readByte();
+	static unsigned short	readShort();
 private:
 	/* Flag management utility, used in instructions */
 	static void 		setZeroFlag(bool value);

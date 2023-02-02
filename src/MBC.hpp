@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/28 22:13:43 by nallani           #+#    #+#             */
-/*   Updated: 2022/12/29 17:27:57 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 09:19:59 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,42 +24,40 @@
 
 class MBC {
 public:
-	MBC(int mbcCode);
+	MBC(int mbcCode, unsigned char typeNb);
 	virtual ~MBC(void){}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value) = 0;
 	virtual unsigned short getRomBank(unsigned short addr) = 0;
 	virtual unsigned char getRamBank() = 0;
 	virtual unsigned short getRamUpperAddress() = 0;
-	virtual unsigned char getType() = 0;
 	static MBC* createMBC(unsigned char mbcCode);
 
 	void setTimer(bool val) {hasTimer = val;}
 
 	bool hasTimer;
+	const unsigned char type;
 };
 
 class RomOnly: public MBC {
 public:
 	RomOnly(int mbcCode)
-	: MBC(mbcCode) {}
+	: MBC(mbcCode, 0) {}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0;}
-	virtual unsigned char getType() { return 0; }
 };
 
 class MBC1: public MBC {
 public:
 	MBC1(int mbcCode)
-	: MBC(mbcCode)
+	: MBC(mbcCode, 1)
 	{bAdvancedBankingMode = false; bEnableRam = false;
 		lowBitsRomBankNumber = 0; highBitsRomBankNumberOrRam = 0;}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
 	virtual unsigned char getRamBank();
-	virtual unsigned char getType() { return 1; }
 
 	bool getAdvancedBankingMode() { return bAdvancedBankingMode; }
 	bool getEnableRam() { return bEnableRam; }
@@ -82,13 +80,12 @@ private:
 class MBC2: public MBC {
 public:
 	MBC2(int mbcCode)
-	: MBC(mbcCode)
+	: MBC(mbcCode, 2)
 	{romBankNb = 0; bEnableRam = false;}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0xA1FF;}
-	virtual unsigned char getType() { return 2; }
 
 	bool getEnableRam() {return bEnableRam;}
 	unsigned char getRomBankNb() {return romBankNb;}
@@ -119,14 +116,13 @@ typedef struct {
 class MBC3: public MBC {
 public:
 	MBC3(int mbcCode)
-	: MBC(mbcCode)
+	: MBC(mbcCode, 3)
 	{romBankNb = 0; bEnableRam = false;
 	ramBankNb = 0; latched = false; lastVal = 0; time(&start);}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
-	virtual unsigned char getType() { return 3; }
 	rtc getCurrentTime();
 
 	time_t getStart() {return start;}
@@ -164,14 +160,13 @@ private:
 class MBC5: public MBC {
 public:
 	MBC5(int mbcCode)
-	: MBC(mbcCode)
+	: MBC(mbcCode, 5)
 	{bEnableRam = 0; leastSignificantRomByte = 0;
 	bit9 = 0; ramBankNb = 0;}
 	virtual unsigned char writeInRom(unsigned short addr, unsigned char value);
 	virtual unsigned short getRomBank(unsigned short addr);
 	virtual unsigned char getRamBank();
 	virtual unsigned short getRamUpperAddress() {return 0xBFFF;}
-	virtual unsigned char getType() { return 5; }
 
 	bool getEnableRam() {return bEnableRam;}
 	unsigned char getRamBankNb() {return ramBankNb;}

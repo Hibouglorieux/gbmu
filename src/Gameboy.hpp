@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 09:23:21 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 09:36:43 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,8 @@ public:
 	static bool		lcdcWasOff;
 
 	static bool		launchUserInterface();
-	static Mem&		getMem();
-	static Clock&		getClock();
+	static inline Mem&		getMem(){return (*gbMem);}
+	static Clock&	getClock();
 
 	// Loading
 	static void		init();

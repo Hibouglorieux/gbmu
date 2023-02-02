@@ -24,11 +24,6 @@ Gameboy::saveBufferStruct	Gameboy::saveBuffer = {nullptr, nullptr};
 unsigned short	Gameboy::saveBufferSize = 0;
 bool		bLogFrameNb = false;
 
-Mem& Gameboy::getMem()
-{
-	return (*gbMem);
-}
-
 Clock& Gameboy::getClock()
 {
 	return (gbClock);
@@ -301,7 +296,7 @@ void Gameboy::loadSaveState()
 	Gameboy::quit = tmp.gameboy.quit;
 	
 	// Load MBC state
-	switch (Gameboy::getMem().mbc->getType())
+	switch (Gameboy::getMem().mbc->type)
 	{
 		case 0:
 			break;
@@ -421,7 +416,7 @@ void Gameboy::saveState()
 	tmp.clock.val = Gameboy::getClock().getClock();
 	tmp.clock.cgbMode = Gameboy::getClock().cgbMode;
 
-	tmp.mbc.type = Gameboy::getMem().mbc->getType();
+	tmp.mbc.type = Gameboy::getMem().mbc->type;
 
 	// Save PPU state
 	tmp.ppu.windowCounter = Ppu::getWindowCounter();
