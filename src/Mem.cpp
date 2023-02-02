@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 12:09:23 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:40:05 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	if (!file.is_open())
 	{
 		std::cerr << "file not found" << std::endl;
-		UserInterface::throwError("file not found", false);
+		UserInterface::throwError("File not found", false);
 		return nullptr;
 	}
 	// read some values in the
@@ -56,7 +56,7 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	if (fileLen < 32'768)
 	{
 			std::cerr << "Error with rom at wrong format" << std::endl;
-			UserInterface::throwError("Error with rom at wrong format", false);
+			UserInterface::throwError("File is not valid, please select a valid Rom file", false);
 			file.close();
 			return nullptr;
 			// throw("");
@@ -66,32 +66,22 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	file.read(&CGBCode, 1);
 	std::cout << std::hex << "CGBCode: " << +CGBCode << std::endl;
 	file.close();
+	Mem* newMem;
 	// boot roms are stored in byte array in Bootrom.hpp
 	if (((CGBCode & 0x80) || (UserInterface::forceMode && UserInterface::forceCGB))
 			&& !(UserInterface::forceMode && !UserInterface::forceCGB))
 	{
-		auto newMem = new CGBMem(pathToRom);
-        if (!newMem->isValid){
-            std::string error = "Can't create Memory for " + pathToRom;
-            UserInterface::throwError(error.c_str(), false);
-            return nullptr;
-        } else {
-            memcpy(newMem->internalArray, cgbBootRom, 2304);
-            return newMem;
-        }
+		newMem = new CGBMem(pathToRom);
+		if (newMem->isValid)
+			memcpy(newMem->internalArray, cgbBootRom, 2304);
 	}
 	else
 	{
-		auto newMem = new Mem(pathToRom);
-		if (!newMem->isValid){
-            std::string error = "Can't create Memory for " + pathToRom;
-            UserInterface::throwError(error.c_str(), false);
-            return nullptr;
-        } else {
-            memcpy(newMem->internalArray, dmgBootRom, 256);
-            return newMem;
-        }
+		newMem = new Mem(pathToRom);
+		if (newMem->isValid)
+			memcpy(newMem->internalArray, dmgBootRom, 256);
 	}
+	return newMem;
 }
 
 void Mem::supervisorWrite(unsigned int addr, unsigned char value)
@@ -119,7 +109,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (!file.is_open())
 	{
 		std::cerr << "file not found" << std::endl;
-		UserInterface::throwError("file not found", false);
+		UserInterface::throwError("File not found", false);
 		isValid = false;
 		return;
 	}
@@ -135,7 +125,7 @@ Mem::Mem(const std::string& pathToRom)
 	if (fileLen != romBanksNb * 1024 * 16) //32768
 	{
         file.close();
-		UserInterface::throwError("Wrong size read in header", false);
+		UserInterface::throwError("File is not valid, please select a valid Rom file", false);
 		isValid = false;
         UserInterface::bIsError = true;
 		return ;

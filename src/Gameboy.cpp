@@ -351,15 +351,13 @@ void Gameboy::loadSaveState()
 	if (mem.mbc->hasTimer) {
 		// Fetching timer save
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr) {
-			bIsInit = false;
-			UserInterface::throwError("Could not dynamically cast MBC3 pointer (loading save state)", false);
-			return ;
+		if (ptr)
+		{
+			memcpy(&ptr->start, content.data() + offset, sizeof(time_t));
+			offset += sizeof(time_t);
 		}
-		memcpy(&ptr->start, content.data() + offset, sizeof(time_t));
 	}
 
-	offset += (mem.mbc->hasTimer ? sizeof(time_t) : 0);
 
 	memcpy(Gameboy::getMem().getInternalArray(), content.data() + offset, MEM_SIZE);
 
@@ -515,12 +513,9 @@ void Gameboy::saveState()
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr) {
-			bIsInit = false;
-			UserInterface::throwError("Could not dynamically cast MBC3 pointer (saveRam)", false);
-			return ;
+		if (ptr) {
+			outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 		}
-		outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
 	outfile.write(reinterpret_cast<char*>(mem.getInternalArray()), MEM_SIZE);
@@ -561,12 +556,8 @@ void Gameboy::saveRam()
 
 	if (mem.mbc->hasTimer) {
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
-		if (!ptr) {
-			bIsInit = false;
-			UserInterface::throwError("Could not dynamically cast MBC3 pointer (saveRam)", false);
-			return ;
-		}
-		outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
+		if (ptr)
+			outfile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
 	if (!bSaveExists)

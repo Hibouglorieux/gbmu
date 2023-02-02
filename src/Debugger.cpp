@@ -48,7 +48,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			32 * BG_SCREEN_SCALE * 9);
 	if (!BGTexture) {
 		// std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
-        	Gameboy::throwError( "Erreur SDL_CreateTexture BG");
+        	Gameboy::throwError("Internal error encountered: couldn't create needed texture");
 		return false;
 	}
 
@@ -59,7 +59,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			2 * BG_SCREEN_SCALE * 9);
 	if (!SpriteTexture) {
 		//std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
-        	Gameboy::throwError( "Erreur SDL_CreateTexture Sprite");
+        	Gameboy::throwError("Internal error encountered: couldn't create needed texture");
 		return false;
 	}
 
@@ -70,7 +70,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			24 * 9 * VRAM_SCREEN_SCALE);
 	if (!VRamTexture) {
 		// std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
-        	Gameboy::throwError( "Erreur SDL_CreateTexture VRAM");
+        	Gameboy::throwError("Internal error encountered: couldn't create needed texture");
 		return false;
 	}
 	lockTexture();
@@ -79,15 +79,9 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 
 void	Debugger::lockTexture()
 {
-    if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
-        Gameboy::throwError( "Could not lock Vram texture");
-    }
-    if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
-        Gameboy::throwError( "Could not lock BG texture");
-    }
-    if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
-        Gameboy::throwError( "Could not lock BG texture");
-    }
+    SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)
+    SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)
+    SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)
 }
 
 void Debugger::hexdump() {
