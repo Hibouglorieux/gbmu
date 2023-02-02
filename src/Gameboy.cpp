@@ -137,9 +137,12 @@ void Gameboy::clear()
 {
 	if (bIsInit) {
 		saveRam();
+		if (mem.extraRamBanksNb)
+		{
+			delete [] saveBuffer.value;
+			delete [] saveBuffer.bHasBeenWritten;
+		}
 		delete gbMem;
-		delete [] saveBuffer.value;
-		delete [] saveBuffer.bHasBeenWritten;
 		APU::clear();
 		Screen::destroyTexture();
 		Debugger::destroyTexture();
@@ -560,11 +563,11 @@ void Gameboy::saveRam()
 			saveFile.write(reinterpret_cast<char *>(&ptr->start), sizeof(time_t));
 	}
 
-	if (!bSaveExists)
+	if (mem.extraRamBanksNb && !bSaveExists)
 	{
 		saveFile.write((char*)saveBuffer.value, saveBufferSize);
 	}
-	else
+	else if (mem.extraRamBanksNb)
 	{
 		auto startPos = saveFile.tellp();
 		unsigned char* finalBuffer = new unsigned char[saveBufferSize];
@@ -578,8 +581,9 @@ void Gameboy::saveRam()
 		{
 			for (int i = 0; i < saveBufferSize; i++)
 			{
-				if (saveBuffer.bHasBeenWritten[i])
+				if (saveBuffer.bHasBeenWritten[i]) {
 					finalBuffer[i] = saveBuffer.value[i];
+				}
 			}
 			saveFile.seekp(startPos);
 			saveFile.write((char*)finalBuffer, saveBufferSize);
