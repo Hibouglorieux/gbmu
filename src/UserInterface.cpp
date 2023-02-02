@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 14:43:07 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 16:01:17 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,17 +229,31 @@ void UserInterface::showGameboyWindow()
 		ImGui::Text("Using autodetect DMG/CGB mode.");
 	}
 	ImGui::NewLine();
+	if (ImGui::Button("Reset FPS")) {
+		Debugger::fps = 60;
+	}
+	ImGui::SameLine();
 	ImGui::SetNextItemWidth(180);
 	if (ImGui::SliderInt("FPS", &Debugger::fps, 1, 300))
 	{
 		framesToSkipRender = 0;
 		framesToSkipUpdate = 0;
+		if (Debugger::fps > 300)
+			Debugger::fps = 300;
+		if (Debugger::fps < 1)
+			Debugger::fps = 1;
 	}
-	ImGui::SliderInt("Volume", &UserInterface::volume, 0, 100);
-	ImGui::SetNextItemWidth(180);
-	ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::SameLine();
+	if (ImGui::SliderInt("Volume", &UserInterface::volume, 0, 100))
+	{
+		if (volume > 100)
+			volume = 100;
+		if (volume < 1)
+			volume = 1;
+	}
+	//ImGui::SetNextItemWidth(180);
+	//ImGui::InputInt("frameNb Break", (int*)&Debugger::stopAtFrame);
+	//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	//ImGui::SameLine();
 	if (ImGui::Button(  Debugger::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
 		Debugger::state = (Debugger::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;
 	}
@@ -364,7 +378,7 @@ bool UserInterface::loop()
 					Gameboy::bIsInit = Gameboy::loadRom();
 				}
 			}
-			if (!Gameboy::bIsPathValid) {
+			if (!bIsError && !Gameboy::bIsPathValid) {
 				// ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 				// ImGui::SetNextWindowSize(ImVec2(1900, 1000), ImGuiCond_FirstUseEver);
 				// ImGui::Begin(UserInterface::romFolderPath.c_str());
@@ -372,38 +386,48 @@ bool UserInterface::loop()
 				//ImGui::End();
 			}
 			Gameboy::Step step = Gameboy::Step::full;
-			if (Debugger::state != DebuggerState::PAUSED) {
-				step = Gameboy::Step::full;
-				if (Debugger::state == DebuggerState::ONCE)
-					step = Gameboy::Step::oneInstruction;
-				if (Debugger::state == DebuggerState::ONCE_LINE)
-					step = Gameboy::Step::oneLine;
+			if (Gameboy::bIsInit && !UserInterface::bIsError)
+			{
+				bool bShouldUpdateGameboy = Debugger::state != DebuggerState::PAUSED;
+				//printf("framesToSkipUpdate: %f\n", framesToSkipUpdate);
+				if (bShouldUpdateGameboy)
+				{
+					step = Gameboy::Step::full;
+					if (Debugger::state == DebuggerState::ONCE)
+						step = Gameboy::Step::oneInstruction;
+					if (Debugger::state == DebuggerState::ONCE_LINE)
+						step = Gameboy::Step::oneLine;
+					//printf("rendering with updateGameboy: %d and skipping:%f\n",
+							//bShouldUpdateGameboy, framesToSkipRender);
+					if (step == Gameboy::Step::full && Debugger::state != DebuggerState::ONCE_FRAME)
+					{
+						if (framesToSkipUpdate < 1)
+						{
+							do
+							{
+								framesToSkipRender -= 1;
+								Gameboy::execFrame(step, framesToSkipRender < 1);
+								//printf("execframe %s\n", framesToSkipRender < 1 ? "WITH RENDER" : "WITHOUT RENDER");
+							} while (framesToSkipRender >= 1);
+							lastTimeGameboyUpdated = std::chrono::system_clock::now();
+							framesToSkipUpdate += (60.f / (float)Debugger::fps) - 1;
+							framesToSkipRender += ((float)Debugger::fps / 60.f);
+						}
+						else
+							framesToSkipUpdate -= 1;
+					}
+					else
+					{
+						framesToSkipUpdate = 0;
+						framesToSkipRender = 0;
+						Gameboy::execFrame(step, true);
+					}
+				}
 				if (Debugger::state == DebuggerState::ONCE ||
 						Debugger::state == DebuggerState::ONCE_FRAME ||
 						Debugger::state == DebuggerState::ONCE_LINE) {
 					Debugger::state = DebuggerState::PAUSED;
 				}
-			}
-
-			if (Gameboy::bIsInit && !UserInterface::bIsError)
-			{
-				bool bShouldUpdateGameboy = Debugger::state != DebuggerState::PAUSED;
-				//printf("framesToSkipUpdate: %f\n", framesToSkipUpdate);
-				if (bShouldUpdateGameboy && framesToSkipUpdate < 1)
-				{
-					//printf("rendering with updateGameboy: %d and skipping:%f\n",
-							//bShouldUpdateGameboy, framesToSkipRender);
-					do
-					{
-						framesToSkipRender -= 1;
-						Gameboy::execFrame(step, framesToSkipRender < 1);
-						//printf("execframe %s\n", framesToSkipRender < 1 ? "WITH RENDER" : "WITHOUT RENDER");
-					} while (framesToSkipRender >= 1);
-					lastTimeGameboyUpdated = std::chrono::system_clock::now();
-					framesToSkipUpdate += (60.f / (float)Debugger::fps) - 1;
-					framesToSkipRender += ((float)Debugger::fps / 60.f);
-				}
-				framesToSkipUpdate -= 1;
 				UserInterface::showGameboyWindow();
 				if (!UserInterface::bIsError)
 				{
