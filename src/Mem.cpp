@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 17:03:44 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 19:49:38 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,8 +134,10 @@ Mem::Mem(const std::string& pathToRom)
    	file.read(&ramSizeCode, 1);
 	file.seekg(0, std::ifstream::beg);
 
-	for (int i = 0; i < romBanksNb; i++)
+	for (int i = 0; i < romBanksNb; i++) {
 		romBanks.push_back(new unsigned char[ROM_BANK_SIZE]);
+		bzero(romBanks[i], ROM_BANK_SIZE);
+	}
 	std::cout << "created " << romBanksNb << " rom banks" << std::endl;
 
 
