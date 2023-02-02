@@ -6,7 +6,7 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:01 by nathan            #+#    #+#             */
-/*   Updated: 2023/01/31 02:08:40 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 11:44:53 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,23 +19,23 @@
 ** It search in OAM entry and manage the sprite drawing for Ppu.
 */
 
+#include <array>
 #include <vector>
-#include "Gameboy.hpp"
-#include "define.hpp"
 
 struct OAM_entry
 {
+public:
 	unsigned char posY;
 	unsigned char posX;
 	unsigned char tileIndex;
 	unsigned char attributes;
 
-	bool getBGWOverWindow() const {return BIT(attributes, 7);}
-	bool getFlipY() const {return BIT(attributes, 6);}
-	bool getFlipX() const {return BIT(attributes, 5);}
-	bool getDMGPalette() const {return BIT(attributes, 4);}
-	bool getTileVramBank() const {return BIT(attributes, 3);}
-	unsigned char getCGBPalette() const {return (attributes & 0b111);}
+	bool getBGOverWindow() const;
+	bool getFlipY() const;
+	bool getFlipX() const;
+	bool getDMGPalette() const;
+	bool getTileVramBank() const;
+	unsigned char getCGBPalette() const;
 
 	friend bool operator==(const OAM_entry &a, const OAM_entry &b) {
 		return ((a.posX == b.posX) && (a.posY == b.posY) && (a.tileIndex == b.tileIndex) && (a.attributes == b.attributes));

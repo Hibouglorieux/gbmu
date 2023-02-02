@@ -1,7 +1,17 @@
 
 #include "Debugger.hpp"
 #include <SDL2/SDL.h>
+#include "Gameboy.hpp"
+#include "define.hpp"
 #include "Screen.hpp"
+#include "Cpu.hpp"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl.h"
+#include "imgui/imgui_impl_sdlrenderer.h"
+#include <cstdio>
+#include "imgui/imconfig.h"
+#include "Sprite.hpp"
+#include "TilePixels.hpp"
 
 SDL_Texture 	*Debugger::BGTexture = nullptr;
 void 		*Debugger::BGPixels = nullptr;
@@ -38,7 +48,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			32 * BG_SCREEN_SCALE * 9);
 	if (!BGTexture) {
 		// std::cerr << "Erreur SDL_CreateTexture BG : "<< SDL_GetError() << std::endl;
-        	UserInterface::throwError( "Erreur SDL_CreateTexture BG", true);
+        	Gameboy::throwError( "Erreur SDL_CreateTexture BG");
 		return false;
 	}
 
@@ -49,7 +59,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			2 * BG_SCREEN_SCALE * 9);
 	if (!SpriteTexture) {
 		//std::cerr << "Erreur SDL_CreateTexture Sprite : "<< SDL_GetError() << std::endl;
-        	UserInterface::throwError( "Erreur SDL_CreateTexture Sprite", true);
+        	Gameboy::throwError( "Erreur SDL_CreateTexture Sprite");
 		return false;
 	}
 
@@ -60,7 +70,7 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 			24 * 9 * VRAM_SCREEN_SCALE);
 	if (!VRamTexture) {
 		// std::cerr << "Erreur SDL_CreateTexture VRam : "<< SDL_GetError() << std::endl;
-        	UserInterface::throwError( "Erreur SDL_CreateTexture VRAM", true);
+        	Gameboy::throwError( "Erreur SDL_CreateTexture VRAM");
 		return false;
 	}
 	lockTexture();
@@ -70,13 +80,13 @@ bool	Debugger::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 void	Debugger::lockTexture()
 {
     if (SDL_LockTexture(VRamTexture, nullptr, &VramPixels, &VramPitch)) {
-        UserInterface::throwError( "Could not lock Vram texture", true);
+        Gameboy::throwError( "Could not lock Vram texture");
     }
     if (SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch)) {
-        UserInterface::throwError( "Could not lock BG texture", true);
+        Gameboy::throwError( "Could not lock BG texture");
     }
     if (SDL_LockTexture(SpriteTexture, nullptr, &SpritePixels, &SpritePitch)) {
-        UserInterface::throwError( "Could not lock BG texture", true);
+        Gameboy::throwError( "Could not lock BG texture");
     }
 }
 
@@ -262,7 +272,8 @@ void	Debugger::drawSprite(void)
 			// fetch the 8 pixel of the sprite in a tmp buffer
 			std::array<short, 8> line = sprite.getColoredLine(y);
 			for (int x = 0; x < 8; x++) {
-				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)SpritePixels, SpritePitch, BG_SCREEN_SCALE);
+				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)SpritePixels,
+						SpritePitch, BG_SCREEN_SCALE, Gameboy::bIsCGB);
 			}
 		}
 	}
@@ -290,7 +301,8 @@ void	Debugger::drawBG(int mapAddr)
 		for (int y = 0; y < 8; y++) {
 			auto line = tile.getColorLine(y);
 			for (int x = 0; x < 8; x++) {
-				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)BGPixels, BGPitch, BG_SCREEN_SCALE);
+				Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)BGPixels,
+						BGPitch, BG_SCREEN_SCALE, Gameboy::bIsCGB);
 			}
 		}
 	}
@@ -348,7 +360,8 @@ void	Debugger::drawVRam(bool bIsCGB)
 				for (int y = 0; y < 8; y++) {
 					auto line = tile.getColorLine(y);
 					for (int x = 0; x < 8; x++) {
-						Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+						Screen::drawPoint(x + x_offset, y + y_offset, line[x], (int*)VramPixels,
+								VramPitch, VRAM_SCREEN_SCALE, Gameboy::bIsCGB);
 					}
 				}
 			}
@@ -364,7 +377,8 @@ void	Debugger::drawVRam(bool bIsCGB)
 					for (int y = 0; y < 8; y++) {
 						auto line = tile.getColorLine(y);
 						for (unsigned char x = 0; x < 8; x++) {
-							Screen::drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x], (int*)VramPixels, VramPitch, VRAM_SCREEN_SCALE);
+							Screen::drawPoint(x + x_offset + Vram * (16 * 9 + 2), y + y_offset, line[x],
+									(int*)VramPixels, VramPitch, VRAM_SCREEN_SCALE, Gameboy::bIsCGB);
 							//std::cout << "drew at x: " << x + x_offset + Vram * (16 * 9 + 2) << " y: " << y + y_offset << std::endl;
 						}
 					}

@@ -6,11 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:06:47 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 23:04:12 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 11:51:22 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Gameboy.hpp"
 
 unsigned char Cpu::rca(unsigned short opcode)
 {

@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:12:27 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:02:06 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,8 @@
 ** it's called by Gameboy
 */
 
-#include "Gameboy.hpp"
-#include "Utility.hpp"
 #include "CpuStackTrace.hpp"
-#include "Hdma.hpp"
 #include <string>
-#include <iostream>
-#include <iomanip>
-#include <utility>
-#include <functional>
-
-#include "define.hpp"
 
 #define M_EI (mem[0xFFFF])
 #define M_IF (mem[0xFF0F])

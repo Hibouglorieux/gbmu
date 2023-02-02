@@ -1,9 +1,8 @@
 #ifndef NOISE_HPP
 #define NOISE_HPP
 
-#include "Mem.hpp"
-#include "Gameboy.hpp"
 #include "define.hpp"
+#include <SDL2/SDL_audio.h>
 
 
 class Noise

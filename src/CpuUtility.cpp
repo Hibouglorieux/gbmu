@@ -6,12 +6,15 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 20:25:14 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 09:31:23 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 11:50:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include <iomanip>
 #include <iostream>
+#include "Utility.hpp"
+#include "Gameboy.hpp"
 
 void	Cpu::printRegisters()
 {
@@ -233,5 +236,5 @@ unsigned short Cpu::readShort()
 void Cpu::logErr(std::string msg)
 {
 	// Throw a fatal error window
-	UserInterface::throwError(msg.c_str(), true);
+	Gameboy::throwError(msg.c_str());
 }

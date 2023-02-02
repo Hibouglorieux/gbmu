@@ -6,18 +6,19 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:17:27 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:09:23 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "UserInterface.hpp"
 #include "Mem.hpp"
-#include "Cpu.hpp"
-#include "Utility.hpp"
+#include "Ppu.hpp"
 #include "APU.hpp"
 #include "Hdma.hpp"
-#include "Debugger.hpp"
 #include <fstream>
 #include <iostream>
+#include "Joypad.hpp"
+#include "Gameboy.hpp"
 
 #include "Bootrom.hpp"
 

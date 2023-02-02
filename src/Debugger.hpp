@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/01/12 02:25:27 by nathan           ###   ########.fr       */
+/*   Updated: 2023/02/02 12:05:25 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,7 @@
 #define BG_SCREEN_SCALE 2
 
 
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_sdl.h"
-#include "imgui/imgui_impl_sdlrenderer.h"
-#include <cstdio>
 #include <SDL2/SDL.h>
-#include "imgui/imconfig.h"
-#include "Cpu.hpp"
 
 enum class DebuggerState : int {
     PAUSED,

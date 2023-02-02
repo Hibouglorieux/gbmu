@@ -9,9 +9,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "UserInterface.hpp"
+#include "Gameboy.hpp"
 #include "Cpu.hpp"
+#include "Ppu.hpp"
 #include "APU.hpp"
 #include <functional>
+#include <iostream>
+#include <iomanip>
+#include "Hdma.hpp"
+#include "Utility.hpp"
 
 CpuStackTrace	Cpu::stackTrace;
 

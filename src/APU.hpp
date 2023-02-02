@@ -3,8 +3,6 @@
 
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL.h>
-#include "define.hpp"
-#include "Gameboy.hpp"
 
 
 #include "SquareWave.hpp"

@@ -6,13 +6,23 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 10:27:16 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:06:15 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "UserInterface.hpp"
 #include "Debugger.hpp"
 #include <thread>
+#include "Joypad.hpp"
+#include "Screen.hpp"
+#include <fstream>
+#include "imgui/imgui.h"
+#include <iostream>
+#include "Gameboy.hpp"
+#include "define.hpp"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_sdl.h"
+#include "imgui/imgui_impl_sdlrenderer.h"
 
 bool UserInterface::showVram = false;
 bool UserInterface::showBG = false;
@@ -136,10 +146,13 @@ void	UserInterface::newFrame()
 	}
 }
 
-void	UserInterface::clear(ImVec4 vec4)
+void	UserInterface::clear()
 {
+	const ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	ImGui::Render();
-	SDL_SetRenderDrawColor(uiRenderer, vec4.x * 255, vec4.y * 255, vec4.z * 255, vec4.w * 255);
+	SDL_SetRenderDrawColor(uiRenderer,
+			clear_color.x * 255, clear_color.y * 255,
+			clear_color.z * 255, clear_color.w * 255);
 	ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 	SDL_RenderPresent(UserInterface::uiRenderer);
 }
@@ -331,8 +344,6 @@ void UserInterface::showSubWindows(bool bShouldComputeScreen)
 
 bool UserInterface::loop()
 {
-
-	static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	std::chrono::time_point<std::chrono::system_clock> lastTimeGameboyUpdated;
 	std::chrono::microseconds hardwareFrameTime(1'000'000 / 60);
 
@@ -423,7 +434,7 @@ bool UserInterface::loop()
 			}
 		}
 
-		UserInterface::clear(clear_color);
+		UserInterface::clear();
 	}
 	Gameboy::clear();
 	destroy();

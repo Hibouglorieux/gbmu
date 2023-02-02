@@ -1,5 +1,7 @@
 #include "Joypad.hpp"
 #include "Gameboy.hpp"
+#include "define.hpp"
+#include "CpuStackTrace.hpp"
 
 // TODO We need to have 8 bit for each input
 // so we cannot write into memory directly, need a temp buffer,

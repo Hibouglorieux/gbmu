@@ -6,12 +6,13 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:52:11 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 17:37:29 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 11:50:41 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
 #include "Clock.hpp"
+#include "Gameboy.hpp"
 
 unsigned char Cpu::nop()
 {

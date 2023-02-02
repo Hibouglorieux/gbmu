@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:27:40 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 11:08:05 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,6 @@
 */
 
 #include <array>
-#include <algorithm>
-#include "Gameboy.hpp"
 
 #define FORCE_DMG_TILEPIXELS 0
 #define FORCE_CGB_TILEPIXELS 2

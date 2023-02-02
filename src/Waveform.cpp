@@ -1,4 +1,6 @@
 #include "Waveform.hpp"
+#include <iostream>
+#include "Gameboy.hpp"
 
 void Waveform::tick() {
     // if (trigger)

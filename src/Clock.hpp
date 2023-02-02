@@ -6,15 +6,13 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:55:36 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/05 16:12:54 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 11:56:16 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #ifndef CLOCK_CLASS_H
 # define CLOCK_CLASS_H
-
-#include "functional"
 
 /*
 ** Clock : time management in GBMU

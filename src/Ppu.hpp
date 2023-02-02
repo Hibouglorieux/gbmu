@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:03 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:31:31 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:10:06 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,8 @@
 #define PIXEL_PER_LINE 160
 #define SPRITES_IN_OAM 40
 
-#include "Mem.hpp"
 #include <vector>
 #include <array>
-#include "TilePixels.hpp"
-#include "Sprite.hpp"
 
 
 //VRAM:

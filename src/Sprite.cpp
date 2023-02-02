@@ -6,13 +6,16 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/17 18:56:00 by nathan            #+#    #+#             */
-/*   Updated: 2023/02/02 10:15:41 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 11:44:29 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Sprite.hpp"
+#include "Gameboy.hpp"
+#include "TilePixels.hpp"
 #include "define.hpp"
 #include <algorithm>
+#include <iostream>
 
 #define OBP0 (0xFF48) // Object/Sprite palette 0
 #define OBP1 (0xFF49) // Object/Sprite palette 1
@@ -95,4 +98,34 @@ std::array<short, 8> Sprite::getColoredLine(int y) const
 	for (int x = 0; x < 8; x++)
 		retLine[x] = TilePixels::getColor(retLine[x], paletteValue);
 	return retLine;
+}
+
+bool OAM_entry::getBGOverWindow() const
+{
+	return BIT(attributes, 7);
+}
+
+bool OAM_entry::getFlipY() const
+{
+	return BIT(attributes, 6);
+}
+
+bool OAM_entry::getFlipX() const
+{
+	return BIT(attributes, 5);
+}
+
+bool OAM_entry::getDMGPalette() const
+{
+	return BIT(attributes, 4);
+}
+
+bool OAM_entry::getTileVramBank() const
+{
+	return BIT(attributes, 3);
+}
+
+unsigned char OAM_entry::getCGBPalette() const
+{
+	return (attributes & 0b111);
 }

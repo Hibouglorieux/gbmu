@@ -1,4 +1,6 @@
 #include "SquareWave.hpp"
+#include "Gameboy.hpp"
+#include <iostream>
 
 void SquareWave::tick() {
 

@@ -6,12 +6,14 @@
 /*   By: nathan <unkown@noaddress.com>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/06 01:22:57 by nathan            #+#    #+#             */
-/*   Updated: 2023/02/02 10:14:56 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 11:46:01 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "define.hpp"
 #include "Hdma.hpp"
 #include "Gameboy.hpp"
+#include <iostream>
 
 uint16_t Hdma::src = 0;
 uint16_t Hdma::dst = 0;

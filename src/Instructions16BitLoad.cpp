@@ -6,11 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:57:55 by nallani           #+#    #+#             */
-/*   Updated: 2022/11/11 15:47:26 by nathan           ###   ########.fr       */
+/*   Updated: 2023/02/02 11:51:00 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Gameboy.hpp"
 
 void	Cpu::internalPush(unsigned short valueToPush)
 {

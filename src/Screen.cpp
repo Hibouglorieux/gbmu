@@ -3,6 +3,7 @@
 #include "Cpu.hpp"
 #include "Debugger.hpp"
 #include <fstream>
+#include "imgui/imgui.h"
 
 
 SDL_Texture	*Screen::ppuTexture = nullptr;
@@ -57,21 +58,21 @@ bool	Screen::createTexture(bool bIsCGB, SDL_Renderer* uiRenderer)
 }
 
 void	Screen::updatePpuLine(const std::array<short, PIXEL_PER_LINE>& lineData,
-		unsigned char currentLine)
+		unsigned char currentLine, bool bIsCGB)
 {
 	for (unsigned char i = 0; i < PIXEL_PER_LINE; i++) {
 		Screen::drawPoint(i, currentLine, lineData[i],
-				(int*)ppuPixels, ppuPitch, MAIN_SCREEN_SCALE);
+				(int*)ppuPixels, ppuPitch, MAIN_SCREEN_SCALE, bIsCGB);
 	}
 }
 
 
-bool	Screen::drawPoint(unsigned short x, unsigned short y, const unsigned short& color, void *pixels, int pitch, int pixelScale)
+bool	Screen::drawPoint(unsigned short x, unsigned short y, const unsigned short& color, void *pixels, int pitch, int pixelScale, bool bIsCGB)
 {
 	x *= pixelScale;
 	y *= pixelScale;
 	int colorForSDL;
-	if (!Gameboy::bIsCGB) {
+	if (!bIsCGB) {
 		//colorForSDL = convertRGBforGB(color);
 		colorForSDL = 255 - color * (255 / 3);
 		colorForSDL = (colorForSDL << 24) | (colorForSDL << 16) | (colorForSDL << 8);

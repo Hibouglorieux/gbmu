@@ -1,9 +1,8 @@
 #ifndef SQUARE_WAVE_HPP
 #define SQUARE_WAVE_HPP
 
-#include "Mem.hpp"
-#include "Gameboy.hpp"
 #include "define.hpp"
+#include <SDL2/SDL_audio.h>
 #include <queue>
 
 typedef struct {

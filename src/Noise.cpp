@@ -1,4 +1,6 @@
 #include "Noise.hpp"
+#include "Gameboy.hpp"
+#include <iostream>
 
 
 void Noise::tick() {

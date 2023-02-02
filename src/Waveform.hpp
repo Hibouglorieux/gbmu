@@ -1,8 +1,7 @@
 #ifndef WAVEFORM_HPP
 #define WAVEFORM_HPP
 
-#include "Mem.hpp"
-#include "Gameboy.hpp"
+#include <SDL2/SDL_audio.h>
 #include "define.hpp"
 
 class Waveform

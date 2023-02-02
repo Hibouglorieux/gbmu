@@ -6,11 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:53:28 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/04 16:37:29 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 11:49:27 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
+#include "Utility.hpp"
 
 unsigned char Cpu::ret_flag(unsigned short opcode)
 {

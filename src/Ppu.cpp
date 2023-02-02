@@ -6,14 +6,18 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 19:58:01 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 10:31:33 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:10:05 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Gameboy.hpp"
+#include "TilePixels.hpp"
+#include "Sprite.hpp"
 #include "Ppu.hpp"
 #include <algorithm>
 #include <iostream>
-
+#include "define.hpp"
+#include <functional>
 
 unsigned char Ppu::windowCounter = 0;
 
@@ -187,7 +191,7 @@ std::array<SpriteData, PIXEL_PER_LINE> Ppu::getOamLine()
 	// 3 - copy sprite color into the whole line
 	for (struct OAM_entry spriteEntry : spritesFound)
 	{
-		bool bIsAboveBG = !spriteEntry.getBGWOverWindow();
+		bool bIsAboveBG = !spriteEntry.getBGOverWindow();
 		Sprite sprite = Sprite(spriteEntry, spriteHeight);
 
 		unsigned char yOffset = M_LY - (spriteEntry.posY - 16); // (posY - 16) is where the first line of the sprite should be drawn, this is the current offset inside the sprite, can be higher than 8 if spriteHeight == 16

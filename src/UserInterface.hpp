@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:45:13 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/01 21:29:35 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 10:44:03 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,7 @@
 */
 
 #include <SDL2/SDL.h>
-#include "imgui/imgui.h"
-#include <array>
-#include <fstream>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <chrono>
+#include <string>
 
 class UserInterface
 {
@@ -44,7 +38,7 @@ public:
     	static void		TexturetoImage(SDL_Texture *);
     	static void		fileExplorer();
 	static void		newFrame();
-	static void		clear(ImVec4 vec4);
+	static void		clear();
 	static void		handleEvent(SDL_Event *ev);
 
 	static void		errorWindow();

@@ -1,9 +1,18 @@
+#include "UserInterface.hpp"
 #include "Gameboy.hpp"
-#include "imgui/imgui_impl_sdl.h"
 #include "Hdma.hpp"
 #include "Debugger.hpp"
 #include "APU.hpp"
 #include <sys/stat.h>
+#include "Joypad.hpp"
+#include "define.hpp"
+#include <fstream>
+#include "Common.hpp"
+#include "Screen.hpp"
+#include "Cpu.hpp"
+#include "Ppu.hpp"
+#include <iostream>
+#include <functional>
 
 Mem*		Gameboy::gbMem = nullptr;
 Clock		Gameboy::gbClock = Clock();
@@ -216,7 +225,7 @@ void Gameboy::setState(int newState, bool bRefreshScreen)
 				// we need to have the ternary because the
 				// frame after the lcd was put on is still white
 				Screen::updatePpuLine( bShouldRenderFrame ? Ppu::doOneLine() : Ppu::getDefaultWhiteLine()
-						, internalLY);
+						, internalLY, bIsCGB);
 			}
 		}
 		if (newState == GBSTATE_H_BLANK) {
@@ -644,4 +653,9 @@ int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 		return (true);
 	}
 	return (false);
+}
+
+void Gameboy::throwError(std::string errMsg)
+{
+	UserInterface::throwError(errMsg.c_str(), true);
 }

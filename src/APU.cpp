@@ -1,6 +1,10 @@
 #include "APU.hpp"
-
+#include <iostream>
+#include "Ppu.hpp"
+#include "Gameboy.hpp"
+#include "define.hpp"
 #include "UserInterface.hpp"
+
 
 #define CHANNEL1 true
 #define CHANNEL1_FACTOR 5

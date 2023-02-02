@@ -19,7 +19,6 @@
 */
 
 #include <SDL2/SDL.h>
-#include "imgui/imgui.h"
 #include <array>
 #include "Ppu.hpp"
 
@@ -30,14 +29,14 @@ public:
 
 	static bool 		drawPoint(unsigned short x, unsigned short y,
 					const unsigned short& color, void *pixels,
-					int pitch, int pixelScale);
+					int pitch, int pixelScale, bool bIsCGB);
     	static void		lockTexture();
 
 	static int 	 	convertColorFromCGB(int colo,
 					bool bConvertForImGUI = false);
 	static void		updatePpuLine(const std::array<short,
 					PIXEL_PER_LINE>& lineData,
-					unsigned char currentLine);
+					unsigned char currentLine, bool bIsCGB);
 	static bool		createTexture(bool bIsCGB, SDL_Renderer* uiRenderer);
 
 

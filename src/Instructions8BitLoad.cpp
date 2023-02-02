@@ -6,12 +6,12 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 15:56:06 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/08 21:07:30 by nathan           ###   ########.fr       */
+/*   Updated: 2023/02/02 11:50:52 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cpu.hpp"
-#include "Debugger.hpp"
+#include "Gameboy.hpp"
 
 unsigned char Cpu::load_a8_a()
 {

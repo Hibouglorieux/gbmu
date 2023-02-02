@@ -6,11 +6,14 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 22:27:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/01/31 06:46:09 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 11:08:02 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Gameboy.hpp"
 #include "TilePixels.hpp"
+#include "define.hpp"
+#include <iostream>
 
 #define BGP (0xFF47)
 // background palette 0b11000000 => 11, 0b110000 => 10, 0b1100 => 01, 0b11 => 00

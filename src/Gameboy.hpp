@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 10:19:00 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/02 12:00:40 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,11 @@
 **	- ...
 */
 
+#include <cstdint>
+#include <string>
+
 #include "Mem.hpp"
 #include "Clock.hpp"
-#include "Cpu.hpp"
-#include "Ppu.hpp"
-#include "UserInterface.hpp"
-#include "Screen.hpp"
-#include "Joypad.hpp"
-#include "define.hpp"
-#include "Common.hpp"
-#include <fstream>
 
 // Theses are used by all class to access mem and clock
 #define g_clock (Gameboy::getClock())
@@ -110,6 +105,7 @@ public:
 		unsigned char*	value;
 		bool*			bHasBeenWritten;
 	};
+	static void throwError(std::string errMsg);
 
 private:
 	static int		currentState;
