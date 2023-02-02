@@ -71,7 +71,8 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	{
 		auto newMem = new CGBMem(pathToRom);
         if (!newMem->isValid){
-            UserInterface::throwError("can't memcpy bootromData into newMem ", false);
+            std::string error = "Can't create Memory for " + pathToRom;
+            UserInterface::throwError(error.c_str(), false);
             return nullptr;
         } else {
             memcpy(newMem->internalArray, cgbBootRom, 2304);
@@ -82,7 +83,8 @@ Mem* Mem::loadFromFile(const std::string& pathToRom)
 	{
 		auto newMem = new Mem(pathToRom);
 		if (!newMem->isValid){
-            UserInterface::throwError("can't memcpy bootromData into newMem ", false);
+            std::string error = "Can't create Memory for " + pathToRom;
+            UserInterface::throwError(error.c_str(), false);
             return nullptr;
         } else {
             memcpy(newMem->internalArray, dmgBootRom, 256);
