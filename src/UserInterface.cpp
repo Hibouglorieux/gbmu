@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 18:27:00 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/02 20:51:56 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,8 +243,8 @@ void UserInterface::showGameboyWindow()
 	{
 		if (volume > 100)
 			volume = 100;
-		if (volume < 1)
-			volume = 1;
+		if (volume < 0)
+			volume = 0;
 	}
 	if (ImGui::Button(  Debugger::state == DebuggerState::RUNNING ? "PAUSE" : "RUN")) {
 		Debugger::state = (Debugger::state == DebuggerState::PAUSED) ? DebuggerState::RUNNING : DebuggerState::PAUSED;

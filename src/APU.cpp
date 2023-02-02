@@ -44,7 +44,7 @@ bool APU::addDecibel(unsigned short &ref, int val) {
     //     ref = MAX_VOLUME;
     // else
     // ref = (unsigned short)(((int)tmp * UserInterface::volume) / 100) ;
-    ref = (unsigned short)tmp;
+    ref = ((unsigned short)tmp * UserInterface::volume) / 100;;
     return true;
 }
 
