@@ -4,17 +4,17 @@
 
 #define CHANNEL1 true
 #define CHANNEL1_FACTOR 5
-#define CHANNEL1_VOLUME_SPEED 50
+#define CHANNEL1_VOLUME_SPEED 15
 
-#define CHANNEL2 true
+#define CHANNEL2 false
 #define CHANNEL2_FACTOR 5
 #define CHANNEL2_VOLUME_SPEED 50
 
-#define CHANNEL3 true
+#define CHANNEL3 false
 #define CHANNEL3_FACTOR 0.4
 #define CHANNEL3_VOLUME_SPEED 500
 
-#define CHANNEL4 true
+#define CHANNEL4 false
 #define CHANNEL4_FACTOR 4
 #define CHANNEL4_VOLUME_SPEED 60
 
@@ -38,7 +38,8 @@ bool APU::addDecibel(unsigned short &ref, int val) {
     // if (tmp > MAX_VOLUME)
     //     ref = MAX_VOLUME;
     // else
-    ref = (unsigned short)(((int)tmp * UserInterface::volume) / 100) ;
+    // ref = (unsigned short)(((int)tmp * UserInterface::volume) / 100) ;
+    ref = (unsigned short)tmp;
     return true;
 }
 
@@ -223,7 +224,8 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         }
                     }
                     channel1.length_count = 0;
-                    channel1.regulator = (channel1.regulator + 1) % channel1.volumeSweepPace;
+                    if (channel1.volumeSweepPace)
+                        channel1.regulator = (channel1.regulator + 1) % channel1.volumeSweepPace;
                     wavelenRegu = (wavelenRegu + 1) % 4;
                 }
             }
@@ -297,7 +299,8 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         }
                     }
                     channel2.length_count = 0;
-                    channel2.regulator = (channel2.regulator + 1) % channel2.volumeSweepPace;
+                    if (channel2.volumeSweepPace)
+                        channel2.regulator = (channel2.regulator + 1) % channel2.volumeSweepPace;
                 }
             }
         }
@@ -396,7 +399,8 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                         channel4.trigger = false;
                 }
                 channel4.length_count = 0;
-                channel4.regulator = (channel4.regulator + 1) % channel4.sweepPace;
+                if (channel4.sweepPace)
+                    channel4.regulator = (channel4.regulator + 1) % channel4.sweepPace;
             }
         }
         unsigned short max = 0;

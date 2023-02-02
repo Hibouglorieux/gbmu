@@ -159,11 +159,20 @@ Mem::Mem(const std::string& pathToRom)
 				std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 			}
 
-			memcpy(internalArray, saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0), MEM_SIZE);
+			unsigned long offset = (unsigned long)saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0);
+
+			memcpy(internalArray, (void*)offset, MEM_SIZE);
+			offset += MEM_SIZE;
 
 			for (int i = 0; i < extraRamBanksNb; i++) {
-				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * RAM_BANK_SIZE) + MEM_SIZE, RAM_BANK_SIZE);
+				memcpy(extraRamBanks[i], (void*)offset, RAM_BANK_SIZE);
+				offset += RAM_BANK_SIZE;
 			}
+
+			// CGBMem *ptr = dynamic_cast<CGBMem*>(&mem);
+			// if (ptr) {
+
+			// }
 		}
 	} else
 		std::cout << "No saves were detected" << std::endl;

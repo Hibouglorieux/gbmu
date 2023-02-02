@@ -492,6 +492,7 @@ void Gameboy::saveState() {
 void Gameboy::saveRam() {
 	if (!bIsPathValid || !bIsInit)
 		return ;
+	std::cout << "Saving game\n";
 	std::ofstream outfile(path + ".save", std::ios::binary);
 
 	if (mem.mbc->hasTimer) {
@@ -509,6 +510,14 @@ void Gameboy::saveRam() {
 	for (unsigned char *elem : mem.extraRamBanks) {
 		outfile.write(reinterpret_cast<char*>(elem), RAM_BANK_SIZE);
 	}
+
+	CGBMem *ptr = dynamic_cast<CGBMem*>(&mem);
+	if (ptr) {
+		for (int i = 0; i < ptr->getCGBExtraRamBanks().size(); i++)
+			outfile.write((char *)ptr->getCGBExtraRamBanks()[i], 0x1000);
+	}
+	
+	
 	outfile.close();
 }
 
