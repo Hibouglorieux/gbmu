@@ -9,14 +9,20 @@
 #include "Waveform.hpp"
 #include "Noise.hpp"
 
+
 class APU
 {
 private:
     static unsigned char triggers[4];
     static int ticks;
+    static int ticksRegisters;
     
     static int masterVolume;
 public:
+    static int allo;
+    static std::vector<sound_registers> registers_queue;
+    
+
     static void tick(int n);
     
     static void init();

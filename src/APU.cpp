@@ -4,6 +4,7 @@
 #include "Gameboy.hpp"
 #include "define.hpp"
 #include "UserInterface.hpp"
+#include "SoundRegisters.hpp"
 
 
 #define CHANNEL1 true
@@ -23,7 +24,10 @@
 
 unsigned char APU::triggers[4] = {0,0,0,0};
 int APU::ticks = 0;
+int APU::ticksRegisters = 0;
 int APU::masterVolume = 0;
+int APU::allo = 0;
+std::vector<sound_registers> APU::registers_queue;
 
 SquareWave* APU::channel1 = nullptr;
 SquareWave* APU::channel2 = nullptr;
@@ -53,8 +57,8 @@ void APU::clear() {
 
 void APU::reset()
 {
-	channel1 = SquareWave::loadSquareWave(1);
-	channel2 = SquareWave::loadSquareWave(2);
+	channel1 = SquareWave::loadSquareWave(1, registers_queue);
+	channel2 = SquareWave::loadSquareWave(2, registers_queue);
 	channel3 = Waveform::loadWaveform(3);
 	channel4 = Noise::loadNoise(4);
 	bzero(triggers, 4);
@@ -83,16 +87,57 @@ void APU::init() {
 
 void APU::tick(int n) {
     ticks += n;
+    ticksRegisters += n;
+
+    if (ticksRegisters >= 62500) {
+        // Each 64 Hz
+
+        sound_registers tmp;
+        tmp.nr50 = mem[NR50];
+        tmp.nr51 = mem[NR51];
+        tmp.nr52 = mem[NR52];
+
+        tmp.channel1.nr10 = mem[NR10];
+        tmp.channel1.nr11 = mem[NR11];
+        tmp.channel1.nr12 = mem[NR12];
+        tmp.channel1.nr13 = mem[NR13];
+        tmp.channel1.nr14 = mem[NR14];
+
+        tmp.channel2.nr21 = mem[NR21];
+        tmp.channel2.nr22 = mem[NR22];
+        tmp.channel2.nr23 = mem[NR23];
+        tmp.channel2.nr24 = mem[NR24];
+
+        tmp.channel3.nr31 = mem[NR31];
+        tmp.channel3.nr32 = mem[NR32];
+        tmp.channel3.nr33 = mem[NR33];
+        tmp.channel3.nr34 = mem[NR34];
+
+        tmp.channel4.nr41 = mem[NR41];
+        tmp.channel4.nr42 = mem[NR42];
+        tmp.channel4.nr43 = mem[NR43];
+        tmp.channel4.nr44 = mem[NR44];
+
+        // for (int i = 1; i < registers_queue.size(); i++)
+        //     registers_queue[i] = registers_queue[i - 1];
+
+        registers_queue.push_back(tmp);
+        allo = 0;
+    }
+
+    ticksRegisters %= 62500;
+    
     if (ticks >= 190) {
         masterVolume = ((mem[0xFF24] & 0b111) + ((mem[0xFF24] & 0b1110000) >> 4)) / 2;
-	masterVolume++; // TODO LMA 7 should be 8 and 0 should be 1
-        // if (!masterVolume)
-        //     masterVolume = 1;
 
-        channel2->tick();
-        channel1->tick();
-        channel3->tick();
-        channel4->tick();
+	    masterVolume++; // TODO LMA 7 should be 8 and 0 should be 1
+        if (!masterVolume)
+            masterVolume = 1;
+
+        // channel2->tick();
+        // channel1->tick();
+        // channel3->tick();
+        // channel4->tick();
     }
     ticks %= 190;
 }
@@ -112,6 +157,7 @@ void APU::turnOnOff(unsigned char old, unsigned char val) {
         channel2->clear();
         channel3->clear();
         channel4->clear();
+        
 
         // mem[NR50] = 0;
         // mem[NR51] = 0;
@@ -124,7 +170,7 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
     // TODO verify for ptr[i] overflow
     uint16_t *ptr = (uint16_t *)stream;
     static int wavelenRegu = 0;
-    // std::cout << "Sound callback\n";
+    // std::cout << "Sound callback : " << std::dec << (length/2) << "\n";
 
     if (!BIT(mem[NR52], 7) || !BIT(mem[LCDC], 7)) {
         memset(stream, 0, length);
@@ -134,6 +180,23 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
     for (int i = 0; i < length/2; i++) {
         ptr[i] = 0;
         float decibels[4] = {0, 0, 0, 0};
+        static int test = 0;
+
+        if (test >= 690) {
+            // Each 64 Hz
+            test = 0;
+
+            channel1->tick(allo);
+            channel2->tick(allo);
+            allo++;
+            if (registers_queue.size() > 0)
+                registers_queue.erase(registers_queue.begin());
+
+        }
+        test++;
+
+
+        
         
 
         if (CHANNEL1)
@@ -158,18 +221,20 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
                 // std::cout << "\twave sweep direction : " << channel1->waveSweepDirection << "\n";
                 // std::cout << "\twave sweep pace : " << channel1->waveSweepPace << "\n";
                 // std::cout << "\twave sweep slope : " << channel1->waveSweepSlope << "\n";
+                // std::cout << "shit : " << channel1->trigger << " et " << channel1->DACenable << "\n";
+                // std::cout << "shit2 : " << channel1->volume << " et " << channel1->volumeReduction << "\n";
             }
             if (channel1->trigger && channel1->DACenable && !(!BIT(mem[NR51], 0) && !BIT(mem[NR51], 4))) {
-
                 // Channel 1
-                
                 int freq = abs(1000000/(2048 - (int)((int)(channel1->waveLength + channel1->wavelengthSweepValue) == 2048 ? 2047 : channel1->waveLength)));
                 int samples_per_step = (SAMPLING_RATE / freq);
 
                 float val = getBetween((float)(channel1->volume)/(0xF/2), 0, 2);
+                
 
                 // ptr[i] = (BIT(channel1->wave, channel1->step) * (int)(val * MAX_VOLUME));
                 if (val + channel1->volumeReduction) {
+                    
                     decibels[0] = (BIT(channel1->wave, channel1->step) * (getBetween(val + channel1->volumeReduction, 0, 2) * CHANNEL1_FACTOR));
                 }
                 

@@ -2,6 +2,7 @@
 #define SQUARE_WAVE_HPP
 
 #include "define.hpp"
+#include "SoundRegisters.hpp"
 #include <SDL2/SDL_audio.h>
 #include <queue>
 
@@ -68,9 +69,9 @@ public:
     SDL_AudioSpec obtainedSpec;
     SDL_AudioSpec desiredSpec;
 
-    void tick();
-    void channel_2_tick();
-    void channel_1_tick();
+    void tick(int index);
+    void channel_2_tick(int index);
+    void channel_1_tick(int index);
 
     void changeWavelength(float val);
     void triggerChannel();
@@ -82,8 +83,10 @@ public:
 
     std::queue<entry> queue;
 
-	static SquareWave* loadSquareWave(int);
-    SquareWave(int chan);
+    std::vector<sound_registers> &registers;
+
+	static SquareWave* loadSquareWave(int, std::vector<sound_registers>&);
+    SquareWave(int chan, std::vector<sound_registers> &regs);
     ~SquareWave();
 };
 
