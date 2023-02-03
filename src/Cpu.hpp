@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:46:19 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 12:02:06 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/03 10:38:31 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,6 @@
 
 class Cpu {
 public:
-	int	executeLine(bool step, bool updateState, bool bRefreshScreen);
-
 	/* StackTrace */
 	static CpuStackTrace	stackTrace;
 	static StackData	captureCurrentState(std::string customData = "");

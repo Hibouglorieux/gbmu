@@ -30,7 +30,7 @@ std::string	Gameboy::path = "";
 float		Gameboy::clockRest = 0;
 Gameboy::saveBufferStruct	Gameboy::saveBuffer = {nullptr, nullptr};
 unsigned short	Gameboy::saveBufferSize = 0;
-bool		bLogFrameNb = false;
+bool		Gameboy::bLYIs0AndOAM = true;
 
 Clock& Gameboy::getClock()
 {
@@ -49,7 +49,6 @@ void	Gameboy::init()
 	bIsCGB = false;
 	bCGBIsInCompatMode = false;
 	clockRest = 0;
-	bLogFrameNb = false;
 	clockLine = 0;
 	Hdma::reset();
 	Ppu::reset();
@@ -64,6 +63,7 @@ void	Gameboy::updateLY(int iter)
 		// And set it to 0
 		mem.supervisorWrite(LY, 0);
 		lcdcWasOff = true;
+		bLYIs0AndOAM = true;
 		return;
 	}
 	else if (lcdcWasOff) {
@@ -72,7 +72,21 @@ void	Gameboy::updateLY(int iter)
 		lcdcWasOff = false;
 		internalLY = 0;
 	}
-	mem.supervisorWrite(LY, ((M_LY + iter) % 154));
+	if (M_LY == 0)
+	{
+		// SPECIAL undocumented case
+		// about LY not being 99 but actually
+		// 0 during vblank for 2 'line' cycles
+		if (bLYIs0AndOAM == true)
+		{
+			mem.supervisorWrite(LY, 1);
+			bLYIs0AndOAM = false;
+		}
+		else
+			bLYIs0AndOAM = true;
+	}
+	else
+		mem.supervisorWrite(LY, ((M_LY + iter) % 153));
 	if (M_LY == M_LYC) {
 		SET(M_LCDC_STATUS, 2);
 		if (BIT(M_LCDC_STATUS, 6)) {
@@ -163,7 +177,8 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		if (Gameboy::executeLine(step == Step::oneInstruction, internalLY < 144, bRefreshScreen))
 		{
 			updateLY(1);
-			internalLY++;
+			if (!(M_LY == 0 && bLYIs0AndOAM == false))
+				internalLY++;
 		}
 		if (step == Step::oneLine || step == Step::oneInstruction)
 			return false;
@@ -179,13 +194,13 @@ bool Gameboy::execFrame(Gameboy::Step step, bool bRefreshScreen)
 		if (!loopFunc())
 			break;
 	}
-	while (!UserInterface::bIsError && internalLY >= 144 && internalLY < 154)
+	while (!UserInterface::bIsError && internalLY >= 144 && internalLY < 153)
 	{
 		Gameboy::setState(GBSTATE_V_BLANK, bRefreshScreen);
 		if (!loopFunc())
 			break;
 	}
-	if (!UserInterface::bIsError && internalLY >= 154) {
+	if (!UserInterface::bIsError && internalLY >= 153) {
 		Ppu::resetWindowCounter();
 		bShouldRenderFrame = true;
 		internalLY = 0;
@@ -306,6 +321,7 @@ void Gameboy::loadSaveState()
 	Gameboy::internalLY = tmp.gameboy.internalLY;
 	// Gameboy::path = tmp.gameboy.path;
 	Gameboy::quit = tmp.gameboy.quit;
+	Gameboy::bLYIs0AndOAM = tmp.gameboy.bLYIs0AndOAM;
 	
 	// Load MBC state
 	switch (Gameboy::getMem().mbc->type)
@@ -441,6 +457,7 @@ void Gameboy::saveState()
 	tmp.gameboy.clockLine = Gameboy::clockLine;
 	tmp.gameboy.internalLY = Gameboy::internalLY;
 	tmp.gameboy.quit = Gameboy::quit;
+	tmp.gameboy.bLYIs0AndOAM = bLYIs0AndOAM;
 
 	// Save MBC state
 	switch (tmp.mbc.type)
@@ -605,17 +622,20 @@ int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 	while (!UserInterface::bIsError && Gameboy::clockLine < nbClockLine)
 	{
-		if (updateState && Gameboy::clockLine < 20)
+		if (!(M_LY == 0 && bLYIs0AndOAM == false))
 		{
-			Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
-		}
-		else if (updateState && Gameboy::clockLine < 20 + 43)
-		{
-			Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
-		}
-		else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
-		{
-			Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
+			if (updateState && Gameboy::clockLine < 20)
+			{
+				Gameboy::setState(GBSTATE_OAM_SEARCH, bRefreshScreen);
+			}
+			else if (updateState && Gameboy::clockLine < 20 + 43)
+			{
+				Gameboy::setState(GBSTATE_PX_TRANSFERT, bRefreshScreen);
+			}
+			else if (updateState && Gameboy::clockLine < 20 + 43 + 51)
+			{
+				Gameboy::setState(GBSTATE_H_BLANK, bRefreshScreen);
+			}
 		}
 
 		int clockInc = Cpu::doMinimumStep();

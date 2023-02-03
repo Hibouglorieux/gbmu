@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/08 19:04:02 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 18:18:50 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 10:56:08 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,7 @@ private:
 
 	static saveBufferStruct saveBuffer;
 	static unsigned short saveBufferSize;
+	static bool bLYIs0AndOAM;
 };
 
 // Save State structure
@@ -128,6 +129,7 @@ typedef struct {
 		uint8_t	internalLY;
 		int	clockLine;
 		bool bIsCGB;
+		bool bLYIs0AndOAM;
 	} gameboy;
 
 	struct {
