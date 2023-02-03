@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/03 13:59:03 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 14:49:12 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -493,11 +493,11 @@ void	UserInterface::fileExplorer()
 			break ;
 		}
 	}
+	Gameboy::clear();
 	filename[8191] = 0; // Ensure it last 0
 	Gameboy::path = filename;
 	Gameboy::bIsPathValid = true;
     pclose(f);
-	Gameboy::clear();
 /*
 ** TODO old file explorer , to remove ?
 **	DIR *dir;

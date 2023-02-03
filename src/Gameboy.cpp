@@ -133,6 +133,8 @@ bool Gameboy::loadRom()
 			saveBuffer.bHasBeenWritten[i] = false;
 		}
 	}
+	else
+		saveBufferSize = 0;
 	Cpu::reset();
 	APU::reset();
 	Screen::createTexture(bIsCGB, UserInterface::uiRenderer);
