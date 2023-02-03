@@ -15,7 +15,7 @@
 #define CHANNEL2_VOLUME_SPEED 0.2
 
 #define CHANNEL3 true
-#define CHANNEL3_FACTOR 0.35
+#define CHANNEL3_FACTOR 1
 
 #define CHANNEL4 true
 #define CHANNEL4_FACTOR 1

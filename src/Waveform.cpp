@@ -10,12 +10,13 @@ void Waveform::tick() {
     length_enable = BIT(mem[NR34], 6);
     // wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
     DACenable = BIT(mem[NR30], 7);
-    // volume = (mem[NR32] & 0b01100000) >> 5;
+    volume = (mem[NR32] & 0b01100000) >> 5;
 
     switch (volume)
     {
     case 0:
     case 2:
+    case 4:
         break;
     case 1:
         volume = 4;
@@ -39,29 +40,30 @@ void Waveform::triggerChannel() {
 
     regulator = 0;
 
-    // volume = (mem[NR32] & 0b01100000) >> 5;
+    volume = (mem[NR32] & 0b01100000) >> 5;
 
-    // switch (volume)
-    // {
-    // case 0:
-    // case 2:
-    //     break;
-    // case 1:
-    //     volume = 4;
-    //     break;
-    // case 3:
-    //     volume = 1;
-    //     break;
+    switch (volume)
+    {
+    case 0:
+    case 2:
+    case 4:
+        break;
+    case 1:
+        volume = 4;
+        break;
+    case 3:
+        volume = 1;
+        break;
     
-    // default:
-    //     std::cout << "Volume : " << std::dec << (int)volume <<"\n";
-    //     throw "Wrong volume specified for Waveform channel\n";
-    // }
-    // std::cout << "Channel 3 triggered\n";
-    // std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
-    // std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
-    // std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
-    // std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
+    default:
+        std::cout << "Volume : " << std::dec << (int)volume <<"\n";
+        throw "Wrong volume specified for Waveform channel\n";
+    }
+    std::cout << "Channel 3 triggered\n";
+    std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
+    std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
+    std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
+    std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
 }
 
 void Waveform::clear() {
