@@ -664,5 +664,5 @@ int	Gameboy::executeLine(bool step, bool updateState, bool bRefreshScreen)
 
 void Gameboy::throwError(std::string errMsg)
 {
-	UserInterface::throwError((std::string("fatal error encountered: ") + errMsg).c_str(), true);
+	UserInterface::throwError((std::string("Fatal error encountered: ") + errMsg).c_str(), true);
 }
