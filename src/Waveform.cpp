@@ -8,7 +8,7 @@ void Waveform::tick() {
 
 
     length_enable = BIT(mem[NR34], 6);
-    // wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
+    wavelength = mem[NR33] | ((mem[NR34] & 0b111) << 8);
     DACenable = BIT(mem[NR30], 7);
     volume = (mem[NR32] & 0b01100000) >> 5;
 
@@ -28,12 +28,6 @@ void Waveform::tick() {
         std::cout << "Volume : " << std::dec << (int)volume <<"\n";
         throw "Wrong volume specified for Waveform channel\n";
     }
-
-    if (length_enable)
-        std::cout << "len enable\n";
-
-    // if (volume > 0)
-    //     std::cout << "lol : " << (int)volume << "\n";
 }
 
 void Waveform::triggerChannel() {
@@ -63,11 +57,11 @@ void Waveform::triggerChannel() {
     //     std::cout << "Volume : " << std::dec << (int)volume <<"\n";
     //     throw "Wrong volume specified for Waveform channel\n";
     // }
-    std::cout << "Channel 3 triggered\n";
-    std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
-    std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
-    std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
-    std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
+    // std::cout << "Channel 3 triggered\n";
+    // std::cout << std::hex << (int)mem[NR31] << " - " << (int)mem[NR32] << " - " << (int)mem[NR33] << " - " << (int)mem[NR34] << "\n";
+    // std::cout << "\tlength enable : " << std::dec << (int)length_enable << "\n";
+    // std::cout << "\tlength timer : " << std::dec << (int)length_timer << "\n";
+    // std::cout << "\tvolume : " << std::dec << (int)volume << "\n";
 }
 
 void Waveform::clear() {
