@@ -361,7 +361,7 @@ void Gameboy::loadSaveState()
 		
 		default:
 			bIsInit = false;
-			UserInterface::throwError("Incorrect MBC type for save state loading", false);
+			UserInterface::throwError("Incorrect MBC type for save state loading", true);
 			return ;
 	}
 
@@ -372,12 +372,19 @@ void Gameboy::loadSaveState()
 		MBC3 *ptr = dynamic_cast<MBC3*>(mem.mbc);
 		if (ptr)
 		{
+			if (content.size() - offset < sizeof(time_t)) {
+				UserInterface::throwError("Missing data in state (MBC3)", true);
+				return;
+			}
 			memcpy(&ptr->start, content.data() + offset, sizeof(time_t));
 			offset += sizeof(time_t);
 		}
 	}
 
-
+	if (content.size() - offset < MEM_SIZE) {
+		UserInterface::throwError("Missing data in state (Internal Array)", true);
+		return;
+	}
 	memcpy(Gameboy::getMem().getInternalArray(), content.data() + offset, MEM_SIZE);
 
 	offset += MEM_SIZE;
@@ -385,6 +392,10 @@ void Gameboy::loadSaveState()
 	{
 		unsigned short ramBankSize = mem.getRamBankSize();
 		for (size_t i = 0; i < Gameboy::getMem().extraRamBanks.size(); i++) {
+			if (content.size() - offset < ramBankSize) {
+				UserInterface::throwError("Missing data in state (RAM BANK)", true);
+				return;
+			}
 			memcpy(Gameboy::getMem().extraRamBanks[i], content.data() + offset, ramBankSize);
 			offset += ramBankSize;
 		}
@@ -407,12 +418,21 @@ void Gameboy::loadSaveState()
 		}
 		ptr->bIsUsingCGBVram = tmp.cgb.bIsUsingCGBVram;
 		
+		if (content.size() - offset < 0x2000) {
+			UserInterface::throwError("Missing data in state (CGBVram)", true);
+			return;
+		}
 		memcpy(ptr->getCGBVram(), content.data() + offset, 0x2000);
 		offset += 0x2000;
 
 		for (int i = 0; i < 8; i++) {
-			if (ptr->getCGBExtraRamBanks()[i])
+			if (ptr->getCGBExtraRamBanks()[i]) {
+				if (content.size() - offset < 0x1000) {
+					UserInterface::throwError("Missing data in state (CGBExtraRam)", true);
+					return;
+				}
 				memcpy(ptr->getCGBExtraRamBanks()[i], content.data() + offset, 0x1000);
+			}
 			offset += 0x1000;
 		}
 	}
