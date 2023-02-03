@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/03 11:54:00 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 12:28:11 by nallani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,44 +167,36 @@ Mem::Mem(const std::string& pathToRom)
 	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
 
 	// Check if there is a save
-	std::ifstream tmp(pathToRom + ".save");
-	if (tmp.good()) {
+	std::ifstream saveFile(pathToRom + ".save");
+	if (saveFile.good())
+	{
 		std::cout << "Save was detected" << std::endl;
 		// std::vector<unsigned char> saveContent = readFile(pathToRom + ".save");
-		std::ifstream infile(pathToRom + ".save", std::ios::binary);
-		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(infile)),
+		saveFile.seekg(0, std::ifstream::end);
+		long unsigned int fileLen = saveFile.tellg();
+
+		if (fileLen != ramBankSize * extraRamBanksNb + (mbc->hasTimer ? sizeof(time_t) : 0))
+		{
+			saveFile.close();
+			UserInterface::throwError("Corrupted save file has been found with that game, please delete manually", true);
+			return;
+		}
+
+		saveFile.seekg(0, std::ifstream::beg);
+		std::vector<unsigned char> saveContent((std::istreambuf_iterator<char>(saveFile)),
 				std::istreambuf_iterator<char>());
-		/*
-		infile.seekg(0, std::ifstream::beg);
-		infile.seekg(0, std::ifstream::end);
-		int fileLen = infile.tellg();
-		*/
-		infile.close();
+		saveFile.close();
 
 		// TODO do more check with size for extraRam
 		if (mbc->hasTimer) {
 			// Fetching timer save
 			MBC3 *ptr = dynamic_cast<MBC3*>(mbc);
-			if (saveContent.size() > sizeof(time_t))
-				memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
-			else {
-				UserInterface::throwError("Corrupted save, please delete it before rerun.", true);
-			}
+			memcpy(&ptr->start, saveContent.data(), sizeof(time_t));
 			std::cout << "Loaded timer : " << std::dec << (int)ptr->start << std::hex << std::endl;
 		}
 
-		for (int i = 0; i < extraRamBanksNb; i++) {
-			if (saveContent.size() > (ramBankSize * i + (mbc->hasTimer ? sizeof(time_t) : 0)))
+		for (int i = 0; i < extraRamBanksNb; i++)
 				memcpy(extraRamBanks[i], saveContent.data() + (mbc->hasTimer ? sizeof(time_t) : 0) + (i * ramBankSize), ramBankSize);
-			else {
-				UserInterface::throwError("Corrupted save, please delete it before rerun.", true);
-			}
-
-			// CGBMem *ptr = dynamic_cast<CGBMem*>(&mem);
-			// if (ptr) {
-
-			// }
-		}
 	} else
 		std::cout << "No saves were detected" << std::endl;
 

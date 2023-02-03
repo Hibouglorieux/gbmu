@@ -567,7 +567,7 @@ void Gameboy::saveByteInSave(unsigned short addr, unsigned char value)
 
 void Gameboy::saveRam()
 {
-	if (!bIsPathValid || !bIsInit)
+	if (!bIsPathValid || !bIsInit || saveBufferSize == 0)
 		return ;
 	struct stat _;
 	bool bSaveExists = stat((path + ".save").c_str(), &_) != -1;
