@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/03 12:28:11 by nallani          ###   ########.fr       */
+/*   Updated: 2023/02/03 12:37:51 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,7 @@ Mem::Mem(const std::string& pathToRom)
 		if (fileLen != ramBankSize * extraRamBanksNb + (mbc->hasTimer ? sizeof(time_t) : 0))
 		{
 			saveFile.close();
-			UserInterface::throwError("Corrupted save file has been found with that game, please delete manually", true);
+			UserInterface::throwError("Corrupted save file has been found with that game, please delete it manually", true);
 			return;
 		}
 

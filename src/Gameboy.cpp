@@ -285,6 +285,10 @@ void Gameboy::loadSaveState()
     	std::vector<unsigned char> content((std::istreambuf_iterator<char>(infile)),
     	                                       std::istreambuf_iterator<char>());
     	infile.close();
+	if (content.size() < sizeof(tmp)) {
+		UserInterface::throwError("Corrupted save state, please delete it manually.", false);
+		return ;
+	}
 	memcpy(&tmp, content.data(), sizeof(tmp));
 
 	size_t romHash = 0;

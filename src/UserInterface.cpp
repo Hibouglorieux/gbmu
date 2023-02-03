@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/03 12:12:37 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 13:59:03 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,8 +187,6 @@ void UserInterface::showGameboyWindow()
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Load Rom")) {
-		Gameboy::clear();
-		//Gameboy::bIsPathValid = false;
 		fileExplorer();
 		ImGui::End();
 		return ;
@@ -499,6 +497,7 @@ void	UserInterface::fileExplorer()
 	Gameboy::path = filename;
 	Gameboy::bIsPathValid = true;
     pclose(f);
+	Gameboy::clear();
 /*
 ** TODO old file explorer , to remove ?
 **	DIR *dir;
