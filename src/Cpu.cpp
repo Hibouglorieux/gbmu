@@ -599,7 +599,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 						break;
 					default:
 						stackTrace.print();
-						logErr(string_format("Unkown opcode encountered: 0xCB%X, a physical gameboy would either crash/freeze" opcode));
+						logErr(string_format("Unkown opcode encountered: 0xCB%X, a gameboy would either crash/freeze", opcode));
 				}
 				// NOTE need to exit here because of targetBit/Register references
 				// Cpu::debug(opcode);
@@ -613,7 +613,7 @@ std::pair<unsigned char, int> Cpu::executeInstruction()
 			{
 				std::cerr << "previuous opcode: 0x" << std::hex << ((int)mem[PC - 2]) << std::endl;
 				stackTrace.print();
-				logErr(string_format("Unkown opcode encountered: 0x%X, a physical gameboy would either crash/freeze" opcode));
+				logErr(string_format("Unkown opcode encountered: 0x%X, a gameboy would either crash/freeze", opcode));
 			}
 	}
 	// Cpu::debug(opcode);
