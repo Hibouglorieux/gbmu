@@ -66,60 +66,21 @@ void	Debugger::lockTexture()
     SDL_LockTexture(BGTexture, nullptr, &BGPixels, &BGPitch);
 }
 
-void Debugger::hexdump() {
-	{
+void Debugger::hexdump()
+{
 	ImGui::Begin("Memory Hexdump:");
+	ImGui::BeginChild("Scrolling");
 
-//        ImGui::Text("Number of Rom: %d\nCurrent Rombank for 1st slot: %d\nCurrent Rombank for 2nd slot:", mem.mbc->getRomBank(0));
-//        ImGui::SameLine();
-//        ImGui::Text("Number of Ram: %d\nCurrent Rambank: %d\n");
-		// Display contents in a scrolling region
-		ImGui::BeginChild("Scrolling");
-
-		int perLine = 16;
-		int i;
-		unsigned char buff[4+1] = {0};
-		int len = 0xffff+1;
-
-		for (i = 0; i < len; i++) {
-
-			if ((i % perLine) == 0) {
-
-				if (i != 0) {
-					ImGui::SameLine();
-					ImGui::Text("  %s", buff);
-					ImGui::NewLine();
-				}
-				// Output the offset of current line.
-				ImGui::SameLine();
-				ImGui::Text("  0x%04x ", i);
+	for (int i = 0 ; i <= 0xFFFF ; i++)
+	{
+			if (i % 16 == 0) {
+				ImGui::Text("0x%04x: ", i);
 			}
-
-			// Now the hex code for the specific character.
 			ImGui::SameLine();
-			ImGui::Text(" %02X", (int)mem[i]);
-
-			// And buffer a printable ASCII character for later.
-			if (std::isprint(mem[i]))
-				buff[i % perLine] = mem[i];
-			else
-				buff[i % perLine] = '.';
-			buff[(i % perLine) + 1] = '\0';
-		}
-
-		// Pad out last line if not exactly perLine characters.
-		while ((i % perLine) != 0) {
-			ImGui::SameLine();
-			ImGui::Text("   ");
-			i++;
-		}
-
-		// And print the final ASCII buffer.
-		ImGui::SameLine();
-		ImGui::Text("  %s", buff);
-		ImGui::EndChild();
-		ImGui::End();
+			ImGui::Text("%02X ", (int)mem[i]);
 	}
+	ImGui::EndChild();
+	ImGui::End();
 }
 
 void Debugger::registers() {
