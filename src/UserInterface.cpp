@@ -6,7 +6,7 @@
 /*   By: lmariott <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/06 22:44:23 by lmariott          #+#    #+#             */
-/*   Updated: 2023/02/02 20:51:56 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 12:12:37 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,11 +262,15 @@ void UserInterface::showGameboyWindow()
 		Debugger::state = DebuggerState::ONCE_LINE;
 	}
 	if (ImGui::Button("Save State")) {
-		Gameboy::saveState();
+		if (Gameboy::bIsInit) {
+			Gameboy::saveState();
+		}
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Load State")) {
-		Gameboy::loadSaveState();
+		if (Gameboy::bIsInit) {
+			Gameboy::loadSaveState();
+		}
 	}
 	ImGui::End();
 }

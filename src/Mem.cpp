@@ -6,7 +6,7 @@
 /*   By: nallani <nallani@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 20:49:00 by nallani           #+#    #+#             */
-/*   Updated: 2023/02/02 19:49:38 by lmariott         ###   ########.fr       */
+/*   Updated: 2023/02/03 11:54:00 by lmariott         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,11 +140,8 @@ Mem::Mem(const std::string& pathToRom)
 	}
 	std::cout << "created " << romBanksNb << " rom banks" << std::endl;
 
-
-
 	internalArray = new unsigned char[MEM_SIZE];
 	bzero(internalArray, MEM_SIZE);
-
 
     for (int i = 0; i < romBanksNb; i++) {
         file.read((char *) romBanks[i], ROM_BANK_SIZE);
@@ -163,8 +160,10 @@ Mem::Mem(const std::string& pathToRom)
 	if (extraRamBanksNb == 0 && mbc->type == 2)
 		extraRamBanksNb = 1;
 	unsigned short ramBankSize = getRamBankSize();
-	for (int i = 0; i < extraRamBanksNb; i++)
+	for (int i = 0; i < extraRamBanksNb; i++) {
 		extraRamBanks.push_back(new unsigned char[ramBankSize]);
+		bzero(extraRamBanks[i], ramBankSize);
+	}
 	std::cout << "created " << +extraRamBanksNb << " extra ram banks" << std::endl;
 
 	// Check if there is a save
