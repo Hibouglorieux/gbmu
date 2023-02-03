@@ -78,7 +78,7 @@ void Debugger::hexdump() {
 
 		int perLine = 16;
 		int i;
-		unsigned char buff[perLine+1] = {0};
+		unsigned char buff[4+1] = {0};
 		int len = 0xffff+1;
 
 		for (i = 0; i < len; i++) {

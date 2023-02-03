@@ -19,8 +19,6 @@ private:
 public:
     static void tick(int n);
     
-    static bool addDecibel(unsigned short &ref, int val);
-
     static void init();
     static void reset();
     static void clear();
