@@ -4,6 +4,7 @@
 #include "Gameboy.hpp"
 #include "define.hpp"
 #include "UserInterface.hpp"
+#include "Debugger.hpp"
 
 
 #define CHANNEL1 true
@@ -134,6 +135,8 @@ void APU::sound_callback(void *arg, Uint8 *stream, int length) {
     for (int i = 0; i < length/2; i++) {
         ptr[i] = 0;
         float decibels[4] = {0, 0, 0, 0};
+        if (Debugger::state != DebuggerState::RUNNING)
+            continue ;
         
 
         if (CHANNEL1)
