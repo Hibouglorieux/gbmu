@@ -132,6 +132,8 @@ public:
 	void setStart(time_t val) {start = val;}
 	void setRTC(rtc val) {rtc_register = val;}
 	void setRTCBind(unsigned char val) {rtcBindNb = val;}
+  void addDay(void) {start -= (time_t)(3600 * 24);};
+  void addHour(void) {start -= (time_t)(3600);};
 	
 	unsigned char getEnableRam() {return bEnableRam;}
 	unsigned short getRomBankNb() {return romBankNb;}

@@ -270,6 +270,19 @@ void UserInterface::showGameboyWindow()
 			Gameboy::loadSaveState();
 		}
 	}
+	if (ImGui::Button("++day")) {
+		if (Gameboy::bIsInit && Gameboy::getMem().mbc->type == 3) {
+			MBC3 *ptr = dynamic_cast<MBC3*>(Gameboy::getMem().mbc);
+      ptr->addDay();
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("++hour")) {
+		if (Gameboy::bIsInit && Gameboy::getMem().mbc->type == 3) {
+			MBC3 *ptr = dynamic_cast<MBC3*>(Gameboy::getMem().mbc);
+      ptr->addHour();
+		}
+	}
 	ImGui::End();
 }
 
@@ -551,6 +564,7 @@ void	UserInterface::handleEvent(SDL_Event *ev)
 	if (ev->type == SDL_KEYDOWN)
 	{
 		if (ev->key.keysym.sym == SDLK_ESCAPE) {
+			Gameboy::saveState();
 			Gameboy::clear();
 			Gameboy::bIsPathValid = false;
 		}
